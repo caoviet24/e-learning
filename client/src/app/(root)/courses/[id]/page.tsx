@@ -3,10 +3,10 @@ import Link from "next/link"
 
 export default function CourseDetail({ params }: { params: { id: string } }) {
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto px-4">
       <div className="mb-6">
         <Link href="/">
-          <Button variant="outline">← Back to Courses</Button>
+          <Button variant="outline">← Quay lại trang chủ</Button>
         </Link>
       </div>
       

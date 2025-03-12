@@ -66,46 +66,6 @@ npm run dev
 npm start
 ```
 
-## API Endpoints
-
-### Users
-- GET `/api/users` - Get all users
-- GET `/api/users/:id` - Get user by ID
-- POST `/api/users` - Create new user
-- PUT `/api/users/:id` - Update user
-- DELETE `/api/users/:id` - Delete user
-
-## WebSocket Events
-
-### Course Room
-- `join-course` - Join a course room
-  ```javascript
-  socket.emit('join-course', courseId)
-  ```
-
-- `course-message` - Send message in course room
-  ```javascript
-  socket.emit('course-message', { courseId, message })
-  ```
-
-## Rate Limiting
-
-The API is protected by rate limiting:
-- Default window: 15 minutes
-- Default max requests: 100 per window
-
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| PORT | Server port | 8000 |
-| NODE_ENV | Environment mode | development |
-| DATABASE_URL | MySQL connection URL | - |
-| RATE_LIMIT_WINDOW | Rate limit window in minutes | 15 |
-| RATE_LIMIT_MAX_REQUEST | Max requests per window | 100 |
-
-## Docker Support
-
 ### Using Docker Compose (Recommended)
 
 1. Start the application and database:
