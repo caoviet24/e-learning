@@ -13,7 +13,7 @@ export default function Header({ isOpen, setIsOpen }: HeaderProps) {
     return (
         <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b h-16 px-8">
             <div className="flex items-center justify-between h-full gap-4">
-                <div className="flex items-center gap-2">
+                <Link href='/' className="flex items-center gap-2">
                     <Image
                         src="/images/utehy-logo.png"
                         alt="UTEHY Logo"
@@ -22,7 +22,7 @@ export default function Header({ isOpen, setIsOpen }: HeaderProps) {
                         className="object-contain"
                     />
                     <span className="font-semibold text-xl hidden md:block">UTEHY E-Learning</span>
-                </div>
+                </Link>
 
                 <div className="flex-1 max-w-screen-md">
                     <div className="relative">

@@ -37,7 +37,6 @@ export const courses = [
         views: 99999,
         rating: 4.5,
     },
-
     {
         id: 11,
         title: 'Nhập môn lập trình',
@@ -57,8 +56,9 @@ export const courses = [
         thumbnail: 'https://files.fullstack.edu.vn/f8-prod/courses/7.png',
         views: 99999,
         rating: 4.5,
+        isJoin: true,
+        progress: 40,
     },
-
     {
         id: 22,
         title: 'Nhập môn lập trình',
@@ -68,8 +68,9 @@ export const courses = [
         thumbnail: 'https://files.fullstack.edu.vn/f8-prod/courses/7.png',
         views: 99999,
         rating: 4.5,
+        isJoin: true,
+        progress: 40,
     },
-
     {
         id: 44,
         title: 'Nhập môn lập trình',
@@ -78,9 +79,8 @@ export const courses = [
         teacher: 'Bùi Đức Thọ',
         thumbnail: 'https://files.fullstack.edu.vn/f8-prod/courses/7.png',
         views: 99999,
-        rating: 4.5,
+        rating: 4.5
     },
-
     {
         id: 55,
         title: 'Nhập môn lập trình',

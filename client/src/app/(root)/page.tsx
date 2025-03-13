@@ -2,6 +2,7 @@
 import React, { SelectHTMLAttributes, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { CourseCard } from '@/components/course-card';
 
 import {
     Select,
@@ -12,7 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { boMon, giangVien, Khoa, myCourses, Nganh } from '@/content/data';
+import { boMon, courses, giangVien, Khoa, myCourses, Nganh } from '@/content/data';
 
 type OptionsType = {
     khoa: typeof Khoa;
@@ -69,8 +70,8 @@ export default function Home() {
     }, [options, searchOptions]);
 
     return (
-        <main className="px-5">
-            <div className="mx-auto">
+        <main className="px-5 container space-y-6 py-6">
+            <div className="mx-auto ">
                 <div>
                     <h2 className="text-2xl font-semibold mb-2">Xin chào bạn !</h2>
                     <p className="text-muted-foreground">Tiếp tục với quá trình học tập ngay cả khi bạn rời đi.</p>
@@ -149,32 +150,10 @@ export default function Home() {
                         </SelectContent>
                     </Select>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {myCourses.map((course, index) => (
-                        <Link key={index} href={`/courses/${index + 1}`} className="block">
-                            <div className="card-gradient border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition-colors">
-                                <div className="w-10 h-10 rounded-lg bg-slate-800/50 p-2 mb-4">
-                                    <Image
-                                        src={course.icon}
-                                        alt={course.title}
-                                        width={24}
-                                        height={24}
-                                        className="dark:invert"
-                                    />
-                                </div>
-                                <h3 className="text-lg font-medium mb-2">{course.title}</h3>
-                                <p className="text-sm text-muted-foreground mb-4">{course.description}</p>
-                                <div className="flex items-center justify-between">
-                                    <div className="w-full max-w-[120px] h-1.5 rounded-full bg-slate-800">
-                                        <div
-                                            className="h-full bg-purple-500 rounded-full"
-                                            style={{ width: `${course.progress}%` }}
-                                        />
-                                    </div>
-                                    <span className="text-sm text-muted-foreground">{course.progress}%</span>
-                                </div>
-                            </div>
+                    {courses.map((course, index) => (
+                        <Link key={index} href={`/courses/${course.id}`}>
+                            <CourseCard {...course} />
                         </Link>
                     ))}
                 </div>

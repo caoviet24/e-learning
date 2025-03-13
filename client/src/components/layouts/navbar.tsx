@@ -2,13 +2,26 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { User } from 'lucide-react';
+import {
+    User,
+    Home,
+    Newspaper,
+    FileText,
+    Globe,
+    ClipboardList,
+    BookOpen,
+    Bell
+} from 'lucide-react';
 import { ThemeToggle } from '../theme-toggle';
 
 const navigationItems = [
-    { name: 'Dashboard', href: '/', icon: '/window.svg', active: true },
-    { name: 'Courses', href: '/courses', icon: '/file.svg', active: false },
-    { name: 'Resources', href: '#', icon: '/globe.svg', active: false },
+    { name: 'Trang chủ', href: '/', icon: Home, active: true },
+    { name: 'Tin tức', href: '#', icon: Newspaper, active: false },
+    { name: 'Khóa học của tôi', href: '/learning', icon: FileText, active: false },
+    { name: 'Quản lý lớp học', href: '/classes', icon: Globe, active: false },
+    { name: 'Làm bài thi', href: '#', icon: ClipboardList, active: false },
+    { name: 'Bài tập', href: '#', icon: BookOpen, active: false },
+    { name: 'Thông báo', href: '#', icon: Bell, active: false },
 ];
 
 interface NavbarProps {
@@ -36,7 +49,7 @@ export function Navbar({ isOpen, setIsOpen }: NavbarProps) {
                                 className="flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium text-muted-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
                                 onClick={() => setIsOpen(false)}
                             >
-                                <Image src={item.icon} alt={item.name} width={20} height={20} className="dark:invert" />
+                                <item.icon className="w-5 h-5" />
                                 {item.name}
                             </Link>
                         ))}
