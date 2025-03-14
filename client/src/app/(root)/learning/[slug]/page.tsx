@@ -26,8 +26,13 @@ const lessons = [
     },
 ];
 
-export default function LearningPage({ params }: { params: { id: string } }) {
-    const course = courses.find((course) => course.id === parseInt(params.id));
+export default async function Page({
+    params,
+  }: {
+    params: Promise<{ slug: string }>
+  }) {
+    const { slug } = await params;
+    const course = courses.find((course) => course.id === parseInt(slug, 10));
     const currentLesson = lessons[0]; // This should be dynamic based on current lesson
     const currentIndex = lessons.findIndex((lesson) => lesson.id === currentLesson.id);
     const prevLesson = currentIndex > 0 ? lessons[currentIndex - 1] : null;
@@ -40,7 +45,7 @@ export default function LearningPage({ params }: { params: { id: string } }) {
     return (
         <div className="container mx-auto px-4">
             <div className="mb-6">
-                <Link href={`/courses/${params.id}`}>
+                <Link href={`/courses/${course.id}`}>
                     <Button variant="outline">← Quay lại thông tin khóa học</Button>
                 </Link>
             </div>
