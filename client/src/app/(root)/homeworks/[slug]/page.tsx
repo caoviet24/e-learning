@@ -10,19 +10,21 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-export default function HomeworkSubmissionPage({
-    params
-}: {
-    params: { slug: string }
-}) {
+export default async function Page({
+    params,
+  }: {
+    params: Promise<{ slug: string }>
+  }) {
+    const { slug } = await params;
+    const hwId = parseInt(slug, 10);
     const [homework, setHomework] = useState<Homework | null>(null);
 
     useEffect(() => {
-        const hw = homeworks.find(h => h.id.toString() === params.slug);
+        const hw = homeworks.find((h) => h.id.toString() === hwId.toString());
         if (hw) {
             setHomework(hw);
         }
-    }, [params.slug]);
+    }, [hwId]);
 
     if (!homework) {
         return notFound();
@@ -36,22 +38,22 @@ export default function HomeworkSubmissionPage({
             case 'pending':
                 return {
                     color: 'text-yellow-500 border-yellow-500',
-                    text: 'Chưa nộp'
+                    text: 'Chưa nộp',
                 };
             case 'submitted':
                 return {
                     color: 'text-blue-500 border-blue-500',
-                    text: 'Đã nộp'
+                    text: 'Đã nộp',
                 };
             case 'graded':
                 return {
                     color: 'text-green-500 border-green-500',
-                    text: 'Đã chấm điểm'
+                    text: 'Đã chấm điểm',
                 };
             default:
                 return {
                     color: 'text-gray-500 border-gray-500',
-                    text: 'Không xác định'
+                    text: 'Không xác định',
                 };
         }
     };
@@ -64,8 +66,8 @@ export default function HomeworkSubmissionPage({
             <div className="border-b">
                 <div className="container max-w-4xl mx-auto py-6 px-4">
                     <div className="space-y-4">
-                        <Link 
-                            href="/homeworks" 
+                        <Link
+                            href="/homeworks"
                             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
                         >
                             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -86,10 +88,7 @@ export default function HomeworkSubmissionPage({
                                             Trắc nghiệm
                                         </Badge>
                                     )}
-                                    <Badge 
-                                        variant="outline" 
-                                        className={statusInfo.color}
-                                    >
+                                    <Badge variant="outline" className={statusInfo.color}>
                                         {statusInfo.text}
                                     </Badge>
                                 </div>
@@ -142,9 +141,7 @@ export default function HomeworkSubmissionPage({
                         )
                     ) : (
                         <div className="text-center py-8">
-                            <p className="text-muted-foreground">
-                                Bạn không thể nộp bài vì đã quá hạn.
-                            </p>
+                            <p className="text-muted-foreground">Bạn không thể nộp bài vì đã quá hạn.</p>
                         </div>
                     )
                 ) : (
@@ -159,9 +156,7 @@ export default function HomeworkSubmissionPage({
                                     Bài tập đã được chấm điểm. Điểm số của bạn là: {homework.grade}
                                 </p>
                             ) : (
-                                <p className="text-muted-foreground">
-                                    Bài tập đang chờ giảng viên chấm điểm
-                                </p>
+                                <p className="text-muted-foreground">Bài tập đang chờ giảng viên chấm điểm</p>
                             )}
                         </div>
                     </div>
