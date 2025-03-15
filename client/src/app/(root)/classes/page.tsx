@@ -5,9 +5,11 @@ import { useState, ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function ClassesPage() {
     const [searchQuery, setSearchQuery] = useState('');
+    const router = useRouter();
 
     // Mock data for classes - replace with real API calls later
     const mockClasses = [
@@ -23,6 +25,12 @@ export default function ClassesPage() {
             c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             c.code.toLowerCase().includes(searchQuery.toLowerCase()),
     );
+
+    const handleJoinClass = (id: string | number) => {
+        // classes/{id}
+        router.push(`/classes/${id}`);
+
+    };
 
     return (
         <div className="container py-6 space-y-6">
@@ -71,16 +79,21 @@ export default function ClassesPage() {
                         {enrolledClasses.map((cls) => (
                             <Card key={cls.id}>
                                 <CardContent className="p-4">
-                                    <Link href={`/classes/${cls.id}`} className="flex justify-between items-center">
+                                    <div className="flex justify-between items-center">
                                         <div>
                                             <h3 className="font-semibold">{cls.name}</h3>
                                             <p className="text-sm text-gray-500">Mã lớp: {cls.code}</p>
                                             <p className="text-sm text-gray-500">Giảng viên: {cls.teacher}</p>
                                         </div>
+                                        <div>
+                                        <Button variant="outline" className="mr-2" onClick={() => handleJoinClass(cls.id)}>
+                                            Tham gia
+                                        </Button>
                                         <Button variant="ghost" className="text-red-500">
                                             Rời lớp
                                         </Button>
-                                    </Link>
+                                        </div>
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))}

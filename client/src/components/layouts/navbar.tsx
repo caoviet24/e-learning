@@ -19,8 +19,8 @@ const navigationItems = [
     { name: 'Tin tức', href: '#', icon: Newspaper, active: false },
     { name: 'Khóa học của tôi', href: '/learning', icon: FileText, active: false },
     { name: 'Quản lý lớp học', href: '/classes', icon: Globe, active: false },
-    { name: 'Làm bài thi', href: '#', icon: ClipboardList, active: false },
-    { name: 'Bài tập', href: '#', icon: BookOpen, active: false },
+    { name: 'Làm bài thi', href: '/exams', icon: ClipboardList, active: false },
+    { name: 'Bài tập', href: '/homeworks', icon: BookOpen, active: false },
     { name: 'Thông báo', href: '#', icon: Bell, active: false },
 ];
 

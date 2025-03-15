@@ -113,3 +113,10 @@ export const myCourses = [
         progress: 25,
     },
 ];
+
+
+
+export const myAccount = {
+    name : 'Test User',
+    role: 'student',
+}
