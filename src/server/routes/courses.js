@@ -1,7 +1,7 @@
 import express from 'express';
-const courseController = require('../controllers/courseController');
-const videoController = require('../controllers/videoController');
-import { protect } from '../middleware/auth';
+import courseController from '../controllers/courseController.js';
+import * as videoController from '../controllers/videoController.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 

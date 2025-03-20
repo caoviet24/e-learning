@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-export const createVideo = async (videoData) => {
+ const createVideo = async (videoData) => {
   // Get max order for the course
   const maxOrder = await prisma.video.findFirst({
     where: {
@@ -38,7 +38,7 @@ export const createVideo = async (videoData) => {
   });
 };
 
-export const updateVideo = async (id, videoData) => {
+ const updateVideo = async (id, videoData) => {
   return await prisma.video.update({
     where: { id },
     data: videoData,
@@ -59,14 +59,14 @@ export const updateVideo = async (id, videoData) => {
   });
 };
 
-export const deleteVideo = async (id) => {
+ const deleteVideo = async (id) => {
   return await prisma.video.update({
     where: { id },
     data: { is_deleted: true }
   });
 };
 
-export const getVideoById = async (id) => {
+ const getVideoById = async (id) => {
   return await prisma.video.findFirst({
     where: {
       id,
@@ -89,7 +89,7 @@ export const getVideoById = async (id) => {
   });
 };
 
-export const getVideosByCourseId = async (courseId, query = {}) => {
+ const getVideosByCourseId = async (courseId, query = {}) => {
   const { page = 1, limit = 10 } = query;
   const skip = (page - 1) * limit;
 
@@ -132,7 +132,7 @@ export const getVideosByCourseId = async (courseId, query = {}) => {
   };
 };
 
-export const reorderVideo = async (id, newOrder) => {
+ const reorderVideo = async (id, newOrder) => {
   const video = await prisma.video.findUnique({
     where: { id },
     select: { course_id: true, order: true }
@@ -180,4 +180,13 @@ export const reorderVideo = async (id, newOrder) => {
     where: { id },
     data: { order: newOrder }
   });
+};
+
+export default {
+  createVideo,
+  updateVideo,
+  deleteVideo,
+  getVideoById,
+  getVideosByCourseId,
+  reorderVideo
 };

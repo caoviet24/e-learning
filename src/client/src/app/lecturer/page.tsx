@@ -1,6 +1,26 @@
 'use client';
 
+import { accountService } from "@/services/accountService";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+
 export default function LecturerPage() {
+
+    const {data: authData, isError: isAuthError, isSuccess: isAuthSuccess} = useQuery({
+        queryKey: ['auth'],
+        queryFn: accountService.auth,
+        enabled: true
+    });
+
+    useEffect(() => {
+        if (isAuthSuccess) {
+            console.log(authData
+            );
+        }
+    }, [isAuthSuccess, isAuthError]);
+
+
+    
     return (
         <div className="container mx-auto p-6">
             <h1 className="text-2xl font-bold mb-6">Dashboard Giảng Viên</h1>

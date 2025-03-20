@@ -1,13 +1,17 @@
-"use client";
+'use client';
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue  } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { accountService } from '@/services/accountService';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
+
+import Cookies from 'js-cookie';
+import useHookMutation from '@/hooks/useHookMutation';
 
 type FormData = {
     username: string;
@@ -31,14 +35,28 @@ export default function LoginPage() {
         });
     };
 
+    const loginMutation = useHookMutation((data: FormData) => accountService.login(data));
+
     const handleLogin = async () => {
-        try {
-            const res = await accountService.login(formData);
-            console.log(res);
-            debugger;
-            
-            if (!res.success) {
-                toast.error(res.message, {
+        loginMutation.mutate(formData, {
+            onSuccess: (res) => {
+                const decoded = jwtDecode<JwtPayload>(res.access_token);
+                const role = decoded.role;
+                
+                console.log('role', role);
+                
+
+                Cookies.set('access_token', res.access_token, { expires: 7 });
+                Cookies.set('refresh_token', res.refresh_token, { expires: 365 });
+
+                if (role === 0) {
+                    router.push('/student');
+                } else if (role === 1) {
+                    router.push('/lecturer');
+                }
+            },
+            onError: (error: any) => {
+                toast.error(error.response.data.message, {
                     position: 'top-right',
                     autoClose: 5000,
                     hideProgressBar: false,
@@ -47,27 +65,9 @@ export default function LoginPage() {
                     draggable: true,
                     progress: undefined,
                 });
-                return;
-            }
-
-            // After successful login, redirect based on role
-            if (res.role === 0) {
-                router.push('/student');
-            } else if (res.role === 1) {
-                router.push('/lecturer');
-            }
-        } catch (error: any) {
-            toast.error(error.message || 'Login failed', {
-                position: 'top-right',
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-        }
-    }
+            },
+        });
+    };
     return (
         <div className="w-full max-w-md space-y-8 px-4 rounded-lg p-6">
             <div className="text-center flex items-center flex-col space-y-2">
@@ -80,11 +80,11 @@ export default function LoginPage() {
             <form className="mt-8 space-y-6">
                 <input
                     id="email"
-                    name="email"
+                    name="username"
                     onChange={handleOnChangeInput}
                     required
                     className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    placeholder="Mã sinh viên"
+                    placeholder={formData.role === 0 ? 'Mã sinh viên' : 'Mã giảng viên'}
                 />
 
                 <input
@@ -97,18 +97,20 @@ export default function LoginPage() {
                     placeholder="Mật khẩu"
                 />
 
-                <div className='bg-background rounded-md'>
-                <Select defaultValue="0" onValueChange={(value: string) => setFormData({ ...formData, role: parseInt(value) })}>
-                    <SelectTrigger className='w-full'>
-                        <SelectValue placeholder="Sinh viên" />
-                    </SelectTrigger>
-                    <SelectContent className='bg-background'>
-                        <SelectItem value="0">Sinh viên</SelectItem>
-                        <SelectItem value="1">Giảng viên</SelectItem>
-                        <SelectItem value="999">Quản trị viên</SelectItem>
-                    </SelectContent>
-                </Select>
-
+                <div className="bg-background rounded-md">
+                    <Select
+                        defaultValue="0"
+                        onValueChange={(value: string) => setFormData({ ...formData, role: parseInt(value) })}
+                    >
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Sinh viên" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background">
+                            <SelectItem value="0">Sinh viên</SelectItem>
+                            <SelectItem value="1">Giảng viên</SelectItem>
+                            <SelectItem value="999">Quản trị viên</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
                 <Button type="button" className="w-full" onClick={handleLogin}>
                     Đăng nhập

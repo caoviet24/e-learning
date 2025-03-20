@@ -1,33 +1,22 @@
+import axiosJWT from '@/utils/axios.intercepter';
+import axios from 'axios';
 import Cookies from 'js-cookie';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export const accountService = {
-    async login(data: any) {
-        const {username, password, role} = data;
-
-        if(username === username && password === password && role === role) {
-
-            debugger;
-            // Set auth cookies
-            Cookies.set('auth', 'true', { expires: 7 });
-            Cookies.set('role', String(role), { expires: 7 });
-            Cookies.set('username', username, { expires: 7 });
-            
-            return {
-                username,
-                role,
-                success: true
-            };
-        }
-        return {
-            message: 'Tài khoản hoặc mật khẩu không chính xác',
-            success: false,
-        };
+    async auth() {
+        const res = await axiosJWT.get(`${API_URL}/auth/me`);
+        return res.data;
     },
 
-    logout() {
-        Cookies.remove('auth');
-        Cookies.remove('role');
-        Cookies.remove('username');
-        window.location.href = '/sign-in';
-    }
+    async login(data: any) {
+        const res = await axios.post(`${API_URL}/auth/login`, data);
+        return res.data;
+    },
+
+    async logout() {
+        Cookies.remove('token');
+        window.location.href = '/auth/sign-in';
+    },
 };

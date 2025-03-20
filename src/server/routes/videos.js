@@ -1,11 +1,11 @@
 import express from 'express';
 import * as videoController from '../controllers/videoController.js';
-import auth from '../middleware/auth.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Protected routes (require authentication)
-router.use(auth);
+router.use(protect);
 
 // Upload video
 router.post('/upload', videoController.uploadVideo);

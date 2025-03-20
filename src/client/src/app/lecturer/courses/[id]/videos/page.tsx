@@ -27,8 +27,7 @@ export default function CourseVideosPage() {
 
     // Upload video mutation
     const uploadMutation = useMutation({
-        mutationFn: (data: { title: string; file: File; course_id: string }) =>
-            videoService.uploadVideo(data),
+        mutationFn: (data: { title: string; file: File; course_id: string }) => videoService.uploadVideo(data),
         onSuccess: () => {
             toast.success('Video uploaded successfully');
             setTitle('');
@@ -56,6 +55,9 @@ export default function CourseVideosPage() {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+
+        console.log(file);
+        
         if (file) {
             setSelectedFile(file);
         }
@@ -122,18 +124,16 @@ export default function CourseVideosPage() {
                                 <label htmlFor="video" className="cursor-pointer flex flex-col items-center gap-2">
                                     <Upload className="w-8 h-8 text-muted-foreground" />
                                     <p className="text-sm text-muted-foreground">
-                                        {selectedFile ? selectedFile.name : 'Kéo thả file vào đây hoặc click để chọn file'}
+                                        {selectedFile
+                                            ? selectedFile.name
+                                            : 'Kéo thả file vào đây hoặc click để chọn file'}
                                     </p>
                                     <p className="text-xs text-muted-foreground">MP4, WebM hoặc Ogg (Tối đa 500MB)</p>
                                 </label>
                             </div>
                         </div>
 
-                        <Button
-                            className="w-full"
-                            onClick={handleUpload}
-                            disabled={uploadMutation.isPending}
-                        >
+                        <Button className="w-full" onClick={handleUpload} disabled={uploadMutation.isPending}>
                             <Upload className="w-4 h-4 mr-2" />
                             {uploadMutation.isPending ? 'Đang tải lên...' : 'Upload Video'}
                         </Button>
@@ -143,35 +143,35 @@ export default function CourseVideosPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>
-                        Danh sách video ({isLoading ? '...' : videosData?.videos.length || 0})
-                    </CardTitle>
+                    <CardTitle>Danh sách video ({isLoading ? '...' : videosData?.videos.length || 0})</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
                         {isLoading ? (
                             <div>Đang tải...</div>
-                        ) : videosData?.videos.map((video: any) => (
-                            <div key={video.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                <div className="flex items-center gap-4">
-                                    <Video className="w-8 h-8 text-muted-foreground" />
-                                    <div>
-                                        <h4 className="font-medium">{video.title}</h4>
-                                        <p className="text-sm text-muted-foreground">
-                                            {video.duration} • {video.size} • {video.status}
-                                        </p>
+                        ) : (
+                            videosData?.videos.map((video: any) => (
+                                <div key={video.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                    <div className="flex items-center gap-4">
+                                        <Video className="w-8 h-8 text-muted-foreground" />
+                                        <div>
+                                            <h4 className="font-medium">{video.title}</h4>
+                                            <p className="text-sm text-muted-foreground">
+                                                {video.duration} • {video.size} • {video.status}
+                                            </p>
+                                        </div>
                                     </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleDelete(video.id)}
+                                        disabled={deleteMutation.isPending}
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </Button>
                                 </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => handleDelete(video.id)}
-                                    disabled={deleteMutation.isPending}
-                                >
-                                    <X className="w-4 h-4" />
-                                </Button>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </CardContent>
             </Card>

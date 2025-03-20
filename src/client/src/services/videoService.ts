@@ -1,7 +1,7 @@
+import axiosJWT from '@/utils/axios.intercepter';
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export interface Video {
   id: string;
   title: string;
@@ -26,7 +26,7 @@ export const videoService = {
     formData.append('file', data.file);
     formData.append('course_id', data.course_id);
 
-    const response = await axios.post(`${API_URL}/api/videos/upload`, formData, {
+    const response = await axiosJWT.post(`${API_URL}/videos/upload`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

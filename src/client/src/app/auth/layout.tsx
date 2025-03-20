@@ -19,6 +19,8 @@ export default function AuthLayout({
                     {children}
                 </div>
             </main>
+
+            <ToastContainer />
         </div>
     );
 }

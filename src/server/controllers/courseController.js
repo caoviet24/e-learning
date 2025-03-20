@@ -1,5 +1,6 @@
-const courseRepository = require('../repositories/courseRepository');
-const videoRepository = require('../repositories/videoRepository');
+import courseRepository from '../repositories/courseRepository.js';
+import videoRepository from '../repositories/videoRepository.js';
+
 
 const createCourse = async (req, res) => {
   try {
@@ -127,7 +128,7 @@ const getCourseVideos = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   createCourse,
   updateCourse,
   deleteCourse,

@@ -79,7 +79,7 @@ export const uploadVideo = async (req, res) => {
   }
 };
 
-export const updateVideo = async (req, res) => {
+export const updateVideo = async (req, res) => {z
   try {
     const { id } = req.params;
     const video = await videoRepository.getVideoById(id);

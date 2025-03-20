@@ -1,5 +1,5 @@
 import express from 'express';
-import authRoute from './auth.js';
+import authRoute from './auth.route.js';
 import usersRoute from './users.js';
 import coursesRoute from './courses.js';
 import youtubeRoute from './youtube.js';

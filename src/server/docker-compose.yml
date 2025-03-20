@@ -11,7 +11,11 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=mysql://user:password@db:3306/elearning
+      - DATABASE_URL=mysql://root:Test@123@localhost:3306/elearning
+      - JWT_SECRET_ACCESS_KEY=your_secure_access_key_2024
+      - JWT_SECRET_REFRESH_KEY=your_secure_refresh_key_2024
+      - ACCESS_EXPIRATION=1h
+      - REFRESH_EXPIRATION=7d
     depends_on:
       - db
     restart: unless-stopped

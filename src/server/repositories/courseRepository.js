@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const createCourse = async (courseData) => {
@@ -120,7 +120,7 @@ const getAllCourses = async (query = {}) => {
   };
 };
 
-module.exports = {
+export default {
   createCourse,
   updateCourse,
   deleteCourse,

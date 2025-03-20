@@ -1,7 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { auth } from '../middleware/auth.js';
-const youtubeController = require('../controllers/youtubeController');
+import * as youtubeController from '../controllers/youtubeController.js';
 
 const router = express.Router();
 
@@ -22,8 +21,8 @@ const upload = multer({
 });
 
 // YouTube video management routes
-router.post('/upload', auth, upload.single('video'), youtubeController.uploadVideo);
-router.get('/videos/:videoId', auth, youtubeController.getVideoInfo);
-router.put('/videos/:videoId', auth, youtubeController.updateVideoInfo);
+router.post('/upload', upload.single('video'), youtubeController.uploadVideo);
+router.get('/videos/:videoId', youtubeController.getVideoInfo);
+router.put('/videos/:videoId', youtubeController.updateVideoInfo);
 
 export default router;

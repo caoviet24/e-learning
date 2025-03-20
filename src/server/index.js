@@ -93,7 +93,12 @@ app.use(morgan(fileFormat, {
 }));
 
 // Essential middleware first
-app.use(cors());
+app.use(cors({
+    origin: process.env.NODE_ENV === 'development' ? process.env.CLIENT_URL_DEV : process.env.CLIENT_URL_PROD,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+}));
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
