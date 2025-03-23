@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 class jwtService {
     async createAccessToken(payload) {
-        return jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+        return jwt.sign(payload, process.env.JWT_SECRET_ACCESS_KEY, {
             expiresIn: process.env.ACCESS_EXPIRATION,
         });
     }
@@ -15,7 +15,7 @@ class jwtService {
     }
 
     verifyAccessToken(token) {
-        return jwt.verify(token, process.env.JWT_SECRET_KEY);
+        return jwt.verify(token, process.env.JWT_SECRET_ACCESS_KEY);
     }
 
     verifyRefreshToken(token) {

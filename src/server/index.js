@@ -8,10 +8,19 @@ import prisma from './middleware/prisma.intercepter.js';
 import morgan from 'morgan';
 import fs from 'fs';
 import path from 'path';
+import swaggerUi from 'swagger-ui-express';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 import AppRoute from './routes/index.js';
 
-dotenv.config();
+// Get directory name in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+// Load Swagger document
+const swaggerDocument = JSON.parse(readFileSync(path.join(__dirname, 'swagger.json'), 'utf8'));
+
+dotenv.config();
 
 // Create logs directory if it doesn't exist
 const logsDir = path.join(process.cwd(), 'logs');
@@ -20,10 +29,7 @@ if (!fs.existsSync(logsDir)) {
 }
 
 // Create a write stream for access logs
-const accessLogStream = fs.createWriteStream(
-    path.join(logsDir, 'access.log'),
-    { flags: 'a' }
-);
+const accessLogStream = fs.createWriteStream(path.join(logsDir, 'access.log'), { flags: 'a' });
 
 // Initialize Express app
 const app = express();
@@ -47,13 +53,13 @@ morgan.token('body', (req) => {
 const colorizeMethod = (method) => {
     switch (method) {
         case 'GET':
-            return '\x1b[32m' + method + '\x1b[0m';     // Green
+            return '\x1b[32m' + method + '\x1b[0m'; // Green
         case 'POST':
-            return '\x1b[34m' + method + '\x1b[0m';     // Blue
+            return '\x1b[34m' + method + '\x1b[0m'; // Blue
         case 'PUT':
-            return '\x1b[33m' + method + '\x1b[0m';     // Yellow
+            return '\x1b[33m' + method + '\x1b[0m'; // Yellow
         case 'DELETE':
-            return '\x1b[31m' + method + '\x1b[0m';     // Red
+            return '\x1b[31m' + method + '\x1b[0m'; // Red
         default:
             return method;
     }
@@ -64,10 +70,10 @@ morgan.token('colorMethod', (req) => {
 });
 
 const colorizeStatus = (status) => {
-    if (status >= 500) return '\x1b[31m' + status + '\x1b[0m';     // Red
-    if (status >= 400) return '\x1b[33m' + status + '\x1b[0m';     // Yellow
-    if (status >= 300) return '\x1b[36m' + status + '\x1b[0m';     // Cyan
-    if (status >= 200) return '\x1b[32m' + status + '\x1b[0m';     // Green
+    if (status >= 500) return '\x1b[31m' + status + '\x1b[0m'; // Red
+    if (status >= 400) return '\x1b[33m' + status + '\x1b[0m'; // Yellow
+    if (status >= 300) return '\x1b[36m' + status + '\x1b[0m'; // Cyan
+    if (status >= 200) return '\x1b[32m' + status + '\x1b[0m'; // Green
     return status;
 };
 
@@ -76,28 +82,36 @@ morgan.token('colorStatus', (req, res) => {
 });
 
 // Console format with colors
-const consoleFormat = ':timestamp [:colorMethod] :url :colorStatus :res[content-length] - :response-time ms :body - IP: :remote-addr - :user-agent';
+const consoleFormat =
+    ':timestamp [:colorMethod] :url :colorStatus :res[content-length] - :response-time ms :body - IP: :remote-addr - :user-agent';
 
 // File format without colors (remove color codes)
-const fileFormat = ':timestamp [:method] :url :status :res[content-length] - :response-time ms :body - IP: :remote-addr - :user-agent';
+const fileFormat =
+    ':timestamp [:method] :url :status :res[content-length] - :response-time ms :body - IP: :remote-addr - :user-agent';
 
 // Logger middleware - Console output
-app.use(morgan(consoleFormat, {
-    skip: (req) => req.url === '/favicon.ico'
-}));
+app.use(
+    morgan(consoleFormat, {
+        skip: (req) => req.url === '/favicon.ico',
+    }),
+);
 
 // Logger middleware - File output
-app.use(morgan(fileFormat, {
-    stream: accessLogStream,
-    skip: (req) => req.url === '/favicon.ico'
-}));
+app.use(
+    morgan(fileFormat, {
+        stream: accessLogStream,
+        skip: (req) => req.url === '/favicon.ico',
+    }),
+);
 
 // Essential middleware first
-app.use(cors({
-    origin: process.env.NODE_ENV === 'development' ? process.env.CLIENT_URL_DEV : process.env.CLIENT_URL_PROD,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-}));
-
+app.use(
+    cors({
+        origin: process.env.NODE_ENV === 'development' ? process.env.CLIENT_URL_DEV : process.env.CLIENT_URL_PROD,
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true,
+    }),
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -110,13 +124,26 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Swagger UI
+app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDocument, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'E-Learning API Documentation',
+    }),
+);
+
 // Initialize routes after all middleware
 app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to E-Learning API' });
+    res.redirect('/api-docs');
 });
 
 // Setup application routes
-AppRoute(app);
+app.use('/api', AppRoute);
+
+// Add io instance to app
+app.set('io', io);
 
 // Socket.IO events
 io.on('connection', (socket) => {
@@ -173,6 +200,8 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8000;
 httpServer.listen(PORT, () => {
     console.log(`Server is running on port http://localhost:${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+    console.log(`Swagger documentation: http://localhost:${PORT}/api-docs`);
 });
 
 // Handle unhandled promise rejections

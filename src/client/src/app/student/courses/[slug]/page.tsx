@@ -21,7 +21,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
                     <Button variant="outline">← Quay lại khóa học</Button>
                 </Link>
                 <div className="md:hidden">
-                    <Sheet >
+                    <Sheet>
                         <SheetTrigger asChild>
                             <Button variant="outline" size="icon">
                                 <Menu className="h-4 w-4" />

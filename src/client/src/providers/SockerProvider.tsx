@@ -6,6 +6,7 @@ interface SocketContextValue {
     on: (event: string, callback: (...args: any[]) => void) => void;
     emit: (event: string, data: any) => void;
     off: (event: string) => void;
+    isConnected: boolean;
 }
 
 const SocketContext = createContext<SocketContextValue | undefined>(undefined);
@@ -14,22 +15,24 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const socketRef = useRef<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
-    // useEffect(() => {
-    //   const socket = io('http://localhost:8080');
-    //   socketRef.current = socket;
-
-    //   socket.on('connect', () => {
-    //     setIsConnected(true);
-    //   });
-
-    //   socket.on('disconnect', () => {
-    //     setIsConnected(false);
-    //   });
-
-    //   return () => {
-    //     socket.disconnect();
-    //   };
-    // }, []);
+    useEffect(() => {
+      const socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+      socketRef.current = socket;
+    
+      socket.on('connect', () => {
+        setIsConnected(true);
+        console.log('Socket connected');
+      });
+    
+      socket.on('disconnect', () => {
+        setIsConnected(false);
+        console.log('Socket disconnected');
+      });
+    
+      return () => {
+        socket.disconnect();
+      };
+    }, []);
 
     const on = (event: string, callback: (...args: any[]) => void) => {
         socketRef.current?.on(event, callback);
@@ -50,6 +53,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                 on,
                 emit,
                 off,
+                isConnected
             }}
         >
             {children}

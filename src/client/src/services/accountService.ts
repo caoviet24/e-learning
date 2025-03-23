@@ -16,7 +16,8 @@ export const accountService = {
     },
 
     async logout() {
-        Cookies.remove('token');
+        Cookies.remove('access_token');
+        Cookies.remove('refresh_token');
         window.location.href = '/auth/sign-in';
     },
 };

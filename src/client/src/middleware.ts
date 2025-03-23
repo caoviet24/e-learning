@@ -1,20 +1,31 @@
 import { jwtDecode } from 'jwt-decode';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { Role } from '@/types/enum';
+
 
 export function middleware(request: NextRequest) {
     const isAuthenticated = request.cookies.has('access_token');
     const token = request.cookies.get('access_token')?.value;
-    
-   var role;
+
+    let role: string | undefined;
     if (token) {
-        const decoded = jwtDecode<JwtPayload>(token);
-        role = decoded.role;
+        try {
+            const decoded = jwtDecode<JwtPayload>(token);
+            role = typeof decoded.role === 'string' ? decoded.role : undefined;
+        } catch (error) {
+            console.error('Token decode error:', error);
+        }
     }
 
+    console.log('Role:', role);
     
+
+
+    
+
     // Public paths that don't require authentication
-    const publicPaths = ['/auth/sign-in', '/auth/forget-password', '/auth/sign-up', '/forbidden'];
+    const publicPaths = ['/auth/sign-in', '/auth/forget-password', '/auth/sign-up', '/not-found'];
     const isPublicPath = publicPaths.some((path) => request.nextUrl.pathname.startsWith(path));
 
     // If the user is not authenticated and trying to access a protected route
@@ -22,39 +33,41 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/auth/sign-in', request.url));
     }
 
-    // If the user is authenticated but trying to access auth pages
-    if (isAuthenticated && request.nextUrl.pathname.startsWith('/auth')) {
-        // Redirect to appropriate dashboard based on role
-        if (role === 1) {
-            return NextResponse.redirect(new URL('/lecturer', request.url));
-        }
-        if (role === 0) {
+    // Redirect root path to appropriate dashboard for authenticated users
+    if (isAuthenticated && request.nextUrl.pathname === '/' && typeof role === 'string') {
+        if (role === Role.STUDENT) {
             return NextResponse.redirect(new URL('/student', request.url));
         }
+
+        if (role === Role.LECTURER) {
+            return NextResponse.redirect(new URL('/lecturer', request.url));
+        }
+        
+        if(role === Role.ADMIN) {
+            return NextResponse.redirect(new URL('/admin', request.url));
+        }
+        return NextResponse.redirect(new URL('/not-found', request.url));
     }
 
     // Role-based route protection for authenticated users
-    if (isAuthenticated && role) {
+    if (isAuthenticated && typeof role === 'string') {
         const pathname = request.nextUrl.pathname;
 
-        // Redirect root path to appropriate dashboard
-        if (pathname === '/') {
-            if (role === 1) {
-                return NextResponse.redirect(new URL('/lecturer', request.url));
-            }
-            if (role === 0) {
-                return NextResponse.redirect(new URL('/student', request.url));
-            }
+        // Handle role-specific route access
+        const isLecturerPath = pathname.startsWith('/lecturer');
+        const isStudentPath = pathname.startsWith('/student');
+        const isAdminPath = pathname.startsWith('/admin');
+
+        if (role === Role.STUDENT && !isStudentPath && !isPublicPath) {
+            return NextResponse.redirect(new URL('/not-found', request.url));
         }
 
-        // Lecturer role (1) can only access /lecturer/* routes
-        if (role === 1 && !pathname.startsWith('/lecturer')) {
-            return NextResponse.redirect(new URL('/forbidden', request.url));
+        if (role === Role.LECTURER && !isLecturerPath && !isPublicPath) {
+            return NextResponse.redirect(new URL('/not-found', request.url));
         }
 
-        // Student role (0) can only access /student/* routes
-        if (role === 0 && !pathname.startsWith('/student')) {
-            return NextResponse.redirect(new URL('/forbidden', request.url));
+        if (role === Role.ADMIN && !isAdminPath && !isPublicPath) {
+            return NextResponse.redirect(new URL('/not-found', request.url));
         }
     }
 

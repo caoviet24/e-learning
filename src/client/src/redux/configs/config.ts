@@ -6,7 +6,8 @@ import createIndexedDBStorage from 'redux-persist-indexeddb-storage';
 import { CookieStorage } from 'redux-persist-cookie-storage';
 import Cookies from 'universal-cookie';
 
-import { accountReducer } from '../slices/account.slices';
+import { accountReducer } from '../slices/account.slice';
+import { facultyReducer } from '../slices/faculty.slice';
 
 // Tạo reducer mặc định nếu không có reducer nào khác
 const defaultReducer = (state = {}) => state;
@@ -40,7 +41,7 @@ const cookiesConfig = {
 
 
 export const localStorageReducer = combineReducers({
-    default: defaultReducer, 
+    faculty: persistReducer(localStorageConfig, facultyReducer),
 });
 
 export const sessionStorageReducer = combineReducers({

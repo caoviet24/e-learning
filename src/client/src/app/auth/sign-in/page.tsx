@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { Role } from '@/types/enum';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
@@ -16,15 +17,21 @@ import useHookMutation from '@/hooks/useHookMutation';
 type FormData = {
     username: string;
     password: string;
-    role: number;
+    role: Role;
 };
 
 export default function LoginPage() {
     const [formData, setFormData] = useState<FormData>({
         username: '',
         password: '',
-        role: 0,
+        role: Role.STUDENT,
     });
+
+    let roles: Record<Role, string> = {
+        [Role.STUDENT]: 'Mã sinh viên',
+        [Role.LECTURER]: 'Mã giảng viên',
+        [Role.ADMIN]: 'Quản trị viên',
+    };
 
     const router = useRouter();
 
@@ -40,20 +47,10 @@ export default function LoginPage() {
     const handleLogin = async () => {
         loginMutation.mutate(formData, {
             onSuccess: (res) => {
-                const decoded = jwtDecode<JwtPayload>(res.access_token);
-                const role = decoded.role;
-                
-                console.log('role', role);
-                
-
                 Cookies.set('access_token', res.access_token, { expires: 7 });
                 Cookies.set('refresh_token', res.refresh_token, { expires: 365 });
 
-                if (role === 0) {
-                    router.push('/student');
-                } else if (role === 1) {
-                    router.push('/lecturer');
-                }
+                router.push('/');
             },
             onError: (error: any) => {
                 toast.error(error.response.data.message, {
@@ -84,7 +81,7 @@ export default function LoginPage() {
                     onChange={handleOnChangeInput}
                     required
                     className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    placeholder={formData.role === 0 ? 'Mã sinh viên' : 'Mã giảng viên'}
+                    placeholder={roles[formData.role]}
                 />
 
                 <input
@@ -99,16 +96,16 @@ export default function LoginPage() {
 
                 <div className="bg-background rounded-md">
                     <Select
-                        defaultValue="0"
-                        onValueChange={(value: string) => setFormData({ ...formData, role: parseInt(value) })}
+                        defaultValue={Role.STUDENT}
+                        onValueChange={(value: string) => setFormData({ ...formData, role: value as Role })}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Sinh viên" />
                         </SelectTrigger>
                         <SelectContent className="bg-background">
-                            <SelectItem value="0">Sinh viên</SelectItem>
-                            <SelectItem value="1">Giảng viên</SelectItem>
-                            <SelectItem value="999">Quản trị viên</SelectItem>
+                            <SelectItem value={Role.STUDENT}>Sinh viên</SelectItem>
+                            <SelectItem value={Role.LECTURER}>Giảng viên</SelectItem>
+                            <SelectItem value={Role.ADMIN}>Quản trị viên</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

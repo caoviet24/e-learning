@@ -12,6 +12,7 @@ const queryClient = new QueryClient({
         },
     },
 });
+
 export default function AppProvider({ children }: { children: React.ReactNode }) {
     return (
         <SocketProvider>

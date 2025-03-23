@@ -25,10 +25,16 @@ function fetchRefreshToken(token: string): Promise<RefreshTokenResponse> {
 
 
 function createAxiosJwtInstance() {
-    const axiosJWT = axios.create();
+    const axiosJWT = axios.create({
+        baseURL: process.env.NEXT_PUBLIC_API_URL,
+        withCredentials: true,
+    });
+    
     axiosJWT.interceptors.request.use(
         async (config) => {
             const accessToken = Cookies.get('access_token');
+            console.log(accessToken);
+            
             if (!accessToken) {
                 throw new Error('Access token is missing');
             }

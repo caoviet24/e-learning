@@ -15,7 +15,7 @@ export class YoutubeService {
         });
     }
 
-    async uploadVideo(filePath, title, description) {
+    async uploadVideo(filePath, title, description, onProgress) {
         try {
             // Set up OAuth2 client with the access token
             this.oauth2Client.setCredentials({
@@ -44,7 +44,9 @@ export class YoutubeService {
                 {
                     onUploadProgress: (evt) => {
                         const progress = (evt.bytesRead / fileSize) * 100;
-                        console.log(`${Math.round(progress)}% complete`);
+                        if (onProgress) {
+                            onProgress(progress);
+                        }
                     },
                 },
             );
@@ -56,7 +58,6 @@ export class YoutubeService {
                 url: `https://www.youtube.com/watch?v=${res.data.id}`,
             };
         } catch (error) {
-            console.error('Error uploading to YouTube:', error);
             throw error;
         }
     }
@@ -87,7 +88,6 @@ export class YoutubeService {
                 url: `https://www.youtube.com/watch?v=${video.id}`,
             };
         } catch (error) {
-            console.error('Error getting video info:', error);
             throw error;
         }
     }
@@ -117,7 +117,6 @@ export class YoutubeService {
                 description: res.data.snippet.description,
             };
         } catch (error) {
-            console.error('Error updating video info:', error);
             throw error;
         }
     }

@@ -1,18 +1,23 @@
 import express from 'express';
-import authRoute from './auth.route.js';
-import usersRoute from './users.js';
-import coursesRoute from './courses.js';
-import youtubeRoute from './youtube.js';
-import videosRoute from './videos.js';
+import authRoutes from './auth.route.js';
+import userRoutes from './users.route.js';
+import courseRoutes from './courses.route.js';
+import videoRoutes from './videos.route.js';
+import youtubeRoutes from './youtube.route.js';
+import departmentRoutes from './faculties.route.js';
+import majorRoutes from './majors.route.js';
 
 const router = express.Router();
 
-router.use('/api/auth', authRoute);
-router.use('/api/users', usersRoute);
-router.use('/api/courses', coursesRoute);
-router.use('/api/youtube', youtubeRoute);
-router.use('/api/videos', videosRoute);
+// Public routes
+router.use('/auth', authRoutes);
 
-export default function AppRoute(app) {
-    app.use(router);
-}
+// API routes
+router.use('/users', userRoutes);
+router.use('/courses', courseRoutes);
+router.use('/videos', videoRoutes);
+router.use('/youtube', youtubeRoutes);
+router.use('/faculties', departmentRoutes);
+router.use('/majors', majorRoutes);
+
+export default router;

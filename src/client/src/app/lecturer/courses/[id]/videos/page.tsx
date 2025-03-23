@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { UploadProgress } from '@/components/upload-progress';
 import { ArrowLeft, Upload, Video, X } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -17,6 +18,7 @@ export default function CourseVideosPage() {
     const { id } = useParams();
     const [title, setTitle] = React.useState('');
     const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+    const [uploadId, setUploadId] = React.useState<string>('');
     const queryClient = useQueryClient();
 
     // Fetch videos
@@ -28,11 +30,16 @@ export default function CourseVideosPage() {
     // Upload video mutation
     const uploadMutation = useMutation({
         mutationFn: (data: { title: string; file: File; course_id: string }) => videoService.uploadVideo(data),
-        onSuccess: () => {
-            toast.success('Video uploaded successfully');
-            setTitle('');
-            setSelectedFile(null);
-            queryClient.invalidateQueries({ queryKey: ['videos', id] });
+        onSuccess: (data) => {
+            if (data.uploadId) {
+                setUploadId(data.uploadId);
+            } else {
+                // If no uploadId (old API), show direct success
+                toast.success('Video uploaded successfully');
+                setTitle('');
+                setSelectedFile(null);
+                queryClient.invalidateQueries({ queryKey: ['videos', id] });
+            }
         },
         onError: (error) => {
             toast.error('Failed to upload video');
@@ -133,10 +140,25 @@ export default function CourseVideosPage() {
                             </div>
                         </div>
 
-                        <Button className="w-full" onClick={handleUpload} disabled={uploadMutation.isPending}>
+                        <Button
+                            className="w-full"
+                            onClick={handleUpload}
+                            disabled={uploadMutation.isPending || !!uploadId}
+                        >
                             <Upload className="w-4 h-4 mr-2" />
                             {uploadMutation.isPending ? 'Đang tải lên...' : 'Upload Video'}
                         </Button>
+
+                        <UploadProgress
+                            uploadId={uploadId}
+                            onComplete={(videoId, url) => {
+                                toast.success('Video uploaded successfully');
+                                setTitle('');
+                                setSelectedFile(null);
+                                setUploadId('');
+                                queryClient.invalidateQueries({ queryKey: ['videos', id] });
+                            }}
+                        />
                     </div>
                 </CardContent>
             </Card>

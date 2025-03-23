@@ -4,8 +4,8 @@ import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/me', authMe);
-router.get('/refresh-token', refreshToken);
+router.get('/me', protect, authMe);
+router.get('/refresh', refreshToken);
 router.post('/register', register);
 router.post('/login', login);
 
