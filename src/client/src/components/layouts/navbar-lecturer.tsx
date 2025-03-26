@@ -29,7 +29,7 @@ interface NavbarProps {
 export function NavbarLecturer({ isOpen, setIsOpen }: NavbarProps) {
     const [username, setUsername] = useState<string | undefined>();
     const [notificationOpen, setNotificationOpen] = useState(false);
-    const unreadCount = 3; // This should come from your notification service/state
+    const unreadCount = 3;
     const { my_account } = useAppSelector((state) => state.sessionStorage.account);
 
     useEffect(() => {

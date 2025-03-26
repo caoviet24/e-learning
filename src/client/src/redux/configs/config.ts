@@ -8,6 +8,7 @@ import Cookies from 'universal-cookie';
 
 import { accountReducer } from '../slices/account.slice';
 import { facultyReducer } from '../slices/faculty.slice';
+import { majorReducer } from '../slices/major.slice';
 
 // Tạo reducer mặc định nếu không có reducer nào khác
 const defaultReducer = (state = {}) => state;
@@ -42,6 +43,7 @@ const cookiesConfig = {
 
 export const localStorageReducer = combineReducers({
     faculty: persistReducer(localStorageConfig, facultyReducer),
+    major: persistReducer(localStorageConfig, majorReducer),
 });
 
 export const sessionStorageReducer = combineReducers({

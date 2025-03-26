@@ -3,20 +3,16 @@ import facultyRepository from '../repositories/faculty.repository.js';
 class FacultyController {
     async getAll(req, res) {
         try {
-            const { page_number = 1, page_size = 10, search = '' } = req.query;
+            const { page_number = 1, page_size = 10, search = '', is_deleted } = req.query;
 
             const result = await facultyRepository.getAll({
                 page_number,
                 page_size,
                 search,
+                is_deleted
             });
 
-            res.json({
-                data: result.faculties,
-                pagination: result.pagination,
-                page_number,
-                page_size,
-            });
+            res.json(result);
         } catch (error) {
             res.status(500).json({
                 success: false,
@@ -84,7 +80,7 @@ class FacultyController {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { name, code } = req.body;
+            const { name, code, is_deleted } = req.body;
 
             if (!name || !code) {
                 return res.status(400).json({
@@ -93,16 +89,19 @@ class FacultyController {
                 });
             }
 
-            const faculty = await facultyRepository.update(id, {
+            const rs = await facultyRepository.update(id, {
                 name,
                 code,
+                is_deleted,
             });
 
-            res.json({
-                success: true,
-                message: 'Cập nhật khoa thành công',
-                data: faculty,
-            });
+            if (rs) {
+                res.json({
+                    success: true,
+                    message: 'Cập nhật khoa thành công',
+                    data: rs,
+                });
+            }
         } catch (error) {
             res.status(500).json({
                 success: false,
@@ -112,15 +111,18 @@ class FacultyController {
         }
     }
 
-    async delete(req, res) {
+    async deleteSoft(req, res) {
         try {
             const { id } = req.params;
-            await facultyRepository.delete(id);
+            const rs = await facultyRepository.deleteSoft(id);
 
-            res.json({
-                success: true,
-                message: 'Xóa khoa thành công',
-            });
+            if (rs) {
+                res.json({
+                    success: true,
+                    message: 'Xóa khoa thành công',
+                    data: rs,
+                });
+            }
         } catch (error) {
             res.status(500).json({
                 success: false,

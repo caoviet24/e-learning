@@ -4,20 +4,10 @@ import { protect, restrictTo } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get all majors with pagination and search
-router.get('/', majorController.getAll);
-
-// Get major by ID
-router.get('/:id', majorController.getById);
-
-// Get majors by department with pagination and search
-router.get('/department/:departmentId', majorController.getByDepartment);
-
-// Protected routes - require authentication and admin role
-router.post('/', protect, restrictTo('ADMIN'), majorController.create);
-
-router.put('/:id', protect, restrictTo('ADMIN'), majorController.update);
-
-router.delete('/:id', protect, restrictTo('ADMIN'), majorController.delete);
+router.get('/get-all', majorController.getAll);
+router.get('/get-by-id/:id', majorController.getById);
+router.post('create/', protect, restrictTo('ADMIN'), majorController.create);
+router.put('/update/:id', protect, restrictTo('ADMIN'), majorController.update);
+router.delete('/delete/:id', protect, restrictTo('ADMIN'), majorController.deleteSoft);
 
 export default router;

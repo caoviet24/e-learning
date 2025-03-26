@@ -7,12 +7,6 @@ const prisma = new PrismaClient();
 
 // Middleware for adding UUID, timestamps, and user fields
 prisma.$use(async (params, next) => {
-    // Tạo đối tượng Date hiện tại
-    const now = new Date();
-
-    // Chuyển đổi sang múi giờ UTC+7 (Việt Nam) và định dạng ISO
-    const vietnamTime = new Date(now.getTime() + 7 * 60 * 60 * 1000).toISOString();
-
     try {
         const req = requestContext.get();
         let userId = null;
@@ -30,7 +24,7 @@ prisma.$use(async (params, next) => {
             params.args.data = {
                 ...params.args.data,
                 id: uuidv4(),
-                created_at: vietnamTime,
+                created_at: new Date(),
                 created_by: userId || null,
                 updated_at: null,
                 updated_by: null,
@@ -45,7 +39,7 @@ prisma.$use(async (params, next) => {
                 params.args.data = params.args.data.map((item) => ({
                     ...item,
                     id: uuidv4(),
-                    created_at: vietnamTime,
+                    created_at: new Date(),
                     created_by: userId || null,
                     updated_at: null,
                     updated_by: null,
@@ -61,8 +55,17 @@ prisma.$use(async (params, next) => {
                 if (!params.args.data) {
                     params.args.data = {};
                 }
+
+                if (params.args.data.is_deleted) {
+                    params.args.data = {
+                        is_deleted: true,
+                        deleted_by: userId,
+                        deleted_at: new Date(),
+                    };
+                }
+
                 params.args.data.updated_by = userId;
-                params.args.data.updated_at = vietnamTime;
+                params.args.data.updated_at = new Date();
             }
         }
 
@@ -71,7 +74,7 @@ prisma.$use(async (params, next) => {
                 params.args.data = {
                     is_deleted: true,
                     deleted_by: userId,
-                    deleted_at: vietnamTime,
+                    deleted_at: new Date(),
                 };
             }
         }
@@ -81,7 +84,6 @@ prisma.$use(async (params, next) => {
 
     return next(params);
 });
-
 
 // Middleware example for logging
 prisma.$use(async (params, next) => {
@@ -94,6 +96,5 @@ prisma.$use(async (params, next) => {
 
     return result;
 });
-
 
 export default prisma;

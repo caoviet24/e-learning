@@ -29,6 +29,7 @@ interface IFaculty {
     id: string;
     name: string;
     code: string;
+    is_deleted?: boolean;
 }
 interface IUser {
     id: string;

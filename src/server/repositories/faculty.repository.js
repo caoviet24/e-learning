@@ -1,14 +1,18 @@
 import prisma from '../middleware/prisma.intercepter.js';
 
 class FacultyRepository {
-    async getAll({ page_number = 1, page_size = 10, search = '' }) {
+    async getAll({ page_number = 1, page_size = 10, search = '', is_deleted }) {
         try {
+
+            console.log('is_deleted', is_deleted);
+            
             const skip = (page_number - 1) * page_size;
 
             const [faculties, total] = await Promise.all([
                 prisma.faculty.findMany({
                     where: {
-                        OR: [{ name: { contains: search } }, { code: { contains: search } }],
+                        is_deleted: is_deleted === 'false' ? false : is_deleted === 'true' ? true : null,
+                        OR: [{ name: { contains: search } }],
                     },
                     include: {
                         _count: {
@@ -25,23 +29,20 @@ class FacultyRepository {
                         id: 'desc',
                     },
                 }),
+                
                 prisma.faculty.count({
                     where: {
-                        OR: [{ name: { contains: search } }, { code: { contains: search } }],
+                        is_deleted: is_deleted === 'false' ? false : is_deleted === 'true' ? true : null,
+                        OR: [{ name: { contains: search } }],
                     },
                 }),
             ]);
 
-            const totalPages = Math.ceil(total / page_size);
-
             return {
-                faculties,
-                pagination: {
-                    page_number: parseInt(page_number),
-                    page_size: parseInt(page_size),
-                    totalItems: total,
-                    totalPages,
-                },
+                data: faculties,
+                total_records: total,
+                page_number,
+                page_size,
             };
         } catch (error) {
             throw error;
@@ -88,7 +89,7 @@ class FacultyRepository {
             });
 
             if (existingFaculty) {
-                throw new Error('Khoa đã tồn tại');
+                throw new Error('Mã khoa đã tồn tại');
             }
 
             return await prisma.faculty.create({
@@ -104,8 +105,8 @@ class FacultyRepository {
 
     async update(id, data) {
         try {
-            const existingFaculty = await prisma.faculty.findUnique({
-                where: { id: parseInt(id) },
+            const existingFaculty = await prisma.faculty.findFirst({
+                where: { id },
             });
 
             if (!existingFaculty) {
@@ -123,10 +124,11 @@ class FacultyRepository {
             }
 
             return await prisma.faculty.update({
-                where: { id: parseInt(id) },
+                where: { id },
                 data: {
                     name: data.name,
                     code: data.code,
+                    is_deleted: data?.is_deleted,
                 },
             });
         } catch (error) {
@@ -134,29 +136,25 @@ class FacultyRepository {
         }
     }
 
-    async delete(id) {
+    async deleteSoft(id) {
         try {
-            const faculty = await prisma.faculty.findUnique({
-                where: { id: parseInt(id) },
-                include: {
-                    students: true,
-                    lecturers: true,
-                    classes: true,
-                },
+            const faculty = await prisma.faculty.findFirst({
+                where: { id },
             });
 
             if (!faculty) {
                 throw new Error('Không tìm thấy khoa');
             }
 
-            // Check if faculty has any related records
-            if (faculty.students.length > 0 || faculty.lecturers.length > 0 || faculty.classes.length > 0) {
-                throw new Error('Không thể xóa khoa đang có sinh viên, giảng viên hoặc lớp học');
-            }
-
-            return await prisma.faculty.delete({
-                where: { id: parseInt(id) },
+            await prisma.faculty.update({
+                where: { id },
+                data: { is_deleted: true },
             });
+
+            return {
+                ...faculty,
+                is_deleted: true,
+            };
         } catch (error) {
             throw error;
         }

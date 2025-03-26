@@ -3,11 +3,13 @@ import axiosJWT from '@/utils/axios.intercepter';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const facultyService = {
-    async getAll({ page_number, page_size }: { page_number: number; page_size: number }) {
+    async getAll({ page_number, page_size, search, is_deleted }: { page_number: number; page_size: number, search?: string, is_deleted?: boolean }) {
         const res = await axiosJWT.get(`/faculties/get-all`, {
             params: {
                 page_number,
                 page_size,
+                search: search || null,
+                is_deleted,
             },
         });
         return res.data;
@@ -23,7 +25,7 @@ export const facultyService = {
         return res.data;
     },
 
-    async update(id: string, data: { name: string; code: string }) {
+    async update(id: string, data: { name?: string; code?: string; is_deleted?: boolean }) {
         const res = await axiosJWT.put(`${API_URL}/faculties/update/${id}`, data);
         return res.data;
     },

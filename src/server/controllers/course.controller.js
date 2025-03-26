@@ -31,7 +31,6 @@ const updateCourse = async (req, res) => {
         const updatedCourse = await courseRepository.updateCourse(id, req.body);
         res.json(updatedCourse);
     } catch (error) {
-        console.error('Update course error:', error);
         res.status(500).json({ message: 'Error updating course' });
     }
 };
@@ -52,7 +51,6 @@ const deleteCourse = async (req, res) => {
         await courseRepository.deleteCourse(id);
         res.json({ message: 'Course deleted successfully' });
     } catch (error) {
-        console.error('Delete course error:', error);
         res.status(500).json({ message: 'Error deleting course' });
     }
 };

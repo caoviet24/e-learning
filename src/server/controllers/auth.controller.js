@@ -53,7 +53,6 @@ export const register = async (req, res) => {
 
         return res.status(400).json({ message: 'Đăng ký thất bại', success: 'false' });
     } catch (error) {
-        console.error('Register error:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -110,9 +109,6 @@ export const authMe = async (req, res) => {
         }
 
         const decoded = jwtService.verifyAccessToken(access_token);
-
-        console.log(decoded);
-        
         
         
         const user = await prisma.user.findFirst({
@@ -135,8 +131,6 @@ export const authMe = async (req, res) => {
             // }
         });
 
-        console.log('user', user);
-        
 
         if (!user) {
             return res.status(401).json({ message: 'Account not found', success: false });
