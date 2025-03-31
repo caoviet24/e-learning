@@ -111,6 +111,27 @@ class FacultyController {
         }
     }
 
+    async delete(req, res) {
+        try {
+            const { id } = req.params;
+            const rs = await facultyRepository.delete(id);
+
+            if (rs) {
+                res.json({
+                    success: true,
+                    message: 'Xóa khoa thành công',
+                    data: rs,
+                });
+            }
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi xóa khoa',
+                error: error.message,
+            });
+        }
+    }
+
     async deleteSoft(req, res) {
         try {
             const { id } = req.params;
@@ -127,6 +148,27 @@ class FacultyController {
             res.status(500).json({
                 success: false,
                 message: 'Lỗi khi xóa khoa',
+                error: error.message,
+            });
+        }
+    }
+
+    async restore(req, res) {
+        try {
+            const { id } = req.params;
+            const rs = await facultyRepository.restore(id);
+
+            if (rs) {
+                res.json({
+                    success: true,
+                    message: 'Khôi phục khoa thành công',
+                    data: rs,
+                });
+            }
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi khôi phục khoa',
                 error: error.message,
             });
         }

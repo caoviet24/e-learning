@@ -36,8 +36,8 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'your_production_domain',
-        methods: ['GET', 'POST'],
+        origin: process.env.NODE_ENV === 'development' ?  process.env.CLIENT_URL_DEV : process.env.CLIENT_URL_PROD,
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
     },
 });
 
@@ -136,7 +136,12 @@ app.use(
 
 // Initialize routes after all middleware
 app.get('/', (req, res) => {
-    res.redirect('/api-docs');
+    if(process.env.NODE_ENV === 'development') {
+        return res.status(200).json({
+            message: 'Welcome to E-Learning API',
+            documentation: 'http://localhost:8000/api-docs',
+        });
+    }
 });
 
 // Setup application routes

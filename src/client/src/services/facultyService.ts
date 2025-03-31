@@ -30,8 +30,19 @@ export const facultyService = {
         return res.data;
     },
 
+    async delete(id: string) {
+        const res = await axiosJWT.delete(`${API_URL}/faculties/delete/${id}`);
+        return res.data;
+    },
+
     async deleteSoft(id: string) {
         const res = await axiosJWT.delete(`${API_URL}/faculties/delete-soft/${id}`);
+        return res.data;
+    },
+
+
+    async restore(id: string) {
+        const res = await axiosJWT.put(`${API_URL}/faculties/restore/${id}`);
         return res.data;
     },
 };

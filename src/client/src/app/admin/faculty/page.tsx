@@ -33,7 +33,7 @@ const PAGE_SIZE_OPTIONS = [
     { value: '100', label: '100 bản ghi' },
 ];
 
-export default function DepartmentsPage() {
+export default function FacultyPage() {
     const dispatch = useAppDispatch();
     const [pageSize, setPageSize] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
@@ -44,7 +44,7 @@ export default function DepartmentsPage() {
         option: string;
         title: string;
     } | null>(null);
-    const [formFaculty, setFormFaculty] = useState<Partial<IFaculty> | null>(null);
+    const [formFaculty, setFormFaculty] = useState<Partial<IFaculty>>({ name: '', code: '' });
 
     const {
         data: facultiesData,
@@ -108,9 +108,18 @@ export default function DepartmentsPage() {
     };
 
     const updateFaculty = useMutation({
-        mutationFn: (data: any) => (optionDialog?.option === 'delete' ? facultyService.deleteSoft(data.id) : facultyService.update(data.id, data)),
+        mutationFn: (data: any) => {
+            if (!data.is_deleted) {
+                return facultyService.restore(data.id);
+            }
+            return facultyService.update(data.id, {
+                name: data.name,
+                code: data.code,
+                is_deleted: data.is_deleted,
+            });
+        },
         onSuccess: (res: IResponse<IFaculty>) => {
-            toast.success(`${res?.data?.is_deleted ? 'Xóa' : 'Cập nhật'} khoa ${res.data?.name} thành công`, {
+            toast.success(`${res?.data?.is_deleted ? 'Khôi phục' : 'Cập nhật'} khoa ${res.data?.name} thành công`, {
                 position: 'top-right',
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -122,7 +131,37 @@ export default function DepartmentsPage() {
                 transition: Bounce,
             });
             setOptionDialog(null);
-            setFormFaculty(null);
+            setFormFaculty({ name: '', code: '' });
+            dispatch(setDeleteSoftFaculty(res.data?.id));
+            refetch();
+        },
+        onError: (error) => {
+            toast.error('Xóa khoa thất bại');
+            console.error('Xóa khoa thất bại:', error);
+        },
+    });
+
+    const deleteFaculty = useMutation({
+        mutationFn: (data: any) => {
+            if (data?.delete) {
+                return facultyService.delete(data.id);
+            }
+            return facultyService.deleteSoft(data.id);
+        },
+        onSuccess: (res: IResponse<IFaculty>) => {
+            toast.success(`Xóa khoa ${res.data?.name} thành công`, {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'light',
+                transition: Bounce,
+            });
+            setOptionDialog(null);
+            setFormFaculty({ name: '', code: '' });
             dispatch(setDeleteSoftFaculty(res.data?.id));
             refetch();
         },
@@ -141,17 +180,15 @@ export default function DepartmentsPage() {
     };
 
     const handleDeleteSoftFaculty = (faculty: IFaculty) => {
-        updateFaculty.mutate({
+        deleteFaculty.mutate({
             id: faculty.id,
-            is_deleted: true,
+            delete: false,
         });
     };
 
     const handleRestoreFaculty = (faculty: IFaculty) => {
         updateFaculty.mutate({
             id: faculty.id,
-            name: faculty.name,
-            code: faculty.code,
             is_deleted: false,
         });
     };
@@ -180,6 +217,8 @@ export default function DepartmentsPage() {
                 </PaginationLink>
             </PaginationItem>,
         );
+
+        console.log('renderPaginationItems', { start, end, totalPages });
 
         if (start > 2) {
             items.push(
@@ -425,15 +464,15 @@ export default function DepartmentsPage() {
                         </div>
                         <Button
                             onClick={() => {
-                                if (optionDialog?.option === 'create') {
-                                    handleAddFaculty();
-                                } else if (optionDialog?.option === 'edit') {
-                                    handleEditFaculty(formFaculty as IFaculty);
-                                } else if (optionDialog?.option === 'delete') {
-                                    handleDeleteSoftFaculty(formFaculty as IFaculty);
-                                } else if (optionDialog?.option === 'restore') {
-                                    handleRestoreFaculty(formFaculty as IFaculty);
-                                }
+                                const actions = {
+                                    create: handleAddFaculty,
+                                    edit: () => handleEditFaculty(formFaculty as IFaculty),
+                                    delete: () => handleDeleteSoftFaculty(formFaculty as IFaculty),
+                                    restore: () => handleRestoreFaculty(formFaculty as IFaculty),
+                                };
+
+                                const action = optionDialog?.option && actions[optionDialog.option as keyof typeof actions];
+                                action && action();
                             }}
                             className="w-full"
                             disabled={createFaculty.isPending || updateFaculty.isPending}

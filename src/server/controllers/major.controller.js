@@ -71,7 +71,9 @@ class MajorController {
 
     async create(req, res) {
         try {
-            const { name, code, description, faculty_id } = req.body;
+            const { name, code, faculty_id } = req.body;
+
+            console.log(req.body);
 
             if (!name || !code || !faculty_id) {
                 return res.status(400).json({
@@ -83,7 +85,6 @@ class MajorController {
             const major = await majorRepository.create({
                 name,
                 code,
-                description,
                 faculty_id,
             });
 
@@ -104,7 +105,7 @@ class MajorController {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { name, code, description, faculty_id } = req.body;
+            const { name, code, faculty_id } = req.body;
 
             if (!name || !code) {
                 return res.status(400).json({
@@ -116,7 +117,6 @@ class MajorController {
             const major = await majorRepository.update(id, {
                 name,
                 code,
-                description,
                 faculty_id,
             });
 
@@ -134,19 +134,58 @@ class MajorController {
         }
     }
 
-    async deleteSoft(req, res) {
+    async delete(req, res) {
         try {
             const { id } = req.params;
-            await majorRepository.deleteSoft(id);
+            const major = await majorRepository.delete(id);
 
             res.json({
                 success: true,
+                message: 'Xóa ngành thành công',
+                data: major,
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi xóa ngành',
+                error: error.message,
+            });
+        }
+    }
+
+    async deleteSoft(req, res) {
+        try {
+            const { id } = req.params;
+            const major = await majorRepository.deleteSoft(id);
+
+            res.json({
+                success: true,
+                data: major,
                 message: 'Xóa ngành thành công',
             });
         } catch (error) {
             res.status(500).json({
                 success: false,
                 message: 'Lỗi khi xóa ngành',
+                error: error.message,
+            });
+        }
+    }
+
+    async restore(req, res) {
+        try {
+            const { id } = req.params;
+            const major = await majorRepository.restore(id);
+
+            res.json({
+                success: true,
+                data: major,
+                message: 'Khôi phục ngành thành công',
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi khôi phục ngành',
                 error: error.message,
             });
         }

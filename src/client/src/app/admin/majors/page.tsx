@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Edit, Layers, Plus, Search, Trash, Trash2 } from 'lucide-react';
+import { Edit, Layers, Plus, Repeat, Search, Trash, Trash2 } from 'lucide-react';
 import { JSX, useRef, useState } from 'react';
 import { IMajor, IFaculty } from '@/types/models';
 import { facultyService } from '@/services/facultyService';
@@ -40,7 +40,7 @@ export default function MajorsPage() {
     const dispatch = useAppDispatch();
     const [pageSize, setPageSize] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
-    const [facultyPageSize] = useState(5);
+    const [facultyPageSize] = useState(10);
     const [facultyPage, setFacultyPage] = useState(1);
     const [faculties, setFaculties] = useState<IFaculty[]>([]);
     const [hasMoreFaculties, setHasMoreFaculties] = useState(true);
@@ -53,20 +53,35 @@ export default function MajorsPage() {
         option: string;
         title: string;
     } | null>(null);
-    const [formMajor, setFormMajor] = useState<Partial<IMajor> | null>(null);
+    const [formMajor, setFormMajor] = useState<Partial<IMajor>>({ name: '', code: '', faculty_id: '' });
 
-    const { data: facultiesData, refetch: refetchFaculties } = useQuery<IResponseList<IFaculty>>({
+    const { data: facultiesData, isFetching: isFetchingFacultiesData } = useQuery<IResponseList<IFaculty>>({
         queryKey: ['faculties', facultyPage, facultyPageSize],
-        queryFn: () => facultyService.getAll({
-            page_number: 1,
-            page_size: 10,
-            is_deleted: false,
-        })
+        queryFn: async () => {
+            setIsFetchingFaculties(true);
+            try {
+                const response = await facultyService.getAll({
+                    page_number: facultyPage,
+                    page_size: facultyPageSize,
+                    is_deleted: false,
+                });
+                if (facultyPage === 1) {
+                    setFaculties(response.data);
+                } else {
+                    setFaculties((prev) => [...prev, ...response.data]);
+                }
+                setHasMoreFaculties(response.data.length === facultyPageSize);
+                return response;
+            } finally {
+                setIsFetchingFaculties(false);
+            }
+        },
+        refetchOnWindowFocus: false,
     });
 
     const handleFacultyScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const bottom = Math.floor(e.currentTarget.scrollHeight - e.currentTarget.scrollTop) === e.currentTarget.clientHeight;
-        if (bottom && !isFetchingFaculties && hasMoreFaculties) {
+        const element = e.currentTarget;
+        if (element.scrollHeight - element.scrollTop <= element.clientHeight + 50 && !isFetchingFaculties && hasMoreFaculties) {
             setFacultyPage((prev) => prev + 1);
         }
     };
@@ -111,7 +126,7 @@ export default function MajorsPage() {
                 transition: Bounce,
             });
             setOptionDialog(null);
-            setFormMajor({ name: '', code: '' });
+            setFormMajor({ name: '', code: '', faculty_id: '' });
             dispatch(setCreateMajor(res.data));
             refetch();
         },
@@ -135,9 +150,20 @@ export default function MajorsPage() {
     };
 
     const updateMajor = useMutation({
-        mutationFn: (data: any) => (optionDialog?.option === 'delete' ? majorService.deleteSoft(data.id) : majorService.update(data.id, data)),
+        mutationFn: (data: any) => {
+            // Only use restore API when explicitly asked to restore
+            if (data.restore === true) {
+                return majorService.restore(data.id);
+            }
+            // Otherwise use normal update API
+            return majorService.update(data.id, {
+                name: data.name,
+                code: data.code,
+                faculty_id: data.faculty_id,
+            });
+        },
         onSuccess: (res: IResponse<IMajor>) => {
-            toast.success(`${res?.data?.is_deleted ? 'Xóa' : 'Cập nhật'} ngành ${res.data?.name} thành công`, {
+            toast.success(`${res?.data?.is_deleted ? 'Khôi phục' : 'Cập nhật'} ngành ${res.data?.name} thành công`, {
                 position: 'top-right',
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -149,7 +175,37 @@ export default function MajorsPage() {
                 transition: Bounce,
             });
             setOptionDialog(null);
-            setFormMajor(null);
+            setFormMajor({ name: '', code: '', faculty_id: '' });
+            dispatch(setDeleteSoftMajor(res.data?.id));
+            refetch();
+        },
+        onError: (error) => {
+            toast.error('Xóa ngành thất bại');
+            console.error('Xóa ngành thất bại:', error);
+        },
+    });
+
+    const deleteMajor = useMutation({
+        mutationFn: (data: any) => {
+            if (data.delete) {
+                return majorService.delete(data.id);
+            }
+            return majorService.deleteSoft(data.id);
+        },
+        onSuccess: (res: IResponse<IMajor>) => {
+            toast.success(`Xóa ngành ${res.data?.name} thành công`, {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'light',
+                transition: Bounce,
+            });
+            setOptionDialog(null);
+            setFormMajor({ name: '', code: '', faculty_id: '' });
             dispatch(setDeleteSoftMajor(res.data?.id));
             refetch();
         },
@@ -169,9 +225,19 @@ export default function MajorsPage() {
     };
 
     const handleDeleteSoftMajor = (major: IMajor) => {
+        deleteMajor.mutate({
+            id: major.id,
+            delete: false,
+        });
+    };
+
+    const handleRestoreMajor = (major: IMajor) => {
         updateMajor.mutate({
             id: major.id,
-            is_deleted: true,
+            restore: true, // Explicitly flag as restore operation
+            name: major.name,
+            code: major.code,
+            faculty_id: major.faculty_id,
         });
     };
 
@@ -287,12 +353,13 @@ export default function MajorsPage() {
                         </SelectTrigger>
                         <SelectContent className="max-h-[200px]" onScroll={handleFacultyScroll}>
                             <SelectItem value="all">Tất cả khoa</SelectItem>
-                            {faculties.map((faculty) => (
-                                <SelectItem key={faculty.id} value={faculty.id.toString()}>
-                                    {faculty.name}
-                                </SelectItem>
-                            ))}
-                            {isFetchingFaculties && (
+                            {faculties.length > 0 &&
+                                faculties.map((faculty) => (
+                                    <SelectItem key={faculty.id} value={faculty.id.toString()}>
+                                        {faculty.name}
+                                    </SelectItem>
+                                ))}
+                            {isFetchingFaculties && hasMoreFaculties && (
                                 <div className="flex justify-center p-2">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
                                 </div>
@@ -375,6 +442,24 @@ export default function MajorsPage() {
                                         >
                                             <Trash className="w-4 h-4" />
                                         </Button>
+
+                                        {major.is_deleted && (
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                className="bg-orange-500"
+                                                onClick={() => {
+                                                    setFormMajor(major);
+                                                    setOptionDialog({
+                                                        option: 'restore',
+                                                        title: `Khôi phục ngành ${major.name}`,
+                                                    });
+                                                }}
+                                                disabled={updateMajor.isPending}
+                                            >
+                                                <Repeat className="w-4 h-4" />
+                                            </Button>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -442,30 +527,39 @@ export default function MajorsPage() {
                             <label>Mã ngành</label>
                             <Input placeholder="Nhập mã ngành" value={formMajor?.code} onChange={(e) => setFormMajor({ ...formMajor, code: e.target.value })} />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 w-full flex flex-col">
                             <label>Khoa</label>
                             <Select value={formMajor?.faculty_id || ''} onValueChange={(value) => setFormMajor({ ...formMajor, faculty_id: value })}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Chọn khoa" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent onScroll={handleFacultyScroll}>
+                                    <SelectItem value="all">Tất cả khoa</SelectItem>
                                     {faculties.map((faculty) => (
                                         <SelectItem key={faculty.id} value={faculty.id.toString()}>
                                             {faculty.name}
                                         </SelectItem>
                                     ))}
+                                    {isFetchingFaculties && hasMoreFaculties && (
+                                        <div className="flex justify-center p-2">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+                                        </div>
+                                    )}
                                 </SelectContent>
                             </Select>
                         </div>
                         <Button
                             onClick={() => {
-                                if (optionDialog?.option === 'create') {
-                                    handleAddMajor();
-                                } else if (optionDialog?.option === 'edit') {
-                                    handleEditMajor(formMajor as IMajor);
-                                } else if (optionDialog?.option === 'delete') {
-                                    handleDeleteSoftMajor(formMajor as IMajor);
-                                }
+                                const actions = {
+                                    create: handleAddMajor,
+                                    edit: () => handleEditMajor(formMajor as IMajor),
+                                    delete: () => handleDeleteSoftMajor(formMajor as IMajor),
+                                    restore: () => handleRestoreMajor(formMajor as IMajor),
+                                };
+                                
+
+                                const action = optionDialog?.option && actions[optionDialog.option as keyof typeof actions];
+                                action && action();
                             }}
                             className="w-full"
                             disabled={createMajor.isPending || updateMajor.isPending}

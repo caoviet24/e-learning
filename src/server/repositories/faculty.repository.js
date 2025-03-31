@@ -3,9 +3,8 @@ import prisma from '../middleware/prisma.intercepter.js';
 class FacultyRepository {
     async getAll({ page_number = 1, page_size = 10, search = '', is_deleted }) {
         try {
-
             console.log('is_deleted', is_deleted);
-            
+
             const skip = (page_number - 1) * page_size;
 
             const [faculties, total] = await Promise.all([
@@ -29,7 +28,7 @@ class FacultyRepository {
                         id: 'desc',
                     },
                 }),
-                
+
                 prisma.faculty.count({
                     where: {
                         is_deleted: is_deleted === 'false' ? false : is_deleted === 'true' ? true : null,
@@ -136,6 +135,26 @@ class FacultyRepository {
         }
     }
 
+    async delete(id) {
+        try {
+            const faculty = await prisma.faculty.findFirst({
+                where: { id },
+            });
+
+            if (!faculty) {
+                throw new Error('Không tìm thấy khoa');
+            }
+
+            await prisma.faculty.delete({
+                where: { id },
+            });
+
+            return faculty;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async deleteSoft(id) {
         try {
             const faculty = await prisma.faculty.findFirst({
@@ -154,6 +173,30 @@ class FacultyRepository {
             return {
                 ...faculty,
                 is_deleted: true,
+            };
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async restore(id) {
+        try {
+            const faculty = await prisma.faculty.findFirst({
+                where: { id },
+            });
+
+            if (!faculty) {
+                throw new Error('Không tìm thấy khoa');
+            }
+
+            await prisma.faculty.update({
+                where: { id },
+                data: { is_deleted: false },
+            });
+
+            return {
+                ...faculty,
+                is_deleted: false,
             };
         } catch (error) {
             throw error;

@@ -1,28 +1,28 @@
 import prisma from '../middleware/prisma.intercepter.js';
 
 class MajorRepository {
-    async getAll({ page_size = 1, page_number = 10, search = '', faculty_id = '', is_deleted }) {
+    async getAll({ page_size = 10, page_number = 1, search = '', faculty_id = '', is_deleted }) {
         try {
-            const skip = (page_size - 1) * page_number;
+            const skip = (page_number - 1) * page_size;
 
             const [majors, total] = await Promise.all([
                 prisma.major.findMany({
                     where: {
                         OR: [{ name: { contains: search } }],
                         faculty_id: faculty_id ? faculty_id : undefined,
-                        is_deleted,
+                        is_deleted: is_deleted === 'false' ? false : is_deleted === 'true' ? true : null,
                     },
-                    include: {
-                        department: true,
-                        _count: {
-                            select: {
-                                students: true,
-                                classes: true,
-                            },
-                        },
-                    },
+                    // include: {
+                    //     faculty: true,
+                    //     _count: {
+                    //         select: {
+                    //             students: true,
+                    //             classes: true,
+                    //         },
+                    //     },
+                    // },
                     skip,
-                    take: parseInt(page_number),
+                    take: parseInt(page_size),
                     orderBy: {
                         id: 'desc',
                     },
@@ -31,7 +31,7 @@ class MajorRepository {
                     where: {
                         OR: [{ name: { contains: search } }],
                         faculty_id: faculty_id ? faculty_id : undefined,
-                        is_deleted,
+                        is_deleted: is_deleted === 'false' ? false : is_deleted === 'true' ? true : null,
                     },
                 }),
             ]);
@@ -52,7 +52,7 @@ class MajorRepository {
             return await prisma.major.findFirst({
                 where: { id },
                 include: {
-                    department: true,
+                    faculty: true,
                     students: {
                         include: {
                             user: true,
@@ -83,7 +83,7 @@ class MajorRepository {
             }
 
             const faculty = await prisma.faculty.findFirst({
-                where: { faculty_id: data.faculty_id },
+                where: { id: data.faculty_id },
             });
 
             if (!faculty) {
@@ -94,7 +94,6 @@ class MajorRepository {
                 data: {
                     name: data.name,
                     code: data.code,
-                    description: data.description,
                     faculty_id: data.faculty_id,
                 },
                 include: {
@@ -129,18 +128,18 @@ class MajorRepository {
                     where: { id: data.faculty_id },
                 });
 
-                if (!department) {
+                if (!faculty) {
                     throw new Error('Không tìm thấy khoa');
                 }
             }
 
             return await prisma.major.update({
-                where: { id: parseInt(id) },
+                where: { id },
                 data: {
                     name: data.name,
                     code: data.code,
                     description: data.description,
-                    faculty_id: data.faculty_id
+                    faculty_id: data.faculty_id,
                 },
                 include: {
                     faculty: true,
@@ -151,17 +150,35 @@ class MajorRepository {
         }
     }
 
-    async deleteSoft(id) {
+    async delete(id) {
         try {
             const major = await prisma.major.findFirst({
-                where: { id: id }
+                where: { id: id },
             });
 
             if (!major) {
                 throw new Error('Không tìm thấy ngành');
             }
 
-            if (major.students.length > 0 || major.classes.length > 0) {
+            return await prisma.major.delete({
+                where: { id },
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async deleteSoft(id) {
+        try {
+            const major = await prisma.major.findFirst({
+                where: { id: id },
+            });
+
+            if (!major) {
+                throw new Error('Không tìm thấy ngành');
+            }
+
+            if (major?.students?.length > 0 || major?.classes?.length > 0) {
                 throw new Error('Không thể xóa ngành đang có sinh viên hoặc lớp học');
             }
 
@@ -175,6 +192,29 @@ class MajorRepository {
             throw error;
         }
     }
+
+    async restore(id) {
+        try {
+            const major = await prisma.major.findFirst({
+                where: { id: id },
+            });
+
+            if (!major) {
+                throw new Error('Không tìm thấy ngành');
+            }
+
+            return await prisma.major.update({
+                where: { id },
+                data: {
+                    is_deleted: false,
+                },
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    
 }
 
 export default new MajorRepository();

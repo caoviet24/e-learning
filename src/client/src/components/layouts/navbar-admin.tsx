@@ -15,7 +15,7 @@ const routes = [
   {
     label: "Chuyên ngành",
     icon: BookOpen,
-    href: "/admin/major",
+    href: "/admin/majors",
     color: "text-orange-500",
   },
   {

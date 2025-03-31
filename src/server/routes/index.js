@@ -6,6 +6,7 @@ import videoRoutes from './videos.route.js';
 import youtubeRoutes from './youtube.route.js';
 import departmentRoutes from './faculties.route.js';
 import majorRoutes from './majors.route.js';
+import lecturerRoutes from './lecturers.route.js';
 
 const router = express.Router();
 
@@ -19,5 +20,6 @@ router.use('/videos', videoRoutes);
 router.use('/youtube', youtubeRoutes);
 router.use('/faculties', departmentRoutes);
 router.use('/majors', majorRoutes);
+router.use('/lecturers', lecturerRoutes);
 
 export default router;
