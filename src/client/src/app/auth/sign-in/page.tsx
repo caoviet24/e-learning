@@ -9,10 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { accountService } from '@/services/accountService';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import { jwtDecode } from 'jwt-decode';
 
 import Cookies from 'js-cookie';
-import useHookMutation from '@/hooks/useHookMutation';
+import { Loader2 } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
 
 type FormData = {
     username: string;
@@ -42,36 +42,35 @@ export default function LoginPage() {
         });
     };
 
-    const loginMutation = useHookMutation((data: FormData) => accountService.login(data));
+    const loginMutation = useMutation({
+        mutationFn: (data: any) => accountService.login(data),
+        onSuccess: (res) => {
+            Cookies.set('access_token', res.access_token, { expires: 7 });
+            Cookies.set('refresh_token', res.refresh_token, { expires: 365 });
+
+            router.push('/');
+        },
+        onError: (error: any) => {
+            toast.error(error.response.data.message, {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+        },
+    });
 
     const handleLogin = async () => {
-        loginMutation.mutate(formData, {
-            onSuccess: (res) => {
-                Cookies.set('access_token', res.access_token, { expires: 7 });
-                Cookies.set('refresh_token', res.refresh_token, { expires: 365 });
-
-                router.push('/');
-            },
-            onError: (error: any) => {
-                toast.error(error.response.data.message, {
-                    position: 'top-right',
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                });
-            },
-        });
+        loginMutation.mutate(formData);
     };
     return (
         <div className="w-full max-w-md space-y-8 px-4 rounded-lg p-6">
             <div className="text-center flex items-center flex-col space-y-2">
                 <Image src="/images/utehy-logo.png" alt="utehy logo" width={80} height={80} />
-                <p className="text-base font-medium tracking-tight text-muted-foreground">
-                    Trường Sư Phạm Kỹ Thuật Hưng Yên
-                </p>
+                <p className="text-base font-medium tracking-tight text-muted-foreground">Trường Sư Phạm Kỹ Thuật Hưng Yên</p>
                 <p className="text-lg mt-2 text-muted-foreground">Hệ thống hỗ trợ học tập và thi trực tuyến</p>
             </div>
             <form className="mt-8 space-y-6">
@@ -95,10 +94,7 @@ export default function LoginPage() {
                 />
 
                 <div className="bg-background rounded-md">
-                    <Select
-                        defaultValue={Role.STUDENT}
-                        onValueChange={(value: string) => setFormData({ ...formData, role: value as Role })}
-                    >
+                    <Select defaultValue={Role.STUDENT} onValueChange={(value: string) => setFormData({ ...formData, role: value as Role })}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Sinh viên" />
                         </SelectTrigger>
@@ -109,9 +105,16 @@ export default function LoginPage() {
                         </SelectContent>
                     </Select>
                 </div>
-                <Button type="button" className="w-full" onClick={handleLogin}>
-                    Đăng nhập
-                </Button>
+                <div className="relative">
+                    <Button type="button" disabled={loginMutation.isPending} className={`${loginMutation.isPending && 'opacity-40'} w-full`} onClick={handleLogin}>
+                        Đăng nhập
+                    </Button>
+                    {loginMutation.isPending && (
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <Loader2 className="animate-spin" size={30} />
+                        </div>
+                    )}
+                </div>
                 <p className="text-center text-sm text-muted-foreground">
                     Quên mật khẩu ?
                     <Link href="/forget-password" className="text-primary hover:underline ml-2">

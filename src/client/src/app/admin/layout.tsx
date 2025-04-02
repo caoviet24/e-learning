@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import React from 'react';
+import { ToastContainer } from 'react-toastify';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -23,6 +24,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </SheetContent>
             </Sheet>
             <div className="flex-1 overflow-y-auto">{children}</div>
+            <ToastContainer />
         </div>
     );
 }

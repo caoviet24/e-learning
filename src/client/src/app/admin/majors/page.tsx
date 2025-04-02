@@ -1,17 +1,16 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Edit, Layers, Plus, Repeat, Search, Trash, Trash2 } from 'lucide-react';
-import { JSX, useRef, useState } from 'react';
-import { IMajor, IFaculty } from '@/types/models';
+import { Edit, FileInput, Layers, Loader2, Plus, Repeat, Search, SearchIcon, Trash, Trash2 } from 'lucide-react';
+import { IFaculty, IMajor, IResponse, IResponseList } from '@/types';
+import React, { useState, useEffect, useMemo } from 'react';
+import MajorDiaLog from './MajorDiaLog';
 import { facultyService } from '@/services/facultyService';
-import { IResponse, IResponseList } from '@/types/response';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { majorService } from '@/services/majorService';
-import { setCreateMajor, setDeleteSoftMajor, setMajors } from '@/redux/slices/major.slice';
+import { setMajors, setMajorsDeleted } from '@/redux/slices/major.slice';
 import {
     Pagination,
     PaginationContent,
@@ -22,9 +21,14 @@ import {
     PaginationEllipsis,
 } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bounce, toast, ToastContainer } from 'react-toastify';
-import { useAppDispatch } from '@/redux/store';
+import { Bounce, toast } from 'react-toastify';
+import { useAppDispatch, useAppSelector } from '@/redux/store';
 import useDebounce from '@/hooks/useDebounce';
+import { setFaculties } from '@/redux/slices/faculty.slice';
+import TableRowSkeleton from '@/components/TableRowSkeleton';
+import ButtonHover from '@/components/ButtonHover';
+import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
+import FacultySelect from '../faculty/FacultySelect';
 
 const PAGE_SIZE_OPTIONS = [
     { value: '1', label: '1 bản ghi' },
@@ -37,218 +41,133 @@ const PAGE_SIZE_OPTIONS = [
 ];
 
 export default function MajorsPage() {
-    const dispatch = useAppDispatch();
+    const [prevPageSize, setPrevPageSize] = useState(10);
     const [pageSize, setPageSize] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
-    const [facultyPageSize] = useState(10);
-    const [facultyPage, setFacultyPage] = useState(1);
-    const [faculties, setFaculties] = useState<IFaculty[]>([]);
-    const [hasMoreFaculties, setHasMoreFaculties] = useState(true);
-    const [selectedFaculty, setSelectedFaculty] = useState<string>('all');
-    const [isFetchingFaculties, setIsFetchingFaculties] = useState(false);
     const [tabOpened, setTabOpened] = useState(0);
-    const [searchValue, setSearchValue] = useState('');
-    const debouncedSearch = useDebounce(searchValue, 500);
+    const [searchMajor, setSearchMajor] = useState('');
+    const [facultySeleted, setFacultySelected] = useState<string>('all');
+    const debouncedMajorSearch = useDebounce(searchMajor, 500);
+    const dispatch = useAppDispatch();
+    const { majorsStore, majorsStoreDeleted } = useAppSelector((state) => state.localStorage.major);
+    const [majorSelected, setMajorSelected] = useState<IMajor | null>(null);
     const [optionDialog, setOptionDialog] = useState<{
         option: string;
         title: string;
     } | null>(null);
-    const [formMajor, setFormMajor] = useState<Partial<IMajor>>({ name: '', code: '', faculty_id: '' });
 
-    const { data: facultiesData, isFetching: isFetchingFacultiesData } = useQuery<IResponseList<IFaculty>>({
-        queryKey: ['faculties', facultyPage, facultyPageSize],
-        queryFn: async () => {
-            setIsFetchingFaculties(true);
-            try {
-                const response = await facultyService.getAll({
-                    page_number: facultyPage,
-                    page_size: facultyPageSize,
-                    is_deleted: false,
-                });
-                if (facultyPage === 1) {
-                    setFaculties(response.data);
-                } else {
-                    setFaculties((prev) => [...prev, ...response.data]);
-                }
-                setHasMoreFaculties(response.data.length === facultyPageSize);
-                return response;
-            } finally {
-                setIsFetchingFaculties(false);
-            }
-        },
-        refetchOnWindowFocus: false,
-    });
-
-    const handleFacultyScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const element = e.currentTarget;
-        if (element.scrollHeight - element.scrollTop <= element.clientHeight + 50 && !isFetchingFaculties && hasMoreFaculties) {
-            setFacultyPage((prev) => prev + 1);
-        }
-    };
+ 
 
     const {
         data: majorsData,
-        isLoading,
-        refetch,
-    } = useQuery<{
-        data: IMajor[];
-        total_records: number;
-        page_number: string;
-        page_size: string;
-    }>({
-        placeholderData: (previousData) => previousData,
-        queryKey: ['majors', currentPage, pageSize, tabOpened, debouncedSearch, selectedFaculty],
-        queryFn: async () => {
-            const result = await majorService.getAll({
+        isLoading: isFetchMajorsLoading,
+        isSuccess: isFetchMajorsSuccess,
+        refetch: refetchMajors,
+    } = useQuery<IResponseList<IFaculty>>({
+        queryKey: ['majors', currentPage, pageSize, tabOpened, debouncedMajorSearch, facultySeleted],
+        queryFn: () =>
+            majorService.getAll({
                 page_number: currentPage,
                 page_size: pageSize,
-                search: debouncedSearch,
+                search: debouncedMajorSearch,
                 is_deleted: tabOpened === 0 ? false : true,
-                faculty_id: selectedFaculty === 'all' ? undefined : selectedFaculty,
-            });
-            dispatch(setMajors(result.data));
-            return result;
-        },
+                faculty_id: facultySeleted === 'all' ? undefined : facultySeleted,
+            }),
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: false,
+        enabled:
+            !!debouncedMajorSearch ||
+            (tabOpened === 0 && majorsStore.total_records <= 0) ||
+            (tabOpened === 1 && majorsStoreDeleted.total_records <= 0) ||
+            facultySeleted !== 'all',
     });
 
-    const createMajor = useMutation<IResponse<IMajor>, Error, { name: string; code: string; faculty_id: string }>({
-        mutationFn: (data) => majorService.create(data),
-        onSuccess: (res) => {
-            toast.success(`Thêm ngành ${res.data?.name} thành công`, {
-                position: 'top-right',
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: 'light',
-                transition: Bounce,
-            });
-            setOptionDialog(null);
-            setFormMajor({ name: '', code: '', faculty_id: '' });
-            dispatch(setCreateMajor(res.data));
-            refetch();
-        },
-        onError: (error) => {
-            toast.error('Thêm ngành thất bại');
-            console.error('Thêm ngành thất bại:', error);
-        },
-    });
-
-    const handleAddMajor = () => {
-        if (!formMajor?.name || !formMajor?.code || !formMajor?.faculty_id) {
-            toast.error('Vui lòng nhập đầy đủ thông tin');
-            return;
+    useEffect(() => {
+        if (isFetchMajorsSuccess) {
+            if (tabOpened === 0) {
+                dispatch(
+                    setMajors({
+                        ...majorsData,
+                        filtered: facultySeleted !== 'all',
+                    }),
+                );
+            } else {
+                dispatch(setMajorsDeleted(majorsData));
+            }
         }
+    }, [isFetchMajorsSuccess, majorsData, debouncedMajorSearch, facultySeleted]);
 
-        createMajor.mutate({
-            name: formMajor.name,
-            code: formMajor.code,
-            faculty_id: formMajor.faculty_id,
-        });
-    };
-
-    const updateMajor = useMutation({
-        mutationFn: (data: any) => {
-            // Only use restore API when explicitly asked to restore
-            if (data.restore === true) {
-                return majorService.restore(data.id);
+    useEffect(() => {
+        if (prevPageSize < pageSize) {
+            if (pageSize > majorsStore.total_records || pageSize > majorsStoreDeleted.total_records) {
+                refetchMajors();
             }
-            // Otherwise use normal update API
-            return majorService.update(data.id, {
-                name: data.name,
-                code: data.code,
-                faculty_id: data.faculty_id,
-            });
-        },
-        onSuccess: (res: IResponse<IMajor>) => {
-            toast.success(`${res?.data?.is_deleted ? 'Khôi phục' : 'Cập nhật'} ngành ${res.data?.name} thành công`, {
-                position: 'top-right',
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: 'light',
-                transition: Bounce,
-            });
-            setOptionDialog(null);
-            setFormMajor({ name: '', code: '', faculty_id: '' });
-            dispatch(setDeleteSoftMajor(res.data?.id));
-            refetch();
-        },
-        onError: (error) => {
-            toast.error('Xóa ngành thất bại');
-            console.error('Xóa ngành thất bại:', error);
-        },
-    });
-
-    const deleteMajor = useMutation({
-        mutationFn: (data: any) => {
-            if (data.delete) {
-                return majorService.delete(data.id);
-            }
-            return majorService.deleteSoft(data.id);
-        },
-        onSuccess: (res: IResponse<IMajor>) => {
-            toast.success(`Xóa ngành ${res.data?.name} thành công`, {
-                position: 'top-right',
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: 'light',
-                transition: Bounce,
-            });
-            setOptionDialog(null);
-            setFormMajor({ name: '', code: '', faculty_id: '' });
-            dispatch(setDeleteSoftMajor(res.data?.id));
-            refetch();
-        },
-        onError: (error) => {
-            toast.error('Xóa ngành thất bại');
-            console.error('Xóa ngành thất bại:', error);
-        },
-    });
-
-    const handleEditMajor = (major: IMajor) => {
-        updateMajor.mutate({
-            id: major.id,
-            name: major.name,
-            code: major.code,
-            faculty_id: major.faculty_id,
-        });
-    };
-
-    const handleDeleteSoftMajor = (major: IMajor) => {
-        deleteMajor.mutate({
-            id: major.id,
-            delete: false,
-        });
-    };
-
-    const handleRestoreMajor = (major: IMajor) => {
-        updateMajor.mutate({
-            id: major.id,
-            restore: true, // Explicitly flag as restore operation
-            name: major.name,
-            code: major.code,
-            faculty_id: major.faculty_id,
-        });
-    };
+        }
+    }, [pageSize]);
 
     const handlePageSizeChange = (value: string) => {
+        setPrevPageSize(pageSize);
         setPageSize(Number(value));
         setCurrentPage(1);
     };
 
+    const dataDisplayed = useMemo(() => {
+        if (facultySeleted !== 'all' || debouncedMajorSearch) {
+            if (majorsData?.data) {
+                if (majorsData.data.length === 0) {
+                    return [];
+                }
+
+                return majorsData.data.map((major, index) => ({
+                    ...major,
+                    index: (currentPage - 1) * pageSize + index + 1,
+                }));
+            }
+            return [];
+        }
+
+        const currentData = tabOpened === 0 ? majorsStore : majorsStoreDeleted;
+        if (!isFetchMajorsLoading && currentData?.data && currentData.data.length > 0) {
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, currentData.data.length);
+            return currentData.data.slice(startIndex, endIndex).map((major, index) => ({
+                ...major,
+                index: startIndex + index + 1,
+            }));
+        }
+
+        if (majorsData?.data) {
+            if (majorsData.data.length === 0) {
+                return [];
+            }
+
+            return majorsData.data.map((major, index) => ({
+                ...major,
+                index: (currentPage - 1) * pageSize + index + 1,
+            }));
+        }
+
+        return [];
+    }, [majorsData, majorsStore, majorsStoreDeleted, tabOpened, currentPage, pageSize, debouncedMajorSearch, isFetchMajorsLoading]);
+
+    const getIsLastPage = () => {
+        const currentData = tabOpened === 0 ? majorsStore : majorsStoreDeleted;
+        const totalRecords =
+            debouncedMajorSearch || pageSize > (currentData?.total_records ?? 0)
+                ? majorsData?.total_records ?? currentData?.total_records ?? 0
+                : currentData?.total_records ?? 0;
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        return currentPage === totalPages;
+    };
+
     const renderPaginationItems = () => {
         const items = [];
-        const totalRecords = majorsData?.total_records ?? 0;
+        const currentData = tabOpened === 0 ? majorsStore : majorsStoreDeleted;
+        const totalRecords =
+            debouncedMajorSearch || pageSize > (currentData?.total_records ?? 0)
+                ? majorsData?.total_records ?? currentData?.total_records ?? 0
+                : currentData?.total_records ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
         const current = currentPage;
         const delta = 2;
@@ -291,7 +210,6 @@ export default function MajorsPage() {
                 </PaginationItem>,
             );
         }
-
         if (totalPages > 1) {
             items.push(
                 <PaginationItem key={totalPages}>
@@ -308,268 +226,269 @@ export default function MajorsPage() {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Quản lý ngành</h2>
-                <Button
-                    onClick={() =>
-                        setOptionDialog({
-                            option: 'create',
-                            title: 'Thêm ngành',
-                        })
-                    }
-                    disabled={createMajor.isPending}
-                >
-                    <Plus className="w-6 h-6" />
-                    <span className="ml-2">Thêm ngành</span>
-                </Button>
-            </div>
-
-            <div className="flex items-center justify-between mb-4 w-full">
-                <div className="flex items-center gap-4">
-                    <div className="flex gap-2">
-                        <Button
-                            className={`bg-blue-500 hover:bg-blue-600 text-white p-2 ${tabOpened === 0 && '!opacity-100'} opacity-60 `}
-                            size="icon"
-                            onClick={() => setTabOpened(0)}
-                        >
-                            <Layers className="h-16 w-16" />
-                        </Button>
-                        <Button
-                            className={`bg-red-500 hover:bg-red-600 text-white p-2 ${tabOpened === 1 && '!opacity-100'} opacity-60 `}
-                            size="icon"
-                            onClick={() => setTabOpened(1)}
-                        >
-                            <Trash2 className="h-16 w-16" />
-                        </Button>
-                        <div className="relative">
-                            <Input placeholder="Tìm kiếm tên ngành" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />
-                            <button className="absolute right-3 top-1/2 -translate-y-1/2">
-                                <Search className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </div>
-                    <Select value={selectedFaculty} onValueChange={setSelectedFaculty}>
-                        <SelectTrigger className="w-[200px]">
-                            <SelectValue placeholder="Chọn khoa" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-[200px]" onScroll={handleFacultyScroll}>
-                            <SelectItem value="all">Tất cả khoa</SelectItem>
-                            {faculties.length > 0 &&
-                                faculties.map((faculty) => (
-                                    <SelectItem key={faculty.id} value={faculty.id.toString()}>
-                                        {faculty.name}
-                                    </SelectItem>
-                                ))}
-                            {isFetchingFaculties && hasMoreFaculties && (
-                                <div className="flex justify-center p-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
-                                </div>
-                            )}
-                        </SelectContent>
-                    </Select>
-                </div>
-
+                <h2 className="text-2xl font-bold">Quản lý chuyên ngành</h2>
                 <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Hiển thị:</span>
-                    <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isLoading}>
-                        <SelectTrigger className="w-[140px]">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {PAGE_SIZE_OPTIONS.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <ButtonHover
+                        title="Thêm chuyên ngành"
+                        variant="default"
+                        leftIcon={<Plus className="w-6 h-6" />}
+                        onClick={() => {
+                            setOptionDialog({
+                                option: 'create',
+                                title: 'Thêm chuyên ngành',
+                            });
+                        }}
+                    />
+
+                    <ButtonHover
+                        title="Xuất file"
+                        variant="outline"
+                        leftIcon={<FileInput className="w-6 h-6" />}
+                        onClick={() => {
+                            toast.info('Chức năng đang được phát triển', {
+                                position: 'top-right',
+                                autoClose: 2000,
+                                hideProgressBar: false,
+                                closeOnClick: true,
+                                pauseOnHover: true,
+                                draggable: true,
+                                progress: undefined,
+                                transition: Bounce,
+                            });
+                        }}
+                    />
                 </div>
             </div>
 
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>STT</TableHead>
-                            <TableHead>Tên ngành</TableHead>
-                            <TableHead>Mã ngành</TableHead>
-                            <TableHead className="text-right">Thao tác</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={4} className="text-center py-6">
-                                    <div className="flex justify-center items-center space-x-2">
-                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-                                        <span>Đang tải...</span>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ) : majorsData?.data && majorsData.data.length > 0 ? (
-                            majorsData.data.map((major: IMajor, index: number) => (
-                                <TableRow key={major.id}>
-                                    <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
-                                    <TableCell>{major.name}</TableCell>
-                                    <TableCell>{major.code}</TableCell>
-                                    <TableCell className="text-right space-x-2">
-                                        <Button
-                                            variant="outline"
-                                            className="bg-green-500"
-                                            size="icon"
-                                            onClick={() => {
-                                                setFormMajor(major);
-                                                setOptionDialog({
-                                                    option: 'edit',
-                                                    title: 'Sửa ngành',
-                                                });
-                                            }}
-                                            disabled={updateMajor.isPending}
-                                        >
-                                            <Edit className="w-4 h-4" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="bg-red-500"
-                                            onClick={() => {
-                                                setFormMajor(major);
-                                                setOptionDialog({
-                                                    option: 'delete',
-                                                    title: 'Xóa ngành',
-                                                });
-                                            }}
-                                            disabled={updateMajor.isPending}
-                                        >
-                                            <Trash className="w-4 h-4" />
-                                        </Button>
-
-                                        {major.is_deleted && (
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                className="bg-orange-500"
-                                                onClick={() => {
-                                                    setFormMajor(major);
-                                                    setOptionDialog({
-                                                        option: 'restore',
-                                                        title: `Khôi phục ngành ${major.name}`,
-                                                    });
-                                                }}
-                                                disabled={updateMajor.isPending}
-                                            >
-                                                <Repeat className="w-4 h-4" />
-                                            </Button>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={4} className="text-center py-6">
-                                    Không có dữ liệu
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-
-            <div className="flex items-center mt-4">
-                <div className="text-sm text-muted-foreground">
-                    {!isLoading && majorsData?.total_records !== undefined && <span>Tổng số: {majorsData.total_records} bản ghi</span>}
-                </div>
-
-                {majorsData && majorsData.total_records > pageSize && (
-                    <div className="flex justify-center flex-1">
-                        <Pagination>
-                            <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious
-                                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                                        aria-label="Go to previous page"
-                                    />
-                                </PaginationItem>
-                                {renderPaginationItems()}
-                                <PaginationItem>
-                                    <PaginationNext
-                                        onClick={() => {
-                                            const totalPages = Math.ceil((majorsData?.total_records ?? 0) / pageSize);
-                                            setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-                                        }}
-                                        className={
-                                            currentPage === Math.ceil((majorsData?.total_records ?? 0) / pageSize) ? 'pointer-events-none opacity-50' : ''
-                                        }
-                                        aria-label="Go to next page"
-                                    />
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
+            <div className="bg-white dark:bg-slate-800 text-black dark:text-white rounded-lg shadow-lg p-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
+                    <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                        <Button
+                            variant={tabOpened === 0 ? 'default' : 'outline'}
+                            onClick={() => {
+                                setTabOpened(0);
+                                setCurrentPage(1);
+                            }}
+                            className="flex-1 md:flex-none"
+                        >
+                            <span>Ngành</span>
+                        </Button>
+                        <Button
+                            variant={tabOpened === 1 ? 'default' : 'outline'}
+                            onClick={() => {
+                                setTabOpened(1);
+                                setCurrentPage(1);
+                            }}
+                            className="flex-1 md:flex-none"
+                        >
+                            <span>Đã xóa</span>
+                        </Button>
                     </div>
-                )}
-            </div>
 
-            <Dialog open={!!optionDialog} onOpenChange={() => setOptionDialog(null)}>
-                <DialogContent className="p-4">
-                    <DialogHeader>
-                        <DialogTitle>{optionDialog?.title}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 pt-4">
-                        <div className="space-y-2">
-                            <label>Tên ngành</label>
+                    <div className="w-full md:w-auto flex flex-col items-center md:flex-row gap-2">
+                        <div className="relative w-full md:w-auto">
+                            {isFetchMajorsLoading && searchMajor ? (
+                                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 animate-spin">
+                                    <Loader2 />
+                                </div>
+                            ) : (
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
+                            )}
                             <Input
-                                placeholder="Nhập tên ngành"
-                                value={formMajor?.name}
-                                onChange={(e) => setFormMajor({ ...formMajor, name: e.target.value })}
+                                className="pl-10 pr-4 w-full md:w-60"
+                                placeholder="Tìm kiếm..."
+                                value={searchMajor}
+                                onChange={(e) => setSearchMajor(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-2">
-                            <label>Mã ngành</label>
-                            <Input placeholder="Nhập mã ngành" value={formMajor?.code} onChange={(e) => setFormMajor({ ...formMajor, code: e.target.value })} />
-                        </div>
-                        <div className="space-y-2 w-full flex flex-col">
-                            <label>Khoa</label>
-                            <Select value={formMajor?.faculty_id || ''} onValueChange={(value) => setFormMajor({ ...formMajor, faculty_id: value })}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Chọn khoa" />
-                                </SelectTrigger>
-                                <SelectContent onScroll={handleFacultyScroll}>
-                                    <SelectItem value="all">Tất cả khoa</SelectItem>
-                                    {faculties.map((faculty) => (
-                                        <SelectItem key={faculty.id} value={faculty.id.toString()}>
-                                            {faculty.name}
-                                        </SelectItem>
-                                    ))}
-                                    {isFetchingFaculties && hasMoreFaculties && (
-                                        <div className="flex justify-center p-2">
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
-                                        </div>
-                                    )}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <Button
-                            onClick={() => {
-                                const actions = {
-                                    create: handleAddMajor,
-                                    edit: () => handleEditMajor(formMajor as IMajor),
-                                    delete: () => handleDeleteSoftMajor(formMajor as IMajor),
-                                    restore: () => handleRestoreMajor(formMajor as IMajor),
-                                };
-                                
 
-                                const action = optionDialog?.option && actions[optionDialog.option as keyof typeof actions];
-                                action && action();
+                        <FacultySelect
+                            value={facultySeleted}
+                            onSelectValue={(value) => {
+                                setFacultySelected(value);
+                                setCurrentPage(1);
                             }}
-                            className="w-full"
-                            disabled={createMajor.isPending || updateMajor.isPending}
-                        >
-                            {createMajor.isPending || updateMajor.isPending ? 'Đang xử lý...' : 'Xác nhận'}
-                        </Button>
+                        />
                     </div>
-                </DialogContent>
-            </Dialog>
-            <ToastContainer />
+                </div>
+
+                <div className="overflow-x-auto">
+                    <Table className="whitespace-nowrap">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>STT</TableHead>
+                                <TableHead>Tên chuyên ngành</TableHead>
+                                <TableHead>Mã chuyên ngành</TableHead>
+                                <TableHead>Khoa</TableHead>
+                                <TableHead className="text-center">Thao tác</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {isFetchMajorsLoading ? (
+                                <TableRowSkeleton />
+                            ) : dataDisplayed && dataDisplayed.length > 0 ? (
+                                dataDisplayed.map((major: IMajor, index) => (
+                                    <TableRow key={major.id}>
+                                        <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
+                                        <TableCell>{major.name}</TableCell>
+                                        <TableCell>{major.code}</TableCell>
+                                        <TableCell>{major.faculty?.name}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-center gap-2">
+                                                {tabOpened === 0 && (
+                                                    <React.Fragment>
+                                                        <ButtonHover
+                                                            variant="ghost"
+                                                            leftIcon={<Edit className="w-6 h-6 text-blue-500" />}
+                                                            suggestText={`Chỉnh sửa`}
+                                                            onClick={() => {
+                                                                setMajorSelected(major);
+                                                                setOptionDialog({
+                                                                    option: 'edit',
+                                                                    title: `Chỉnh sửa chuyên ngành`,
+                                                                });
+                                                            }}
+                                                        />
+                                                        <ButtonHover
+                                                            variant="ghost"
+                                                            leftIcon={<Trash className="w-6 h-6 text-red-500" />}
+                                                            suggestText={`Xóa tạm thời`}
+                                                            onClick={() => {
+                                                                setMajorSelected(major);
+                                                                setOptionDialog({
+                                                                    option: 'delete-soft',
+                                                                    title: `Xóa chuyên ngành`,
+                                                                });
+                                                            }}
+                                                        />
+                                                    </React.Fragment>
+                                                )}
+                                                {tabOpened === 1 && (
+                                                    <React.Fragment>
+                                                        <ButtonHover
+                                                            variant="ghost"
+                                                            leftIcon={<Repeat className="w-6 h-6 text-orange-500" />}
+                                                            suggestText={`Khôi phục`}
+                                                            onClick={() => {
+                                                                setMajorSelected(major);
+                                                                setOptionDialog({
+                                                                    option: 'restore',
+                                                                    title: `Khôi phục chuyên ngành`,
+                                                                });
+                                                            }}
+                                                        />
+                                                        <ButtonHover
+                                                            variant="ghost"
+                                                            leftIcon={<Trash2 className="w-6 h-6 text-red-500" />}
+                                                            suggestText={`Xóa vĩnh viễn`}
+                                                            onClick={() => {
+                                                                setMajorSelected(major);
+                                                                setOptionDialog({
+                                                                    option: 'delete',
+                                                                    title: `Xóa chuyên ngành`,
+                                                                });
+                                                            }}
+                                                        />
+                                                    </React.Fragment>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="text-center py-6">
+                                        Không có dữ liệu
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                {!isFetchMajorsLoading &&
+                    ((debouncedMajorSearch && (majorsData?.total_records ?? 0) > 0) ||
+                        (!debouncedMajorSearch && ((tabOpened === 0 ? majorsStore?.total_records : majorsStoreDeleted?.total_records) ?? 0) > 0)) && (
+                        <div className="mt-4 flex flex-col md:flex-row justify-between items-center">
+                            <div className="mb-4 md:mb-0 flex items-center">
+                                <span className="text-sm text-gray-500 text-nowrap">
+                                    Tổng số bản ghi:{' '}
+                                    {debouncedMajorSearch ||
+                                    pageSize > ((tabOpened === 0 ? majorsStore?.total_records : majorsStoreDeleted?.total_records) ?? 0)
+                                        ? majorsData?.total_records ?? (tabOpened === 0 ? majorsStore?.total_records : majorsStoreDeleted?.total_records) ?? 0
+                                        : (tabOpened === 0 ? majorsStore?.total_records : majorsStoreDeleted?.total_records) ?? 0}
+                                </span>
+                                <div className="ml-2 inline-block">
+                                    <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isFetchMajorsLoading}>
+                                        <SelectTrigger className="h-8 w-[100px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {PAGE_SIZE_OPTIONS.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            {((debouncedMajorSearch && (majorsData?.total_records ?? 0) > pageSize) ||
+                                (!debouncedMajorSearch &&
+                                    ((tabOpened === 0 ? majorsStore?.total_records : majorsStoreDeleted?.total_records) ?? 0) > pageSize)) && (
+                                <Pagination>
+                                    <PaginationContent>
+                                        <PaginationItem>
+                                            <PaginationPrevious
+                                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                                className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                                                aria-label="Go to previous page"
+                                            />
+                                        </PaginationItem>
+                                        {renderPaginationItems()}
+                                        <PaginationItem>
+                                            <PaginationNext
+                                                onClick={() => {
+                                                    const currentData = tabOpened === 0 ? majorsStore : majorsStoreDeleted;
+                                                    const totalRecords =
+                                                        debouncedMajorSearch || pageSize > (currentData?.total_records ?? 0)
+                                                            ? majorsData?.total_records ?? currentData?.total_records ?? 0
+                                                            : currentData?.total_records ?? 0;
+                                                    const totalPages = Math.ceil(totalRecords / pageSize);
+                                                    const nextPage = Math.min(currentPage + 1, totalPages);
+                                                    const currentReduxData = tabOpened === 0 ? majorsStore.data : majorsStoreDeleted.data;
+
+                                                    if (totalRecords > currentReduxData.length) {
+                                                        setCurrentPage(nextPage);
+                                                        setTimeout(() => {
+                                                            refetchMajors();
+                                                        }, 0);
+                                                    } else {
+                                                        setCurrentPage(nextPage);
+                                                    }
+                                                }}
+                                                className={getIsLastPage() ? 'pointer-events-none opacity-50' : ''}
+                                                aria-label="Go to next page"
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            )}
+                        </div>
+                    )}
+            </div>
+            {optionDialog && (
+                <MajorDiaLog
+                    open={!!optionDialog}
+                    major={majorSelected as IMajor}
+                    mode={optionDialog.option as 'create' | 'edit' | 'delete' | 'delete-soft' | 'restore'}
+                    onClose={() => setOptionDialog(null)}
+                    onSuccess={() => {
+                        setOptionDialog(null);
+                    }}
+                />
+            )}
         </div>
     );
 }

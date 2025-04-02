@@ -9,7 +9,7 @@ class FacultyController {
                 page_number,
                 page_size,
                 search,
-                is_deleted
+                is_deleted,
             });
 
             res.json(result);
@@ -80,7 +80,7 @@ class FacultyController {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { name, code, is_deleted } = req.body;
+            const { name, code } = req.body;
 
             if (!name || !code) {
                 return res.status(400).json({
@@ -92,7 +92,6 @@ class FacultyController {
             const rs = await facultyRepository.update(id, {
                 name,
                 code,
-                is_deleted,
             });
 
             if (rs) {

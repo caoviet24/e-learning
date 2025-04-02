@@ -1,10 +1,10 @@
+
+import { facultyDto } from '../dtos/faculty.dto.js';
 import prisma from '../middleware/prisma.intercepter.js';
 
 class FacultyRepository {
     async getAll({ page_number = 1, page_size = 10, search = '', is_deleted }) {
         try {
-            console.log('is_deleted', is_deleted);
-
             const skip = (page_number - 1) * page_size;
 
             const [faculties, total] = await Promise.all([
@@ -13,15 +13,7 @@ class FacultyRepository {
                         is_deleted: is_deleted === 'false' ? false : is_deleted === 'true' ? true : null,
                         OR: [{ name: { contains: search } }],
                     },
-                    include: {
-                        _count: {
-                            select: {
-                                students: true,
-                                lecturers: true,
-                                classes: true,
-                            },
-                        },
-                    },
+                    select: facultyDto,
                     skip,
                     take: parseInt(page_size),
                     orderBy: {
@@ -96,6 +88,7 @@ class FacultyRepository {
                     name: data.name,
                     code: data.code,
                 },
+                select: facultyDto,
             });
         } catch (error) {
             throw error;
@@ -127,8 +120,8 @@ class FacultyRepository {
                 data: {
                     name: data.name,
                     code: data.code,
-                    is_deleted: data?.is_deleted,
                 },
+                select: facultyDto,
             });
         } catch (error) {
             throw error;
@@ -147,6 +140,7 @@ class FacultyRepository {
 
             await prisma.faculty.delete({
                 where: { id },
+                select: facultyDto,
             });
 
             return faculty;
@@ -165,15 +159,11 @@ class FacultyRepository {
                 throw new Error('Không tìm thấy khoa');
             }
 
-            await prisma.faculty.update({
+            return await prisma.faculty.update({
                 where: { id },
                 data: { is_deleted: true },
+                select: facultyDto,
             });
-
-            return {
-                ...faculty,
-                is_deleted: true,
-            };
         } catch (error) {
             throw error;
         }
@@ -189,15 +179,11 @@ class FacultyRepository {
                 throw new Error('Không tìm thấy khoa');
             }
 
-            await prisma.faculty.update({
+            return await prisma.faculty.update({
                 where: { id },
                 data: { is_deleted: false },
+                select: facultyDto,
             });
-
-            return {
-                ...faculty,
-                is_deleted: false,
-            };
         } catch (error) {
             throw error;
         }

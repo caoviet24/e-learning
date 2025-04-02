@@ -20,19 +20,42 @@ interface IResponseList<T> {
 interface IAccount {
     id: string;
     username: string;
-    email: string;
-    role: number;
+    role: string;
     user: IUser;
 }
 
-interface IFaculty {
+export interface IUser {
+    id: string;
+    full_name: string;
+    email?: string;
+    gender?: number;
+    avatar?: string;
+    phone_number?: string;
+    is_deleted?: boolean;
+    original_address?: string;
+    current_address?: string;
+    account: IAccount;
+}
+
+export interface IFaculty {
     id: string;
     name: string;
     code: string;
     is_deleted?: boolean;
 }
-interface IUser {
+
+export interface IMajor {
     id: string;
-    full_name: string;
-    avatar: string;
+    name: string;
+    code: string;
+    is_deleted?: boolean;
+    faculty?: IFaculty;
+}
+
+export interface ILecturer {
+    id: string;
+    lecturer_id?: string;
+    user: IUser;
+    faculty?: IFaculty;
+    major?: IMajor;
 }

@@ -1,3 +1,4 @@
+import { majorDto } from '../dtos/major.dto.js';
 import prisma from '../middleware/prisma.intercepter.js';
 
 class MajorRepository {
@@ -12,15 +13,7 @@ class MajorRepository {
                         faculty_id: faculty_id ? faculty_id : undefined,
                         is_deleted: is_deleted === 'false' ? false : is_deleted === 'true' ? true : null,
                     },
-                    // include: {
-                    //     faculty: true,
-                    //     _count: {
-                    //         select: {
-                    //             students: true,
-                    //             classes: true,
-                    //         },
-                    //     },
-                    // },
+                    select: majorDto,
                     skip,
                     take: parseInt(page_size),
                     orderBy: {
@@ -51,21 +44,7 @@ class MajorRepository {
         try {
             return await prisma.major.findFirst({
                 where: { id },
-                include: {
-                    faculty: true,
-                    students: {
-                        include: {
-                            user: true,
-                        },
-                    },
-                    classes: true,
-                    _count: {
-                        select: {
-                            students: true,
-                            classes: true,
-                        },
-                    },
-                },
+                select: majorDto,
             });
         } catch (error) {
             throw error;
@@ -96,9 +75,7 @@ class MajorRepository {
                     code: data.code,
                     faculty_id: data.faculty_id,
                 },
-                include: {
-                    faculty: true,
-                },
+                select: majorDto,
             });
         } catch (error) {
             throw error;
@@ -118,19 +95,22 @@ class MajorRepository {
             const duplicateName = await prisma.major.findFirst({
                 where: { name: data.name },
             });
-
-            if (duplicateName) {
+            if (duplicateName && duplicateName.id !== id) {
                 throw new Error('Tên ngành đã tồn tại');
             }
 
-            if (data.faculty_id) {
-                const faculty = await prisma.faculty.findFirst({
-                    where: { id: data.faculty_id },
-                });
+            const duplicateCode = await prisma.major.findFirst({
+                where: { code: data.code },
+            });
+            if (duplicateCode && duplicateCode.id !== id) {
+                throw new Error('Mã ngành đã tồn tại');
+            }
 
-                if (!faculty) {
-                    throw new Error('Không tìm thấy khoa');
-                }
+            const exitFaculty = await prisma.faculty.findFirst({
+                where: { id: data.faculty_id },
+            });
+            if (!exitFaculty) {
+                throw new Error('Không tìm thấy khoa');
             }
 
             return await prisma.major.update({
@@ -138,12 +118,9 @@ class MajorRepository {
                 data: {
                     name: data.name,
                     code: data.code,
-                    description: data.description,
                     faculty_id: data.faculty_id,
                 },
-                include: {
-                    faculty: true,
-                },
+                select: majorDto,
             });
         } catch (error) {
             throw error;
@@ -162,6 +139,7 @@ class MajorRepository {
 
             return await prisma.major.delete({
                 where: { id },
+                select: majorDto,
             });
         } catch (error) {
             throw error;
@@ -187,6 +165,7 @@ class MajorRepository {
                 data: {
                     is_deleted: true,
                 },
+                select: majorDto,
             });
         } catch (error) {
             throw error;
@@ -208,13 +187,12 @@ class MajorRepository {
                 data: {
                     is_deleted: false,
                 },
+                select: majorDto,
             });
         } catch (error) {
             throw error;
         }
     }
-
-    
 }
 
 export default new MajorRepository();

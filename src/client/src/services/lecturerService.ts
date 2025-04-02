@@ -24,65 +24,13 @@ export const lecturerService = {
         return res.data;
     },
 
-    async getById(id: string) {
-        const res = await axiosJWT.get(`${API_URL}/lecturers/get-by-id/${id}`);
-        return res.data;
-    },
-
-    async searchByDepartment(faculty_id: string, {
-        page_number,
-        page_size,
-        search,
-        is_deleted
-    }: {
-        page_number: number;
-        page_size: number;
-        search?: string;
-        is_deleted?: boolean
-    }) {
-        const res = await axiosJWT.get(`${API_URL}/lecturers/search-by-department/${faculty_id}`, {
-            params: {
-                page_number,
-                page_size,
-                search: search || null,
-                is_deleted,
-            },
-        });
-        return res.data;
-    },
-
-    async create(data: {
-        username: string;
-        password: string;
-        full_name: string;
-        gender?: number;
-        avatar?: string;
-        original_address?: string;
-        current_address?: string;
-        email?: string;
-        phone_number?: string;
-        faculty_id: string;
-        major_id: string;
-        id_card: string;
-    }) {
+  
+    async create(data : any) {
         const res = await axiosJWT.post(`${API_URL}/lecturers/create`, data);
         return res.data;
     },
 
-    async update(id: string, data: {
-        username?: string;
-        password?: string;
-        full_name?: string;
-        gender?: number;
-        avatar?: string;
-        original_address?: string;
-        current_address?: string;
-        email?: string;
-        phone_number?: string;
-        faculty_id?: string;
-        major_id?: string;
-        id_card?: string;
-    }) {
+    async update(id: string, data : any) {
         const res = await axiosJWT.put(`${API_URL}/lecturers/update/${id}`, data);
         return res.data;
     },

@@ -4,7 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const facultyService = {
     async getAll({ page_number, page_size, search, is_deleted }: { page_number: number; page_size: number, search?: string, is_deleted?: boolean }) {
-        const res = await axiosJWT.get(`/faculties/get-all`, {
+        const res = await axiosJWT.get(`${API_URL}/faculties/get-all`, {
             params: {
                 page_number,
                 page_size,
