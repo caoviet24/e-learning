@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import prisma from '../middleware/prisma.intercepter.js';
 import jwtService from '../services/jwtService.js';
+import getCurrentUser from '../services/getCurrentUser.js';
 
 export const register = async (req, res) => {
     try {
@@ -15,6 +16,9 @@ export const register = async (req, res) => {
                 username,
             },
         });
+
+       console.log(existingAccount);
+       
 
 
         if (existingAccount) {
@@ -38,9 +42,6 @@ export const register = async (req, res) => {
                 original_address: '',
                 current_address: '',
                 phone_number: '',
-                created_by: '',
-                updated_by: '',
-                deleted_by: '',
             },
         });
 

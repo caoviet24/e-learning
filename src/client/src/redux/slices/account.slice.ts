@@ -1,4 +1,5 @@
 
+import { IAccount } from '@/types';
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
@@ -9,11 +10,10 @@ export const accountSlice = createSlice({
     name: 'account',
     initialState,
     reducers: {
-        setMyAcount: (state, action) => {
+        setMyAccount: (state, action) => {
             state.my_account = action.payload;
         },
     },
 });
-
-export const { setMyAcount } = accountSlice.actions;
+export const { setMyAccount } = accountSlice.actions;
 export const accountReducer = accountSlice.reducer;

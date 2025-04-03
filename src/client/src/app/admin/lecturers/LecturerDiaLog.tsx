@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { IFaculty, ILecturer, IMajor } from '@/types';
+import { ILecturer, IResponse } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,30 +12,32 @@ import { useMutation } from '@tanstack/react-query';
 import { lecturerService } from '@/services/lecturerService';
 import { Bounce, toast } from 'react-toastify';
 import * as z from 'zod';
-import { facultyService } from '@/services/facultyService';
-import { majorService } from '@/services/majorService';
 import FacultySelect from '../faculty/FacultySelect';
 import MajorSelect from '../majors/MajorSelect';
+import { useAppDispatch } from '@/redux/store';
+import { setCreateLecturer, setDeleteSoftLecturer, setRestoreLecturer, setUpdateLecturer } from '@/redux/slices/lecturer.slice';
 
 interface ILecturerDiaLogProps {
     open: boolean;
     lecturer?: ILecturer;
-    mode: 'create' | 'update' | 'delete' | 'view' | 'restore';
+    mode: 'create' | 'update' | 'delete-soft' | 'delete' | 'view' | 'restore';
     onClose: () => void;
     onSuccess?: () => void;
 }
 
 interface LecturerPayLoad {
     username: string;
-    password: string;
+    password?: string;
     full_name: string;
-    gender: string;
-    email: string;
-    phone_number: string;
-    original_address: string;
-    current_address: string;
+    gender?: string;
+    email?: string;
+    phone_number?: string;
+    original_address?: string;
+    current_address?: string;
     faculty_id: string;
     major_id: string;
+    role: string;
+    lecturer_id?: string;
 }
 
 const MODE_OPTIONS = {
@@ -47,6 +49,9 @@ const MODE_OPTIONS = {
     },
     delete: {
         title: 'Xóa giảng viên',
+    },
+    'delete-soft': {
+        title: 'Xóa tạm thời giảng viên',
     },
     view: {
         title: 'Xem giảng viên',
@@ -62,33 +67,36 @@ const GENDER_OPTIONS = [
     { value: '2', label: 'Khác' },
 ];
 
-const lecturerSchema = z.object({
-    username: z.string().min(3, 'Tên đăng nhập phải có ít nhất 3 ký tự'),
-    password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự').optional(),
+const getLecturerSchema = (mode: string) => {
+    const baseSchema = {
+        full_name: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
+        gender: z.string().optional(),
+        email: z.string().email('Email không hợp lệ').optional().or(z.literal('')),
+        phone_number: z.string().optional(),
+        original_address: z.string().optional(),
+        current_address: z.string().optional(),
+        faculty_id: z.string().min(1, 'Vui lòng chọn khoa'),
+        major_id: z.string().min(1, 'Vui lòng chọn ngành'),
+        role: z.string().optional().default('LECTURER'),
+    };
 
-    full_name: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
-    gender: z.string().optional(),
-    email: z.string().email('Email không hợp lệ').optional().or(z.literal('')),
-    phone_number: z.string().optional(),
-    original_address: z.string().optional(),
-    current_address: z.string().optional(),
+    if (mode === 'create') {
+        return z.object({
+            username: z.string().min(3, 'Tên đăng nhập phải có ít nhất 3 ký tự'),
+            password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+            ...baseSchema,
+        });
+    }
 
-    faculty_id: z.string().min(1, 'Vui lòng chọn khoa'),
-    major_id: z.string().min(1, 'Vui lòng chọn ngành'),
-});
+    return z.object({
+        username: z.string().optional(),
+        password: z.string().optional(),
+        ...baseSchema,
+    });
+};
 
 export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSuccess }: ILecturerDiaLogProps) {
-    const [faculties, setFaculties] = React.useState<IFaculty[]>([]);
-    const [majors, setMajors] = React.useState<IMajor[]>([]);
-    const [filteredMajors, setFilteredMajors] = React.useState<IMajor[]>([]);
-    const [isFetchingFaculties, setIsFetchingFaculties] = React.useState(false);
-    const [isFetchingMajors, setIsFetchingMajors] = React.useState(false);
-    const [hasMoreFaculties, setHasMoreFaculties] = React.useState(true);
-    const [hasMoreMajors, setHasMoreMajors] = React.useState(true);
-    const [facultyPage, setFacultyPage] = React.useState(1);
-    const [majorPage, setMajorPage] = React.useState(1);
-    const facultyPageSize = 10;
-    const majorPageSize = 10;
+    const dispatch = useAppDispatch();
 
     const {
         control,
@@ -97,18 +105,19 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
         formState: { errors },
         reset,
     } = useForm({
-        resolver: zodResolver(lecturerSchema),
+        resolver: zodResolver(getLecturerSchema(mode)),
         defaultValues: {
             username: '',
             password: '',
-            full_name: '',
-            gender: '',
-            email: '',
-            phone_number: '',
-            original_address: '',
-            current_address: '',
-            faculty_id: '',
-            major_id: '',
+            full_name: lecturer?.user?.full_name || '',
+            gender: lecturer?.user?.gender?.toString() || '',
+            email: lecturer?.user?.email || '',
+            phone_number: lecturer?.user?.phone_number || '',
+            original_address: lecturer?.user?.original_address || '',
+            current_address: lecturer?.user?.current_address || '',
+            faculty_id: lecturer?.major?.faculty?.id || '',
+            major_id: lecturer?.major?.id || '',
+            role: 'LECTURER',
         } as LecturerPayLoad,
     });
 
@@ -117,6 +126,7 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
     const createLecturer = useMutation({
         mutationFn: (data: any) => lecturerService.create(data),
         onSuccess: (res) => {
+            dispatch(setCreateLecturer(res.data));
             toast.success(`Thêm giảng viên ${res.data?.user?.full_name} thành công`, {
                 position: 'top-right',
                 autoClose: 5000,
@@ -132,8 +142,8 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
             if (onSuccess) onSuccess();
         },
         onError: (error: any) => {
-            toast.error(`Thêm giảng viên thất bại: ${error.message}`);
-            console.error('Thêm giảng viên thất bại:', error);
+            toast.error(`Thêm giảng viên thất bại`);
+            console.error('Thêm giảng viên thất bại:', error.message);
         },
     });
 
@@ -144,8 +154,14 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
             }
             return lecturerService.update(data.id, data);
         },
-        onSuccess: (res: any) => {
-            toast.success(`${res?.data?.user?.is_deleted ? 'Khôi phục' : 'Cập nhật'} giảng viên ${res?.data?.user?.full_name} thành công`, {
+        onSuccess: (res: IResponse<ILecturer>) => {
+            if (res.message.startsWith('Khôi phục')) {
+                dispatch(setRestoreLecturer(res.data));
+            } else {
+                dispatch(setUpdateLecturer(res.data));
+            }
+
+            toast.success(`${res.message.startsWith('Khôi phục') ? 'Khôi phục' : 'Cập nhật'} giảng viên ${res?.data?.user?.full_name} thành công`, {
                 position: 'top-right',
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -160,8 +176,8 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
             if (onSuccess) onSuccess();
         },
         onError: (error: any) => {
-            toast.error(`Cập nhật giảng viên thất bại: ${error.message}`);
-            console.error('Cập nhật giảng viên thất bại:', error);
+            toast.error(`Cập nhật giảng viên thất bại`);
+            console.error('Cập nhật giảng viên thất bại:', error.message);
         },
     });
 
@@ -172,8 +188,13 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
             }
             return lecturerService.deleteSoft(data.id);
         },
-        onSuccess: (res: any) => {
-            toast.success(`Xóa giảng viên ${res.data?.full_name || ''} thành công`, {
+        onSuccess: (res: IResponse<ILecturer>) => {
+            if (res.message.startsWith('Xóa tạm thời')) {
+                dispatch(setDeleteSoftLecturer(res.data));
+            } else {
+                dispatch(setRestoreLecturer(res.data));
+            }
+            toast.success(`Xóa giảng viên ${res.data?.user.full_name || ''} thành công`, {
                 position: 'top-right',
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -188,8 +209,8 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
             if (onSuccess) onSuccess();
         },
         onError: (error: any) => {
-            toast.error(`Xóa giảng viên thất bại: ${error.message}`);
-            console.error('Xóa giảng viên thất bại:', error);
+            toast.error(`Xóa giảng viên thất bại`);
+            console.error('Xóa giảng viên thất bại:', error.message);
         },
     });
 
@@ -202,10 +223,14 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
         if (mode === 'create') {
             createLecturer.mutate(formData);
         } else if (mode === 'update' && lecturer) {
+            const { role, username, password, ...rest } = formData;
             updateLecturer.mutate({
                 id: lecturer.id,
-                ...formData,
-                password: formData.password || undefined,
+                ...rest,
+            });
+        } else if (mode === 'delete-soft' && lecturer) {
+            deleteLecturer.mutate({
+                id: lecturer.id,
             });
         } else if (mode === 'delete' && lecturer) {
             deleteLecturer.mutate({
@@ -366,20 +391,8 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label>Địa chỉ gốc</label>
-                            <Controller
-                                name="original_address"
-                                control={control}
-                                render={({ field }) => (
-                                    <Input
-                                        {...field}
-                                        placeholder="Nhập địa chỉ gốc"
-                                        disabled={mode === 'view'}
-                                        className={errors.original_address ? 'border-red-500' : ''}
-                                    />
-                                )}
-                            />
-                            {errors.original_address && <p className="text-red-500 text-sm">{errors.original_address.message as string}</p>}
+                            <label>Mã giảng vien viên</label>
+                            <Input value={lecturer && lecturer.lecturer_id} placeholder="Mã giáo viên" disabled={true} />
                         </div>
                         <div className="space-y-2">
                             <label>Địa chỉ hiện tại</label>
@@ -401,9 +414,7 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
 
                     <Button
                         type="submit"
-                        className={`w-full ${
-                            mode === 'delete' ? 'bg-red-500 hover:bg-red-600' : mode === 'restore' ? 'bg-orange-500 hover:bg-orange-600' : ''
-                        }`}
+                        className={`w-full`}
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? 'Đang xử lý...' : 'Xác nhận'}

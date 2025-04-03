@@ -5,6 +5,11 @@ import getCurrentUser from '../services/getCurrentUser.js';
 
 const prisma = new PrismaClient();
 
+// Models that have timestamp and tracking fields
+const modelsWithTimestamps = [
+    'User', 'Faculty', 'Major', 'Course', 'News'
+];
+
 // Middleware for adding UUID, timestamps, and user fields
 prisma.$use(async (params, next) => {
     try {
@@ -20,10 +25,15 @@ prisma.$use(async (params, next) => {
             }
         }
 
-        if (params.action === 'create') {
+        // Always ensure ID is set for create operations
+        if (params.action === 'create' && !params.args.data.id) {
+            params.args.data.id = params.args.data.id || uuidv4();
+        }
+
+        // Only add timestamp fields for models that have them
+        if (params.action === 'create' && modelsWithTimestamps.includes(params.model)) {
             params.args.data = {
                 ...params.args.data,
-                id: uuidv4(),
                 created_at: new Date(),
                 created_by: userId || null,
                 updated_at: null,
@@ -36,21 +46,33 @@ prisma.$use(async (params, next) => {
 
         if (params.action === 'createMany') {
             if (Array.isArray(params.args.data)) {
-                params.args.data = params.args.data.map((item) => ({
-                    ...item,
-                    id: uuidv4(),
-                    created_at: new Date(),
-                    created_by: userId || null,
-                    updated_at: null,
-                    updated_by: null,
-                    is_deleted: false,
-                    deleted_by: null,
-                    deleted_at: null,
-                }));
+                params.args.data = params.args.data.map((item) => {
+                    // Always ensure ID is set
+                    const withId = {
+                        ...item,
+                        id: item.id || uuidv4(),
+                    };
+                    
+                    // Only add timestamp fields for models that have them
+                    if (modelsWithTimestamps.includes(params.model)) {
+                        return {
+                            ...withId,
+                            created_at: new Date(),
+                            created_by: userId || null,
+                            updated_at: null,
+                            updated_by: null,
+                            is_deleted: false,
+                            deleted_by: null,
+                            deleted_at: null,
+                        };
+                    }
+                    
+                    return withId;
+                });
             }
         }
 
-        if (params.action === 'update' || params.action === 'updateMany') {
+        if ((params.action === 'update' || params.action === 'updateMany') && modelsWithTimestamps.includes(params.model)) {
             if (userId) {
                 if (!params.args.data) {
                     params.args.data = {};
@@ -58,6 +80,7 @@ prisma.$use(async (params, next) => {
 
                 if (params.args.data.is_deleted) {
                     params.args.data = {
+                        ...params.args.data,
                         is_deleted: true,
                         deleted_by: userId,
                         deleted_at: new Date(),
@@ -69,9 +92,15 @@ prisma.$use(async (params, next) => {
             }
         }
 
-        if (params.action === 'delete' || params.action === 'deleteMany') {
+        if ((params.action === 'delete' || params.action === 'deleteMany') && modelsWithTimestamps.includes(params.model)) {
             if (userId) {
+                params.action = 'update';
+                if (!params.args.data) {
+                    params.args.data = {};
+                }
+                
                 params.args.data = {
+                    ...params.args.data,
                     is_deleted: true,
                     deleted_by: userId,
                     deleted_at: new Date(),

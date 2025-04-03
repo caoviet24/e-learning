@@ -24,7 +24,7 @@ import { Bounce, toast, ToastContainer } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import { IFaculty, IResponse, IResponseList } from '@/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import TableRowSkeleton from '@/components/TableRowSkeleton';
+import TableRowSkeleton from '@/components/table-row-skeleton';
 import ButtonHover from '@/components/ButtonHover';
 
 const PAGE_SIZE_OPTIONS = [
@@ -285,7 +285,7 @@ export default function FacultyPage() {
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
-                                <TableRowSkeleton />
+                                <TableRowSkeleton row={4} cell={4} />
                             ) : dataDisplayed && dataDisplayed.length > 0 ? (
                                 dataDisplayed.map((faculty: IFaculty, index: number) => (
                                     <TableRow key={faculty.id}>
@@ -372,8 +372,11 @@ export default function FacultyPage() {
                             <div className="mb-4 md:mb-0 flex items-center">
                                 <span className="text-sm text-gray-500 text-nowrap">
                                     Tổng số bản ghi:{' '}
-                                    {debouncedSearch || pageSize > ((tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ?? 0)
-                                        ? facultiesData?.total_records ?? (tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ?? 0
+                                    {debouncedSearch ||
+                                    pageSize > ((tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ?? 0)
+                                        ? facultiesData?.total_records ??
+                                          (tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ??
+                                          0
                                         : (tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ?? 0}
                                 </span>
                                 <div className="ml-2 inline-block">
@@ -393,7 +396,8 @@ export default function FacultyPage() {
                             </div>
 
                             {((debouncedSearch && (facultiesData?.total_records ?? 0) > pageSize) ||
-                                (!debouncedSearch && ((tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ?? 0) > pageSize)) && (
+                                (!debouncedSearch &&
+                                    ((tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ?? 0) > pageSize)) && (
                                 <Pagination>
                                     <PaginationContent>
                                         <PaginationItem>

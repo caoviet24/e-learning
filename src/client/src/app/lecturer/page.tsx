@@ -1,6 +1,5 @@
 'use client';
-
-import { setMyAcount } from "@/redux/slices/account.slice";
+import { setMyAccount } from "@/redux/slices/account.slice";
 import { useAppDispatch } from "@/redux/store";
 import { accountService } from "@/services/accountService";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +17,7 @@ export default function LecturerPage() {
 
     useEffect(() => {
         if (isAuthSuccess) {
-            dispatch(setMyAcount(authData.account));
+            dispatch(setMyAccount(authData.account));
         }
     }, [isAuthSuccess, isAuthError]);
 

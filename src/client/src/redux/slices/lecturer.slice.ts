@@ -16,12 +16,7 @@ export const lecturerSlice = createSlice({
     },
     reducers: {
         setLecturers: (state, action) => {
-            // When filtering (e.g., by faculty_id) always take the API response as the source of truth
-            if (action.payload.filtered) {
-                state.lecturersStore = action.payload;
-            }
-            // For regular paging/loading, merge with existing data
-            else if (state.lecturersStore.data && state.lecturersStore.data.length > 0 && action.payload.data) {
+            if (state.lecturersStore.data && state.lecturersStore.data.length > 0 && action.payload.data) {
                 const existingIds = new Set(state.lecturersStore.data.map((lecturer) => lecturer.id));
                 const newRecords = action.payload.data.filter((lecturer: ILecturer) => !existingIds.has(lecturer.id));
                 state.lecturersStore = {
@@ -64,6 +59,8 @@ export const lecturerSlice = createSlice({
         },
         setRestoreLecturer: (state, action) => {
             const index = state.lecturersStoreDeleted.data.findIndex((lecturer) => lecturer.id === action.payload.id);
+            console.log('index', index);
+            
             if (index !== -1) {
                 const restoredLecturer = state.lecturersStoreDeleted.data[index];
                 state.lecturersStore.data.push(restoredLecturer);
@@ -75,13 +72,6 @@ export const lecturerSlice = createSlice({
     },
 });
 
-export const {
-    setLecturers,
-    setLecturersDeleted,
-    setCreateLecturer,
-    setUpdateLecturer,
-    setDeleteSoftLecturer,
-    setRestoreLecturer
-} = lecturerSlice.actions;
+export const { setLecturers, setLecturersDeleted, setCreateLecturer, setUpdateLecturer, setDeleteSoftLecturer, setRestoreLecturer } = lecturerSlice.actions;
 
 export const lecturerReducer = lecturerSlice.reducer;

@@ -21,6 +21,7 @@ interface IAccount {
     id: string;
     username: string;
     role: string;
+    is_deleted?: boolean;
     user: IUser;
 }
 
@@ -31,7 +32,7 @@ export interface IUser {
     gender?: number;
     avatar?: string;
     phone_number?: string;
-    is_deleted?: boolean;
+  
     original_address?: string;
     current_address?: string;
     account: IAccount;
@@ -56,6 +57,11 @@ export interface ILecturer {
     id: string;
     lecturer_id?: string;
     user: IUser;
-    faculty?: IFaculty;
-    major?: IMajor;
+    major: {
+        id: string;
+        name: string;
+        code: string;
+        is_deleted?: boolean;
+        faculty: IFaculty;
+    };
 }

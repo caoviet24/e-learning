@@ -42,29 +42,21 @@ export default function MajorSelect({ value, onSelectValue, facultyId }: MajorSe
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
-        enabled: !!value || !!debouncedMajorSearch || majorsStore.total_records <= 0 || !!facultyId,
+        enabled: !!debouncedMajorSearch || majorsStore.total_records <= 0 || !!facultyId,
     });
 
     useEffect(() => {
-        if (isFetchMajorsSuccess && majorsData && !debouncedMajorSearch) {
-            dispatch(setMajors(majorsData));
-        }
-
-        if (debouncedMajorSearch && isFetchMajorsSuccess) {
-            setSearchMajorResult(majorsData.data);
-        }
-    }, [isFetchMajorsSuccess, majorsData, debouncedMajorSearch, dispatch]);
-
-    useEffect(() => {
-        setSearchMajor('');
-        refetchMajors();
-    }, [facultyId, refetchMajors]);
-
-    useEffect(() => {
-        if (majorsStore.total_records > 0 && !debouncedMajorSearch) {
+        if (majorsStore.total_records > 0 && !majorsData && !isFetchMajorsSuccess) {
             setSearchMajorResult(majorsStore.data);
         }
-    }, [majorsStore.data, majorsStore.total_records, debouncedMajorSearch]);
+    }, [majorsStore]);
+
+    useEffect(() => {
+        if (isFetchMajorsSuccess) {
+            setSearchMajorResult(majorsData.data);
+            dispatch(setMajors(majorsData));
+        }
+    }, [isFetchMajorsSuccess, majorsData, dispatch]);
 
     return (
         <Select value={value} onValueChange={onSelectValue} disabled={isFetchMajorsLoading}>
@@ -104,7 +96,7 @@ export default function MajorSelect({ value, onSelectValue, facultyId }: MajorSe
                     </div>
                 </RenderWithCondition>
 
-                <RenderWithCondition condition={searchMajorResult && searchMajorResult.length > 0 && !isFetchMajorsLoading}>
+                <RenderWithCondition condition={searchMajorResult.length > 0 && !isFetchMajorsLoading}>
                     {searchMajorResult.map((major) => (
                         <SelectItem key={major.id} value={major.id}>
                             <div className="flex items-center justify-between w-full">

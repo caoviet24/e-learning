@@ -2,6 +2,7 @@ import { jwtDecode } from 'jwt-decode';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { Role } from '@/types/enum';
+import { JwtPayload } from './types';
 
 
 export function middleware(request: NextRequest) {

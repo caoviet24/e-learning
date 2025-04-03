@@ -1,7 +1,7 @@
 import { combineReducers } from '@reduxjs/toolkit';
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import storageSession from 'redux-persist/lib/storage/session'; 
+import storageSession from 'redux-persist/lib/storage/session';
 import createIndexedDBStorage from 'redux-persist-indexeddb-storage';
 import { CookieStorage } from 'redux-persist-cookie-storage';
 import Cookies from 'universal-cookie';
@@ -17,12 +17,10 @@ const defaultReducer = (state = {}) => state;
 const cookies = new Cookies();
 
 const localStorageConfig = {
-    key: 'local',
     storage,
 };
 
 const sessionStorageConfig = {
-    key: 'session',
     storage: storageSession,
 };
 
@@ -41,19 +39,18 @@ const cookiesConfig = {
     }),
 };
 
-
 export const localStorageReducer = combineReducers({
-    faculty: persistReducer(localStorageConfig, facultyReducer),
-    major: persistReducer(localStorageConfig, majorReducer),
-    lecturer: persistReducer(localStorageConfig, lecturerReducer),
+    faculty: persistReducer({ ...localStorageConfig, key: 'faculty' }, facultyReducer),
+    major: persistReducer({ ...localStorageConfig, key: 'major' }, majorReducer),
+    lecturer: persistReducer({ ...localStorageConfig, key: 'lecturer' }, lecturerReducer),
 });
 
 export const sessionStorageReducer = combineReducers({
-    account: persistReducer(sessionStorageConfig, accountReducer),
+    account: persistReducer({ ...sessionStorageConfig, key: 'account' }, accountReducer),
 });
 
 export const indexedDBReducer = combineReducers({
-    default: defaultReducer, 
+    default: defaultReducer,
 });
 
 export const cookieStorageReducer = combineReducers({

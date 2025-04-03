@@ -25,7 +25,7 @@ import { Bounce, toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import useDebounce from '@/hooks/useDebounce';
 import { setFaculties } from '@/redux/slices/faculty.slice';
-import TableRowSkeleton from '@/components/TableRowSkeleton';
+import TableRowSkeleton from '@/components/table-row-skeleton';
 import ButtonHover from '@/components/ButtonHover';
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
 import FacultySelect from '../faculty/FacultySelect';
@@ -325,7 +325,7 @@ export default function MajorsPage() {
                         </TableHeader>
                         <TableBody>
                             {isFetchMajorsLoading ? (
-                                <TableRowSkeleton />
+                                <TableRowSkeleton row={4} cell={5} />
                             ) : dataDisplayed && dataDisplayed.length > 0 ? (
                                 dataDisplayed.map((major: IMajor, index) => (
                                     <TableRow key={major.id}>

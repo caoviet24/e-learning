@@ -1,6 +1,8 @@
 import { IFaculty, IResponseList } from '@/types';
 import { createSlice } from '@reduxjs/toolkit';
 
+
+
 const initStateFaculty = {
     data: [] as IFaculty[],
     total_records: 0,

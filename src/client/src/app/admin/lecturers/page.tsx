@@ -26,7 +26,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/store';
 import useDebounce from '@/hooks/useDebounce';
 import { IFaculty, ILecturer, IResponse, IResponseList } from '@/types';
 import { setFaculties } from '@/redux/slices/faculty.slice';
-import TableRowSkeleton from '@/components/TableRowSkeleton';
+import TableRowSkeleton from '@/components/table-row-skeleton';
 import ButtonHover from '@/components/ButtonHover';
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
 import FacultySelect from '../faculty/FacultySelect';
@@ -353,21 +353,31 @@ export default function LecturersPage() {
                             <TableRow>
                                 <TableHead>STT</TableHead>
                                 <TableHead>Tên giảng viên</TableHead>
+                                <TableHead>Giới tinh</TableHead>
+                                <TableHead>Số điện thoại</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Địa chỉ</TableHead>
                                 <TableHead>Mã giảng viên</TableHead>
                                 <TableHead>Khoa</TableHead>
+                                <TableHead>Chuyên ngành</TableHead>
                                 <TableHead className="text-center">Thao tác</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isFetchLecturersLoading ? (
-                                <TableRowSkeleton />
+                                <TableRowSkeleton row={4} cell={10} />
                             ) : dataDisplayed && dataDisplayed.length > 0 ? (
                                 dataDisplayed.map((lecturer: ILecturer, index) => (
                                     <TableRow key={lecturer.id}>
                                         <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                                         <TableCell>{lecturer.user?.full_name}</TableCell>
-                                        <TableCell>{lecturer.lecturer_id}</TableCell>
-                                        <TableCell>{lecturer.faculty?.name}</TableCell>
+                                        <TableCell>{lecturer.user?.gender === 0 ? 'Nam' : 'Nữ'}</TableCell>
+                                        <TableCell>{lecturer.user?.phone_number}</TableCell>
+                                        <TableCell>{lecturer.user?.email}</TableCell>
+                                        <TableCell>{lecturer.user?.current_address}</TableCell>
+                                        <TableCell>{lecturer?.lecturer_id}</TableCell>
+                                        <TableCell>{lecturer?.major?.name}</TableCell>
+                                        <TableCell>{lecturer?.major?.faculty?.name}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-center gap-2">
                                                 {tabOpened === 0 && (
@@ -379,7 +389,7 @@ export default function LecturersPage() {
                                                             onClick={() => {
                                                                 setLecturerSelected(lecturer);
                                                                 setOptionDialog({
-                                                                    option: 'edit',
+                                                                    option: 'update',
                                                                     title: `Chỉnh sửa giảng viên`,
                                                                 });
                                                             }}
@@ -519,10 +529,10 @@ export default function LecturersPage() {
             {optionDialog && (
                 <LecturerDiaLog
                     open={!!optionDialog}
-                    mode={optionDialog.option as 'create' | 'update' | 'delete' | 'view' | 'restore'}
+                    mode={optionDialog.option as 'create' | 'update' | 'delete-soft' | 'delete' | 'view' | 'restore'}
                     lecturer={lecturerSelected || undefined}
                     onClose={() => setOptionDialog(null)}
-                    onSuccess={refetchLecturers}
+                    onSuccess={() => setOptionDialog(null)}
                 />
             )}
             <ToastContainer />

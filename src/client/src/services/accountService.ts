@@ -15,6 +15,11 @@ export const accountService = {
         return res.data;
     },
 
+    async register(data: any) {
+        const res = await axios.post(`${API_URL}/auth/register`, data);
+        return res.data;
+    },
+
     async logout() {
         Cookies.remove('access_token');
         Cookies.remove('refresh_token');

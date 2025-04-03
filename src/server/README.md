@@ -25,7 +25,7 @@ server/
 - **Controllers**: Handle HTTP requests and responses, input validation, and business logic
 - **Repositories**: Handle database operations and data access logic
 - **Routes**: Define API endpoints and connect them to controllers
-- **Prisma**: ORM for database operations with MySQL
+- **Prisma**: ORM for database operations with Postgresql
 
 ## Setup
 
@@ -40,7 +40,7 @@ npm install
 ```bash
 # Required variables:
 PORT=8000
-DATABASE_URL="mysql://user:password@localhost:3306/elearning"
+DATABASE_URL="postgresql://localhost:5432/postgres"
 RATE_LIMIT_WINDOW=15
 RATE_LIMIT_MAX_REQUEST=100
 ```
@@ -74,7 +74,7 @@ docker-compose up -d
 ```
 
 2. The server will be available at `http://localhost:8000`
-3. MySQL database will be accessible at `localhost:3306`
+3. MySQL database will be accessible at `localhost:5432`
 
 To stop the containers:
 ```bash
@@ -89,7 +89,7 @@ docker-compose up -d --build
 ### Environment Variables for Docker
 
 The following environment variables are pre-configured in docker-compose.yml:
-- `DATABASE_URL`: mysql://user:password@db:3306/elearning
+- `DATABASE_URL`: postgresql://localhost:5432/postgres
 - MySQL credentials:
   - Database: elearning
   - User: user
