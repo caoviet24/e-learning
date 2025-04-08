@@ -12,10 +12,11 @@ import { useMutation } from '@tanstack/react-query';
 import { lecturerService } from '@/services/lecturerService';
 import { Bounce, toast } from 'react-toastify';
 import * as z from 'zod';
-import FacultySelect from '../faculty/FacultySelect';
-import MajorSelect from '../majors/MajorSelect';
+import FacultySelect from '../../../components/FacultySelect';
+import MajorSelect from '../../../components/MajorSelect';
 import { useAppDispatch } from '@/redux/store';
 import { setCreateLecturer, setDeleteSoftLecturer, setRestoreLecturer, setUpdateLecturer } from '@/redux/slices/lecturer.slice';
+import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
 
 interface ILecturerDiaLogProps {
     open: boolean;
@@ -254,44 +255,47 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
                     <DialogTitle>{MODE_OPTIONS[mode].title}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label>
-                                Tên đăng nhập <span className="text-red-500">*</span>
-                            </label>
-                            <Controller
-                                name="username"
-                                control={control}
-                                render={({ field }) => (
-                                    <Input
-                                        {...field}
-                                        placeholder="Nhập tên đăng nhập"
-                                        disabled={mode === 'view'}
-                                        className={errors.username ? 'border-red-500' : ''}
-                                    />
-                                )}
-                            />
-                            {errors.username && <p className="text-red-500 text-sm">{errors.username.message as string}</p>}
-                        </div>
-                        <div className="space-y-2">
-                            <label>
-                                Mật khẩu {mode === 'update' && '(để trống nếu không thay đổi)'} {mode === 'create' && <span className="text-red-500">*</span>}
-                            </label>
-                            <Controller
-                                name="password"
-                                control={control}
-                                render={({ field }) => (
-                                    <Input
-                                        type="password"
-                                        {...field}
-                                        placeholder="Nhập mật khẩu"
-                                        disabled={mode === 'view'}
-                                        className={errors.password ? 'border-red-500' : ''}
-                                    />
-                                )}
-                            />
-                            {errors.password && <p className="text-red-500 text-sm">{errors.password.message as string}</p>}
-                        </div>
+                    <div className="grid grid-cols-1  md:grid-cols-2 gap-4">
+                        <RenderWithCondition condition={mode === 'create'}>
+                            <div className="space-y-2">
+                                <label>
+                                    Tên đăng nhập <span className="text-red-500">*</span>
+                                </label>
+                                <Controller
+                                    name="username"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Input
+                                            {...field}
+                                            placeholder="Nhập tên đăng nhập"
+                                            disabled={mode === 'view'}
+                                            className={errors.username ? 'border-red-500' : ''}
+                                        />
+                                    )}
+                                />
+                                {errors.username && <p className="text-red-500 text-sm">{errors.username.message as string}</p>}
+                            </div>
+                            <div className="space-y-2">
+                                <label>
+                                    Mật khẩu {mode === 'update' && '(để trống nếu không thay đổi)'}{' '}
+                                    {mode === 'create' && <span className="text-red-500">*</span>}
+                                </label>
+                                <Controller
+                                    name="password"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Input
+                                            type="password"
+                                            {...field}
+                                            placeholder="Nhập mật khẩu"
+                                            disabled={mode === 'view'}
+                                            className={errors.password ? 'border-red-500' : ''}
+                                        />
+                                    )}
+                                />
+                                {errors.password && <p className="text-red-500 text-sm">{errors.password.message as string}</p>}
+                            </div>
+                        </RenderWithCondition>
                         <div className="space-y-2">
                             <label>
                                 Họ tên <span className="text-red-500">*</span>
@@ -412,11 +416,7 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
                         </div>
                     </div>
 
-                    <Button
-                        type="submit"
-                        className={`w-full`}
-                        disabled={isSubmitting}
-                    >
+                    <Button type="submit" className={`w-full`} disabled={isSubmitting}>
                         {isSubmitting ? 'Đang xử lý...' : 'Xác nhận'}
                     </Button>
                 </form>

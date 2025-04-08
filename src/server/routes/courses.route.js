@@ -1,23 +1,14 @@
 import express from 'express';
 import courseController from '../controllers/course.controller.js';
-import * as videoController from '../controllers/video.controller.js';
-import { protect } from '../middleware/auth.js';
+import { protect, restrictTo } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Course routes
-router.post('/', protect, courseController.createCourse);
-router.put('/:id', protect, courseController.updateCourse);
-router.delete('/:id', protect, courseController.deleteCourse);
-router.get('/:id', courseController.getCourse);
-router.get('/', courseController.getAllCourses);
-
-// Video routes under courses
-router.post('/:courseId/videos',protect, courseController.addVideo);
-router.get('/:courseId/videos', courseController.getCourseVideos);
-router.put('/:courseId/videos/:id', protect, videoController.updateVideo);
-router.delete('/:courseId/videos/:id', protect, videoController.deleteVideo);
-router.get('/:courseId/videos/:id', videoController.getVideo);
-router.patch('/:courseId/videos/:id/reorder', protect, videoController.reorderVideo);
+router.get('/get-all', protect, courseController.getAll);
+router.post('/create', protect, restrictTo('LECTURER'), courseController.create);
+router.put('/update/:id', protect, restrictTo('LECTURER'), courseController.update);
+router.delete('/delete/:id', protect, restrictTo('LECTURER'), courseController.delete);
+router.delete('/delete-soft/:id', protect, restrictTo('LECTURER'), courseController.deleteSoft);
+router.put('/restore/:id', protect, restrictTo('LECTURER'), courseController.restore);
 
 export default router;

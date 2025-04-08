@@ -1,135 +1,157 @@
-import courseRepository from '../repositories/course.repository.js';
-import videoRepository from '../repositories/video.repository.js';
+import courseRepository from "../repositories/course.repository.js";
 
-const createCourse = async (req, res) => {
-    try {
-        const courseData = {
-            ...req.body,
-            author_id: req.user.id,
-        };
-
-        const course = await courseRepository.createCourse(courseData);
-        res.status(201).json(course);
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating course' });
+class CourseController {
+    async getAll(req, res) {
+        try {
+            const { page_number, page_size, search, is_deleted, faculty_id, major_id, lecturer_id } = req.query;
+            const rs = await courseRepository.getAll({
+                page_number,
+                page_size,
+                search,
+                is_deleted,
+                faculty_id,
+                major_id,
+                lecturer_id,
+            });
+            res.json({
+                success: true,
+                message: 'Lấy danh sách khóa học thành công',
+                data: rs,
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi lấy danh sách khóa học',
+                error: error.message,
+            });
+        }
     }
-};
 
-const updateCourse = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const course = await courseRepository.getCourseById(id);
+    async create(req, res) {
+        try {
+            const { title, description, faculty_id, major_id, lecturer_id } = req.body;
 
-        if (!course) {
-            return res.status(404).json({ message: 'Course not found' });
+            if (!title || !description || !faculty_id || !major_id || !lecturer_id) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Tên khóa học và mã khoa không được để trống',
+                });
+            }
+
+            const course = await courseRepository.create({
+                title,
+                description,
+                faculty_id,
+                major_id,
+                lecturer_id,
+            });
+
+            res.json({
+                success: true,
+                message: 'Tạo khóa học thành công',
+                data: course,
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi tạo khóa học',
+                error: error.message,
+            });
         }
-
-        if (course.created_by.id !== req.user.id) {
-            return res.status(403).json({ message: 'Not authorized to update this course' });
-        }
-
-        const updatedCourse = await courseRepository.updateCourse(id, req.body);
-        res.json(updatedCourse);
-    } catch (error) {
-        res.status(500).json({ message: 'Error updating course' });
     }
-};
 
-const deleteCourse = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const course = await courseRepository.getCourseById(id);
+    async update(req, res) {
+        try {
+            const { id } = req.params;
+            const { title, description, faculty_id, major_id, lecturer_id } = req.body;
 
-        if (!course) {
-            return res.status(404).json({ message: 'Course not found' });
+            if (!title || !description || !faculty_id || !major_id || !lecturer_id) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Tên khóa học và mã khoa không được để trống',
+                });
+            }
+
+            const course = await courseRepository.update(id, {
+                title,
+                description,
+                faculty_id,
+                major_id,
+                lecturer_id,
+            });
+
+            res.json({
+                success: true,
+                message: 'Cập nhật khóa học thành công',
+                data: course,
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi cập nhật khóa học',
+                error: error.message,
+            });
         }
-
-        if (course.created_by.id !== req.user.id) {
-            return res.status(403).json({ message: 'Not authorized to delete this course' });
-        }
-
-        await courseRepository.deleteCourse(id);
-        res.json({ message: 'Course deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error deleting course' });
     }
-};
+    async delete(req, res) {
+        try {
+            const { id } = req.params;
 
-const getCourse = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const course = await courseRepository.getCourseById(id);
+            const course = await courseRepository.delete(id);
 
-        if (!course) {
-            return res.status(404).json({ message: 'Course not found' });
+            res.json({
+                success: true,
+                message: 'Xóa khóa học thành công',
+                data: course,
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi xóa khóa học',
+                error: error.message,
+            });
         }
-
-        res.json(course);
-    } catch (error) {
-        console.error('Get course error:', error);
-        res.status(500).json({ message: 'Error retrieving course' });
     }
-};
 
-const getAllCourses = async (req, res) => {
-    try {
-        const result = await courseRepository.getAllCourses(req.query);
-        res.json(result);
-    } catch (error) {
-        console.error('Get all courses error:', error);
-        res.status(500).json({ message: 'Error retrieving courses' });
-    }
-};
+    async deleteSoft(req, res) {
+        try {
+            const { id } = req.params;
 
-const addVideo = async (req, res) => {
-    try {
-        const { courseId } = req.params;
-        const course = await courseRepository.getCourseById(courseId);
+            const course = await courseRepository.deleteSoft(id);
 
-        if (!course) {
-            return res.status(404).json({ message: 'Course not found' });
+            res.json({
+                success: true,
+                message: 'Xóa khóa học thành công',
+                data: course,
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi xóa khóa học',
+                error: error.message,
+            });
         }
-
-        if (course.created_by.id !== req.user.id) {
-            return res.status(403).json({ message: 'Not authorized to add videos to this course' });
-        }
-
-        const videoData = {
-            ...req.body,
-            course_id: courseId,
-        };
-
-        const video = await videoRepository.createVideo(videoData);
-        res.status(201).json(video);
-    } catch (error) {
-        console.error('Add video error:', error);
-        res.status(500).json({ message: 'Error adding video to course' });
     }
-};
 
-const getCourseVideos = async (req, res) => {
-    try {
-        const { courseId } = req.params;
-        const course = await courseRepository.getCourseById(courseId);
+    async restore(req, res) {
+        try {
+            const { id } = req.params;
 
-        if (!course) {
-            return res.status(404).json({ message: 'Course not found' });
+            const course = await courseRepository.restore(id);
+
+            res.json({
+                success: true,
+                message: 'Khôi phục khóa học thành công',
+                data: course,
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Lỗi khi khôi phục khóa học',
+                error: error.message,
+            });
         }
-
-        const result = await videoRepository.getVideosByCourseId(courseId, req.query);
-        res.json(result);
-    } catch (error) {
-        console.error('Get course videos error:', error);
-        res.status(500).json({ message: 'Error retrieving course videos' });
     }
-};
+}
 
-export default {
-    createCourse,
-    updateCourse,
-    deleteCourse,
-    getCourse,
-    getAllCourses,
-    addVideo,
-    getCourseVideos,
-};
+export default new CourseController();

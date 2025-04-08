@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { facultyService } from '@/services/facultyService';
 import useDebounce from '@/hooks/useDebounce';
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
-import FacultySelect from '../faculty/FacultySelect';
+import FacultySelect from '../../../components/FacultySelect';
 
 interface MajorDialogProps {
     open: boolean;

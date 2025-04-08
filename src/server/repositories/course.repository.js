@@ -1,129 +1,164 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { courseDto } from '../dtos/course.dto.js';
+import prisma from '../middleware/prisma.intercepter.js';
 
-const createCourse = async (courseData) => {
-    return await prisma.course.create({
-        data: courseData,
-        include: {
-            created_by: {
-                select: {
-                    username: true,
-                    email: true,
-                    user: {
-                        select: {
-                            full_name: true,
-                        },
+class CourseRepository {
+    async getAll({ page_number = 1, page_size = 10, search = '', is_deleted, faculty_id, major_id, lecturer_id }) {
+        try {
+            const skip = (page_number - 1) * page_size;
+
+            const [courses, total] = await Promise.all([
+                prisma.course.findMany({
+                    where: {
+                        is_deleted: is_deleted === 'false' ? false : is_deleted === 'true' ? true : null,
+                        OR: [{ name: { contains: search } }],
+                        faculty_id: faculty_id ? parseInt(faculty_id) : undefined,
+                        major_id: major_id ? parseInt(major_id) : undefined,
+                        lecturer_id: lecturer_id ? parseInt(lecturer_id) : undefined,
                     },
-                },
-            },
-        },
-    });
-};
-
-const updateCourse = async (id, courseData) => {
-    return await prisma.course.update({
-        where: { id },
-        data: courseData,
-        include: {
-            created_by: {
-                select: {
-                    username: true,
-                    email: true,
-                    user: {
-                        select: {
-                            full_name: true,
-                        },
+                    select: courseDto,
+                    skip,
+                    take: parseInt(page_size),
+                    orderBy: {
+                        id: 'desc',
                     },
-                },
-            },
-        },
-    });
-};
+                }),
 
-const deleteCourse = async (id) => {
-    return await prisma.course.update({
-        where: { id },
-        data: { is_deleted: true },
-    });
-};
-
-const getCourseById = async (id) => {
-    return await prisma.course.findFirst({
-        where: {
-            id,
-            is_deleted: false,
-        },
-        include: {
-            created_by: {
-                select: {
-                    username: true,
-                    email: true,
-                    user: {
-                        select: {
-                            full_name: true,
-                        },
+                prisma.course.count({
+                    where: {
+                        is_deleted: is_deleted === 'false' ? false : is_deleted === 'true' ? true : null,
+                        OR: [{ name: { contains: search } }],
+                        faculty_id: faculty_id ? parseInt(faculty_id) : undefined,
+                        major_id: major_id ? parseInt(major_id) : undefined,
+                        lecturer_id: lecturer_id ? parseInt(lecturer_id) : undefined,
                     },
+                }),
+            ]);
+
+            return {
+                data: courses,
+                total_records: total,
+                page_number,
+                page_size,
+            };
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async create(data) {
+        try {
+            const { title, description, faculty_id, major_id, lecturer_id } = data;
+
+            if (!title || !description || !faculty_id || !major_id || !lecturer_id) {
+                throw new Error('Missing required fields');
+            }
+
+            const existingCourse = await prisma.course.findFirst({
+                where: {
+                    title,
+                    faculty_id,
+                    major_id,
+                    lecturer_id,
                 },
-            },
-            videos: {
-                where: { is_deleted: false },
-                orderBy: { order: 'asc' },
-            },
-        },
-    });
-};
+            });
 
-const getAllCourses = async (query = {}) => {
-    const { page = 1, limit = 10, search = '', status } = query;
-    const skip = (page - 1) * limit;
+            if (existingCourse) {
+                throw new Error('Course already exists');
+            }
 
-    const where = {
-        is_deleted: false,
-        title: { contains: search },
-        ...(status !== undefined && { status: parseInt(status) }),
-    };
+            return await prisma.course.create({
+                data,
+                select: courseDto,
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
 
-    const [courses, total] = await Promise.all([
-        prisma.course.findMany({
-            where,
-            include: {
-                created_by: {
-                    select: {
-                        username: true,
-                        email: true,
-                        user: {
-                            select: {
-                                full_name: true,
-                            },
-                        },
-                    },
-                },
-                videos: {
-                    where: { is_deleted: false },
-                    select: { id: true },
-                },
-            },
-            skip,
-            take: parseInt(limit),
-            orderBy: { created_at: 'desc' },
-        }),
-        prisma.course.count({ where }),
-    ]);
+    async update(id, data) {
+        try {
+            const { title, description, faculty_id, major_id, lecturer_id } = data;
 
-    return {
-        courses,
-        pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
-            total,
-        },
-    };
-};
+            if (!title || !description || !faculty_id || !major_id || !lecturer_id) {
+                throw new Error('Missing required fields');
+            }
 
-export default {
-    createCourse,
-    updateCourse,
-    deleteCourse,
-    getCourseById,
-    getAllCourses,
-};
+            const existingCourse = await prisma.course.findFirst({
+                where: { id },
+            });
+
+            if (!existingCourse) {
+                throw new Error('Course not found');
+            }
+
+            return await prisma.course.update({
+                where: { id },
+                data,
+                select: courseDto,
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async delete(id) {
+        try {
+            const course = await prisma.course.findFirst({
+                where: { id },
+            });
+
+            if (!course) {
+                throw new Error('Course not found');
+            }
+
+            return await prisma.course.delete({
+                where: { id },
+                select: courseDto,
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async deleteSoft(id) {
+        try {
+            const course = await prisma.course.findFirst({
+                where: { id },
+            });
+
+            if (!course) {
+                throw new Error('Course not found');
+            }
+
+            return await prisma.course.update({
+                where: { id },
+                data: { is_deleted: true },
+                select: courseDto,
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async restore(id) {
+        try {
+            const course = await prisma.course.findFirst({
+                where: { id },
+            });
+
+            if (!course) {
+                throw new Error('Course not found');
+            }
+
+            return await prisma.course.update({
+                where: { id },
+                data: { is_deleted: false },
+                select: courseDto,
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+}
+
+export default new CourseRepository();

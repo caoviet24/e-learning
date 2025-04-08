@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, GraduationCap, Newspaper, Users, BookOpen } from "lucide-react";
+import { Building2, GraduationCap, Newspaper, Users, BookOpen, LayoutGrid } from "lucide-react";
 
 const routes = [
   {
@@ -23,6 +23,12 @@ const routes = [
     icon: GraduationCap,
     href: "/admin/lecturers",
     color: "text-violet-500",
+  },
+  {
+    label: "Lớp học",
+    icon: LayoutGrid,
+    href: "/admin/classes",
+    color: "text-green-500",
   },
   {
     label: "Sinh viên",

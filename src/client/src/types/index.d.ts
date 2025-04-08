@@ -65,3 +65,22 @@ export interface ILecturer {
         faculty: IFaculty;
     };
 }
+
+export interface IClass {
+    id: string;
+    class_code: string;
+    name: string;
+    is_deleted?: boolean;
+    major: {
+        id: string;
+        name: string;
+        code: string;
+        is_deleted?: boolean;
+        faculty: IFaculty;
+    };
+    lecturer?: {
+        id: string;
+        lecturer_id?: string;
+        user: IUser;
+    };
+}

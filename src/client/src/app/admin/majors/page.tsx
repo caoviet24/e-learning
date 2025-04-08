@@ -2,11 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Edit, FileInput, Layers, Loader2, Plus, Repeat, Search, SearchIcon, Trash, Trash2 } from 'lucide-react';
-import { IFaculty, IMajor, IResponse, IResponseList } from '@/types';
+import { Edit, FileInput, Layers, Loader2, Plus, Repeat, Search, Trash, Trash2 } from 'lucide-react';
+import { IFaculty, IMajor, IResponseList } from '@/types';
 import React, { useState, useEffect, useMemo } from 'react';
 import MajorDiaLog from './MajorDiaLog';
-import { facultyService } from '@/services/facultyService';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQuery } from '@tanstack/react-query';
 import { majorService } from '@/services/majorService';
@@ -24,11 +23,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Bounce, toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import useDebounce from '@/hooks/useDebounce';
-import { setFaculties } from '@/redux/slices/faculty.slice';
 import TableRowSkeleton from '@/components/table-row-skeleton';
 import ButtonHover from '@/components/ButtonHover';
-import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
-import FacultySelect from '../faculty/FacultySelect';
+import FacultySelect from '@/components/FacultySelect';
 
 const PAGE_SIZE_OPTIONS = [
     { value: '1', label: '1 bản ghi' },

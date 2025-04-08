@@ -5,12 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Edit, FileInput, FileOutput, Layers, Loader2, Plus, Repeat, Search, SearchIcon, Trash, Trash2 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
-import { facultyService } from '@/services/facultyService';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { lecturerService } from '@/services/lecturerService';
-import { setCreateLecturer, setDeleteSoftLecturer, setLecturers, setLecturersDeleted, setRestoreLecturer } from '@/redux/slices/lecturer.slice';
-import LecturerDiaLog from './LecturerDiaLog';
 import {
     Pagination,
     PaginationContent,
@@ -24,13 +20,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Bounce, toast, ToastContainer } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import useDebounce from '@/hooks/useDebounce';
-import { IFaculty, ILecturer, IResponse, IResponseList } from '@/types';
-import { setFaculties } from '@/redux/slices/faculty.slice';
+import { IClass, IFaculty, IResponse, IResponseList } from '@/types';
 import TableRowSkeleton from '@/components/table-row-skeleton';
 import ButtonHover from '@/components/ButtonHover';
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
 import FacultySelect from '../../../components/FacultySelect';
 import MajorSelect from '../../../components/MajorSelect';
+import LecturerSelect from '../lecturers/LecturerSelect';
+import ClassDiaLog from './ClassDiaLog';
+import { classService } from '@/services/classService';
+import { setClasses, setClassesDeleted, setCreateClass, setDeleteSoftClass, setRestoreClass } from '@/redux/slices/class.slice';
 
 const PAGE_SIZE_OPTIONS = [
     { value: '1', label: '1 bản ghi' },
@@ -42,73 +41,76 @@ const PAGE_SIZE_OPTIONS = [
     { value: '100', label: '100 bản ghi' },
 ];
 
-const GENDER_OPTIONS = [
-    { value: '0', label: 'Nam' },
-    { value: '1', label: 'Nữ' },
-    { value: '2', label: 'Khác' },
-];
-
-export default function LecturersPage() {
+export default function ClassesPage() {
     const [prevPageSize, setPrevPageSize] = useState(10);
     const [pageSize, setPageSize] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
     const [tabOpened, setTabOpened] = useState(0);
-    const [searchLecturer, setSearchLecturer] = useState('');
-    const debouncedLecturerSearch = useDebounce(searchLecturer, 500);
+    const [searchClass, setSearchClass] = useState('');
+    const debouncedClassSearch = useDebounce(searchClass, 500);
     const [facultySeleted, setFacultySelected] = useState('all');
     const [majorSeleted, setMajorSelected] = useState('all');
+    const [lecturerSeleted, setLecturerSelected] = useState('all');
     const dispatch = useAppDispatch();
-    const { lecturersStore, lecturersStoreDeleted } = useAppSelector((state) => state.localStorage.lecturer);
-    const [lecturerSelected, setLecturerSelected] = useState<ILecturer | null>(null);
+    const { classesStore, classesStoreDeleted } = useAppSelector((state) => {
+        return state.localStorage.class || {
+            classesStore: { data: [], total_records: 0, page_number: 0, page_size: 0 },
+            classesStoreDeleted: { data: [], total_records: 0, page_number: 0, page_size: 0 }
+        };
+    });
+    const [classSelected, setClassSelected] = useState<IClass | null>(null);
     const [optionDialog, setOptionDialog] = useState<{
         option: string;
         title: string;
     } | null>(null);
 
     const {
-        data: lecturersData,
-        isLoading: isFetchLecturersLoading,
-        isSuccess: isFetchLecturersSuccess,
-        refetch: refetchLecturers,
-    } = useQuery<IResponseList<ILecturer>>({
-        queryKey: ['lecturers', currentPage, pageSize, tabOpened, debouncedLecturerSearch, facultySeleted],
+        data: classesData,
+        isLoading: isFetchClassesLoading,
+        isSuccess: isFetchClassesSuccess,
+        refetch: refetchClasses,
+    } = useQuery<IResponseList<IClass>>({
+        queryKey: ['classes', currentPage, pageSize, tabOpened, debouncedClassSearch, facultySeleted, majorSeleted, lecturerSeleted],
         queryFn: () =>
-            lecturerService.getAll({
+            classService.getAll({
                 page_number: currentPage,
                 page_size: pageSize,
-                search: debouncedLecturerSearch,
+                search: debouncedClassSearch,
                 is_deleted: tabOpened === 0 ? false : true,
                 faculty_id: facultySeleted === 'all' ? undefined : facultySeleted,
                 major_id: majorSeleted === 'all' ? undefined : majorSeleted,
+                lecturer_id: lecturerSeleted === 'all' ? undefined : lecturerSeleted,
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
         enabled:
-            !!debouncedLecturerSearch ||
-            (tabOpened === 0 && lecturersStore.total_records <= 0) ||
-            (tabOpened === 1 && lecturersStoreDeleted.total_records <= 0) ||
-            facultySeleted !== 'all',
+            !!debouncedClassSearch ||
+            (tabOpened === 0 && classesStore?.total_records <= 0) ||
+            (tabOpened === 1 && classesStoreDeleted?.total_records <= 0) ||
+            facultySeleted !== 'all' ||
+            majorSeleted !== 'all' ||
+            lecturerSeleted !== 'all',
     });
 
     useEffect(() => {
-        if (isFetchLecturersSuccess) {
+        if (isFetchClassesSuccess) {
             if (tabOpened === 0) {
                 dispatch(
-                    setLecturers({
-                        ...lecturersData,
-                        filtered: facultySeleted !== 'all',
+                    setClasses({
+                        ...classesData,
+                        filtered: facultySeleted !== 'all' || majorSeleted !== 'all' || lecturerSeleted !== 'all',
                     }),
                 );
             } else {
-                dispatch(setLecturersDeleted(lecturersData));
+                dispatch(setClassesDeleted(classesData));
             }
         }
-    }, [isFetchLecturersSuccess, lecturersData, debouncedLecturerSearch, facultySeleted]);
+    }, [isFetchClassesSuccess, classesData, debouncedClassSearch, facultySeleted, majorSeleted, lecturerSeleted]);
 
     useEffect(() => {
         if (prevPageSize < pageSize) {
-            if (pageSize > lecturersStore.total_records || pageSize > lecturersStoreDeleted.total_records) {
-                refetchLecturers();
+            if (pageSize > classesStore?.total_records || pageSize > classesStoreDeleted?.total_records) {
+                refetchClasses();
             }
         }
     }, [pageSize]);
@@ -120,49 +122,49 @@ export default function LecturersPage() {
     };
 
     const dataDisplayed = useMemo(() => {
-        if (facultySeleted !== 'all' || debouncedLecturerSearch) {
-            if (lecturersData?.data) {
-                if (lecturersData.data.length === 0) {
+        if (facultySeleted !== 'all' || majorSeleted !== 'all' || lecturerSeleted !== 'all' || debouncedClassSearch) {
+            if (classesData?.data) {
+                if (classesData.data.length === 0) {
                     return [];
                 }
 
-                return lecturersData.data.map((lecturer, index) => ({
-                    ...lecturer,
+                return classesData.data.map((cls, index) => ({
+                    ...cls,
                     index: (currentPage - 1) * pageSize + index + 1,
                 }));
             }
             return [];
         }
 
-        const currentData = tabOpened === 0 ? lecturersStore : lecturersStoreDeleted;
-        if (!isFetchLecturersLoading && currentData?.data && currentData.data.length > 0) {
+        const currentData = tabOpened === 0 ? classesStore : classesStoreDeleted;
+        if (!isFetchClassesLoading && currentData?.data && currentData.data.length > 0) {
             const startIndex = (currentPage - 1) * pageSize;
             const endIndex = Math.min(startIndex + pageSize, currentData.data.length);
-            return currentData.data.slice(startIndex, endIndex).map((lecturer, index) => ({
-                ...lecturer,
+            return currentData.data.slice(startIndex, endIndex).map((cls: IClass, index: number) => ({
+                ...cls,
                 index: startIndex + index + 1,
             }));
         }
 
-        if (lecturersData?.data) {
-            if (lecturersData.data.length === 0) {
+        if (classesData?.data) {
+            if (classesData.data.length === 0) {
                 return [];
             }
 
-            return lecturersData.data.map((lecturer, index) => ({
-                ...lecturer,
+            return classesData.data.map((cls, index) => ({
+                ...cls,
                 index: (currentPage - 1) * pageSize + index + 1,
             }));
         }
 
         return [];
-    }, [lecturersData, lecturersStore, lecturersStoreDeleted, tabOpened, currentPage, pageSize, debouncedLecturerSearch, isFetchLecturersLoading]);
+    }, [classesData, classesStore, classesStoreDeleted, tabOpened, currentPage, pageSize, debouncedClassSearch, isFetchClassesLoading]);
 
     const getIsLastPage = () => {
-        const currentData = tabOpened === 0 ? lecturersStore : lecturersStoreDeleted;
+        const currentData = tabOpened === 0 ? classesStore : classesStoreDeleted;
         const totalRecords =
-            debouncedLecturerSearch || pageSize > (currentData?.total_records ?? 0)
-                ? lecturersData?.total_records ?? currentData?.total_records ?? 0
+            debouncedClassSearch || pageSize > (currentData?.total_records ?? 0)
+                ? classesData?.total_records ?? currentData?.total_records ?? 0
                 : currentData?.total_records ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
 
@@ -171,10 +173,10 @@ export default function LecturersPage() {
 
     const renderPaginationItems = () => {
         const items = [];
-        const currentData = tabOpened === 0 ? lecturersStore : lecturersStoreDeleted;
+        const currentData = tabOpened === 0 ? classesStore : classesStoreDeleted;
         const totalRecords =
-            debouncedLecturerSearch || pageSize > (currentData?.total_records ?? 0)
-                ? lecturersData?.total_records ?? currentData?.total_records ?? 0
+            debouncedClassSearch || pageSize > (currentData?.total_records ?? 0)
+                ? classesData?.total_records ?? currentData?.total_records ?? 0
                 : currentData?.total_records ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
         const current = currentPage;
@@ -234,37 +236,20 @@ export default function LecturersPage() {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Quản lý giảng viên</h2>
+                <h2 className="text-2xl font-bold">Quản lý lớp học</h2>
                 <div className="flex items-center gap-2">
                     <ButtonHover
-                        title="Thêm giảng viên"
+                        title="Thêm lớp học"
                         variant="default"
                         leftIcon={<Plus className="w-6 h-6" />}
                         onClick={() => {
                             setOptionDialog({
                                 option: 'create',
-                                title: 'Thêm giảng viên',
+                                title: 'Thêm lớp học',
                             });
                         }}
                     />
 
-                    <ButtonHover
-                        title="Nhập file"
-                        variant="outline"
-                        leftIcon={<FileInput className="w-6 h-6" />}
-                        onClick={() => {
-                            toast.info('Chức năng đang được phát triển', {
-                                position: 'top-right',
-                                autoClose: 2000,
-                                hideProgressBar: false,
-                                closeOnClick: true,
-                                pauseOnHover: true,
-                                draggable: true,
-                                progress: undefined,
-                                transition: Bounce,
-                            });
-                        }}
-                    />
 
                     <ButtonHover
                         title="Xuất file"
@@ -297,7 +282,7 @@ export default function LecturersPage() {
                             }}
                             className="flex-1 md:flex-none"
                         >
-                            <span>Giảng viên</span>
+                            <span>Lớp học</span>
                         </Button>
                         <Button
                             variant={tabOpened === 1 ? 'default' : 'outline'}
@@ -313,7 +298,7 @@ export default function LecturersPage() {
 
                     <div className="w-full md:w-auto flex flex-col items-center md:flex-row gap-2">
                         <div className="relative w-full md:w-auto">
-                            {isFetchLecturersLoading && searchLecturer ? (
+                            {isFetchClassesLoading && searchClass ? (
                                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 animate-spin">
                                     <Loader2 />
                                 </div>
@@ -323,8 +308,8 @@ export default function LecturersPage() {
                             <Input
                                 className="pl-10 pr-4 w-full md:w-60"
                                 placeholder="Tìm kiếm..."
-                                value={searchLecturer}
-                                onChange={(e) => setSearchLecturer(e.target.value)}
+                                value={searchClass}
+                                onChange={(e) => setSearchClass(e.target.value)}
                             />
                         </div>
 
@@ -333,6 +318,9 @@ export default function LecturersPage() {
                             onSelectValue={(value) => {
                                 setFacultySelected(value);
                                 setCurrentPage(1);
+                                if (value !== facultySeleted) {
+                                    setMajorSelected('all');
+                                }
                             }}
                         />
 
@@ -344,6 +332,16 @@ export default function LecturersPage() {
                             }}
                             facultyId={facultySeleted === 'all' ? undefined : facultySeleted}
                         />
+
+                        {/* <LecturerSelect
+                            value={lecturerSeleted}
+                            onSelectValue={(value) => {
+                                setLecturerSelected(value);
+                                setCurrentPage(1);
+                            }}
+                            facultyId={facultySeleted === 'all' ? undefined : facultySeleted}
+                            majorId={majorSeleted === 'all' ? undefined : majorSeleted}
+                        /> */}
                     </div>
                 </div>
 
@@ -352,32 +350,26 @@ export default function LecturersPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>STT</TableHead>
-                                <TableHead>Tên giảng viên</TableHead>
-                                <TableHead>Giới tinh</TableHead>
-                                <TableHead>Số điện thoại</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Địa chỉ</TableHead>
-                                <TableHead>Mã giảng viên</TableHead>
+                                <TableHead>Tên lớp</TableHead>
+                                <TableHead>Mã lớp</TableHead>
                                 <TableHead>Khoa</TableHead>
                                 <TableHead>Chuyên ngành</TableHead>
+                                <TableHead>Giảng viên phụ trách</TableHead>
                                 <TableHead className="text-center">Thao tác</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {isFetchLecturersLoading ? (
-                                <TableRowSkeleton row={4} cell={10} />
+                            {isFetchClassesLoading ? (
+                                <TableRowSkeleton row={4} cell={7} />
                             ) : dataDisplayed && dataDisplayed.length > 0 ? (
-                                dataDisplayed.map((lecturer: ILecturer, index) => (
-                                    <TableRow key={lecturer.id}>
+                                dataDisplayed.map((cls: IClass, index: number) => (
+                                    <TableRow key={cls.id}>
                                         <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
-                                        <TableCell>{lecturer.user?.full_name}</TableCell>
-                                        <TableCell>{lecturer.user?.gender === 0 ? 'Nam' : 'Nữ'}</TableCell>
-                                        <TableCell>{lecturer.user?.phone_number}</TableCell>
-                                        <TableCell>{lecturer.user?.email}</TableCell>
-                                        <TableCell>{lecturer.user?.current_address}</TableCell>
-                                        <TableCell>{lecturer?.lecturer_id}</TableCell>
-                                        <TableCell>{lecturer?.major?.name}</TableCell>
-                                        <TableCell>{lecturer?.major?.faculty?.name}</TableCell>
+                                        <TableCell>{cls.name}</TableCell>
+                                        <TableCell>{cls.class_code}</TableCell>
+                                        <TableCell>{cls.major?.faculty?.name}</TableCell>
+                                        <TableCell>{cls.major?.name}</TableCell>
+                                        <TableCell>{cls.lecturer?.user?.full_name || 'Chưa phân công'}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-center gap-2">
                                                 {tabOpened === 0 && (
@@ -387,10 +379,10 @@ export default function LecturersPage() {
                                                             leftIcon={<Edit className="w-6 h-6 text-blue-500" />}
                                                             suggestText={`Chỉnh sửa`}
                                                             onClick={() => {
-                                                                setLecturerSelected(lecturer);
+                                                                setClassSelected(cls);
                                                                 setOptionDialog({
                                                                     option: 'update',
-                                                                    title: `Chỉnh sửa giảng viên`,
+                                                                    title: `Chỉnh sửa lớp học`,
                                                                 });
                                                             }}
                                                         />
@@ -399,10 +391,10 @@ export default function LecturersPage() {
                                                             leftIcon={<Trash className="w-6 h-6 text-red-500" />}
                                                             suggestText={`Xóa tạm thời`}
                                                             onClick={() => {
-                                                                setLecturerSelected(lecturer);
+                                                                setClassSelected(cls);
                                                                 setOptionDialog({
                                                                     option: 'delete-soft',
-                                                                    title: `Xóa giảng viên`,
+                                                                    title: `Xóa lớp học`,
                                                                 });
                                                             }}
                                                         />
@@ -415,10 +407,10 @@ export default function LecturersPage() {
                                                             leftIcon={<Repeat className="w-6 h-6 text-orange-500" />}
                                                             suggestText={`Khôi phục`}
                                                             onClick={() => {
-                                                                setLecturerSelected(lecturer);
+                                                                setClassSelected(cls);
                                                                 setOptionDialog({
                                                                     option: 'restore',
-                                                                    title: `Khôi phục giảng viên`,
+                                                                    title: `Khôi phục lớp học`,
                                                                 });
                                                             }}
                                                         />
@@ -427,10 +419,10 @@ export default function LecturersPage() {
                                                             leftIcon={<Trash2 className="w-6 h-6 text-red-500" />}
                                                             suggestText={`Xóa vĩnh viễn`}
                                                             onClick={() => {
-                                                                setLecturerSelected(lecturer);
+                                                                setClassSelected(cls);
                                                                 setOptionDialog({
                                                                     option: 'delete',
-                                                                    title: `Xóa giảng viên`,
+                                                                    title: `Xóa lớp học`,
                                                                 });
                                                             }}
                                                         />
@@ -442,7 +434,7 @@ export default function LecturersPage() {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-6">
+                                    <TableCell colSpan={7} className="text-center py-6">
                                         Không có dữ liệu
                                     </TableCell>
                                 </TableRow>
@@ -451,22 +443,22 @@ export default function LecturersPage() {
                     </Table>
                 </div>
 
-                {!isFetchLecturersLoading &&
-                    ((debouncedLecturerSearch && (lecturersData?.total_records ?? 0) > 0) ||
-                        (!debouncedLecturerSearch && ((tabOpened === 0 ? lecturersStore?.total_records : lecturersStoreDeleted?.total_records) ?? 0) > 0)) && (
+                {!isFetchClassesLoading &&
+                    ((debouncedClassSearch && (classesData?.total_records ?? 0) > 0) ||
+                        (!debouncedClassSearch && ((tabOpened === 0 ? classesStore?.total_records : classesStoreDeleted?.total_records) ?? 0) > 0)) && (
                         <div className="mt-4 flex flex-col md:flex-row justify-between items-center">
                             <div className="mb-4 md:mb-0 flex items-center">
                                 <span className="text-sm text-gray-500 text-nowrap">
                                     Tổng số bản ghi:{' '}
-                                    {debouncedLecturerSearch ||
-                                    pageSize > ((tabOpened === 0 ? lecturersStore?.total_records : lecturersStoreDeleted?.total_records) ?? 0)
-                                        ? lecturersData?.total_records ??
-                                          (tabOpened === 0 ? lecturersStore?.total_records : lecturersStoreDeleted?.total_records) ??
+                                    {debouncedClassSearch ||
+                                    pageSize > ((tabOpened === 0 ? classesStore?.total_records : classesStoreDeleted?.total_records) ?? 0)
+                                        ? classesData?.total_records ??
+                                          (tabOpened === 0 ? classesStore?.total_records : classesStoreDeleted?.total_records) ??
                                           0
-                                        : (tabOpened === 0 ? lecturersStore?.total_records : lecturersStoreDeleted?.total_records) ?? 0}
+                                        : (tabOpened === 0 ? classesStore?.total_records : classesStoreDeleted?.total_records) ?? 0}
                                 </span>
                                 <div className="ml-2 inline-block">
-                                    <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isFetchLecturersLoading}>
+                                    <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isFetchClassesLoading}>
                                         <SelectTrigger className="h-8 w-[100px]">
                                             <SelectValue />
                                         </SelectTrigger>
@@ -481,9 +473,9 @@ export default function LecturersPage() {
                                 </div>
                             </div>
 
-                            {((debouncedLecturerSearch && (lecturersData?.total_records ?? 0) > pageSize) ||
-                                (!debouncedLecturerSearch &&
-                                    ((tabOpened === 0 ? lecturersStore?.total_records : lecturersStoreDeleted?.total_records) ?? 0) > pageSize)) && (
+                            {((debouncedClassSearch && (classesData?.total_records ?? 0) > pageSize) ||
+                                (!debouncedClassSearch &&
+                                    ((tabOpened === 0 ? classesStore?.total_records : classesStoreDeleted?.total_records) ?? 0) > pageSize)) && (
                                 <Pagination>
                                     <PaginationContent>
                                         <PaginationItem>
@@ -497,22 +489,8 @@ export default function LecturersPage() {
                                         <PaginationItem>
                                             <PaginationNext
                                                 onClick={() => {
-                                                    const currentData = tabOpened === 0 ? lecturersStore : lecturersStoreDeleted;
-                                                    const totalRecords =
-                                                        debouncedLecturerSearch || pageSize > (currentData?.total_records ?? 0)
-                                                            ? lecturersData?.total_records ?? currentData?.total_records ?? 0
-                                                            : currentData?.total_records ?? 0;
-                                                    const totalPages = Math.ceil(totalRecords / pageSize);
-                                                    const nextPage = Math.min(currentPage + 1, totalPages);
-                                                    const currentReduxData = tabOpened === 0 ? lecturersStore.data : lecturersStoreDeleted.data;
-
-                                                    if (totalRecords > currentReduxData.length) {
-                                                        setCurrentPage(nextPage);
-                                                        setTimeout(() => {
-                                                            refetchLecturers();
-                                                        }, 0);
-                                                    } else {
-                                                        setCurrentPage(nextPage);
+                                                    if (!getIsLastPage()) {
+                                                        setCurrentPage((prev) => prev + 1);
                                                     }
                                                 }}
                                                 className={getIsLastPage() ? 'pointer-events-none opacity-50' : ''}
@@ -527,15 +505,16 @@ export default function LecturersPage() {
             </div>
 
             {optionDialog && (
-                <LecturerDiaLog
+                <ClassDiaLog
                     open={!!optionDialog}
-                    mode={optionDialog.option as 'create' | 'update' | 'delete-soft' | 'delete' | 'view' | 'restore'}
-                    lecturer={lecturerSelected || undefined}
-                    onClose={() => setOptionDialog(null)}
-                    onSuccess={() => setOptionDialog(null)}
+                    class={classSelected || undefined}
+                    mode={optionDialog.option as any}
+                    onClose={() => {
+                        setOptionDialog(null);
+                        setClassSelected(null);
+                    }}
                 />
             )}
-            <ToastContainer />
         </div>
     );
 }

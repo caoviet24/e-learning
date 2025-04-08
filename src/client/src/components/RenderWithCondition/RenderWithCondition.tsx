@@ -9,5 +9,5 @@ export default function RenderWithCondition({
     className?: string;
     children: React.ReactNode;
 }) {
-    return <div className={className}>{condition && children}</div>;
+    return condition && children;
 }

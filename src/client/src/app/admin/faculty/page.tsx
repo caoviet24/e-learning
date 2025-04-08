@@ -9,7 +9,7 @@ import useDebounce from '@/hooks/useDebounce';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQuery } from '@tanstack/react-query';
 import { facultyService } from '@/services/facultyService';
-import { setCreateFaculty, setDeleteSoftFaculty, setFaculties, setFacultiesDeleted } from '@/redux/slices/faculty.slice';
+import { setFaculties, setFacultiesDeleted } from '@/redux/slices/faculty.slice';
 import {
     Pagination,
     PaginationContent,
@@ -20,10 +20,9 @@ import {
     PaginationEllipsis,
 } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bounce, toast, ToastContainer } from 'react-toastify';
+import { Bounce, toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
-import { IFaculty, IResponse, IResponseList } from '@/types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { IFaculty, IResponseList } from '@/types';
 import TableRowSkeleton from '@/components/table-row-skeleton';
 import ButtonHover from '@/components/ButtonHover';
 

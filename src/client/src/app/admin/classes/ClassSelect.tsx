@@ -3,38 +3,41 @@
 import React, { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
-import { lecturerService } from '@/services/lecturerService';
-import { ILecturer } from '@/types';
+import { classService } from '@/services/classService';
+import { IClass } from '@/types';
 
-interface LecturerSelectProps {
+interface ClassSelectProps {
     value: string;
     onSelectValue: (value: string) => void;
     facultyId?: string;
     majorId?: string;
+    lecturerId?: string;
     placeholder?: string;
     disabled?: boolean;
 }
 
-export default function LecturerSelect({
+export default function ClassSelect({
     value,
     onSelectValue,
     facultyId,
     majorId,
-    placeholder = 'Chọn giảng viên',
+    lecturerId,
+    placeholder = 'Chọn lớp học',
     disabled = false,
-}: LecturerSelectProps) {
+}: ClassSelectProps) {
     const {
-        data: lecturers,
+        data: classes,
         isLoading,
         refetch,
     } = useQuery({
-        queryKey: ['lecturers-options', facultyId, majorId],
+        queryKey: ['classes-options', facultyId, majorId, lecturerId],
         queryFn: () =>
-            lecturerService.getAll({
+            classService.getAll({
                 page_number: 1,
                 page_size: 100,
                 faculty_id: facultyId,
                 major_id: majorId,
+                lecturer_id: lecturerId,
                 is_deleted: false,
             }),
         enabled: false,
@@ -42,7 +45,7 @@ export default function LecturerSelect({
 
     useEffect(() => {
         refetch();
-    }, [facultyId, majorId, refetch]);
+    }, [facultyId, majorId, lecturerId, refetch]);
 
     return (
         <Select value={value} onValueChange={onSelectValue} disabled={disabled || isLoading}>
@@ -50,10 +53,10 @@ export default function LecturerSelect({
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="">Không chọn</SelectItem>
-                {lecturers?.data?.map((lecturer: ILecturer) => (
-                    <SelectItem key={lecturer.id} value={lecturer.id}>
-                        {lecturer.user?.full_name} - {lecturer.lecturer_id}
+                <SelectItem value="all">Tất cả lớp học</SelectItem>
+                {classes?.data?.map((cls: IClass) => (
+                    <SelectItem key={cls.id} value={cls.id}>
+                        {cls.name} ({cls.class_code})
                     </SelectItem>
                 ))}
             </SelectContent>

@@ -10,6 +10,7 @@ import { accountReducer } from '../slices/account.slice';
 import { facultyReducer } from '../slices/faculty.slice';
 import { majorReducer } from '../slices/major.slice';
 import { lecturerReducer } from '../slices/lecturer.slice';
+import { classReducer } from '../slices/class.slice';
 
 // Tạo reducer mặc định nếu không có reducer nào khác
 const defaultReducer = (state = {}) => state;
@@ -43,6 +44,7 @@ export const localStorageReducer = combineReducers({
     faculty: persistReducer({ ...localStorageConfig, key: 'faculty' }, facultyReducer),
     major: persistReducer({ ...localStorageConfig, key: 'major' }, majorReducer),
     lecturer: persistReducer({ ...localStorageConfig, key: 'lecturer' }, lecturerReducer),
+    class: persistReducer({ ...localStorageConfig, key: 'class' }, classReducer),
 });
 
 export const sessionStorageReducer = combineReducers({

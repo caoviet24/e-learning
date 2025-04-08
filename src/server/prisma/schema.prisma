@@ -120,6 +120,7 @@ model Faculty {
   classes           Class[]
   students          Student[]
   lecturers         Lecturer[]
+  courses           Course[]
   notifications     Notification[] @relation("faculty_notifications")
 
   createdUser       User        @relation("faculty_created", fields: [created_by], references: [id])
@@ -147,6 +148,7 @@ model Major {
   classes           Class[]
   students          Student[]
   lecturers         Lecturer[]
+  courses           Course[]
   notifications     Notification[] @relation("major_notifications")
 
   createdUser       User        @relation("major_created", fields: [created_by], references: [id])
@@ -204,6 +206,7 @@ model StudentClass {
   @@map("student_classes")
 }
 
+
 // Quản lý khóa học
 model Course {
   id              String        @id 
@@ -212,9 +215,11 @@ model Course {
   thumbnail       String?
   status          CourseStatus  @default(PRIVATE)
   active          Boolean       @default(false)
-  created_at      DateTime    @default(now())
+  faculty_id      String    
+  major_id        String
+  created_at      DateTime      @default(now())
   created_by      String
-  updated_at      DateTime?    @updatedAt
+  updated_at      DateTime?     @updatedAt
   updated_by      String?
   is_deleted      Boolean?
   deleted_by      String? 
@@ -223,6 +228,9 @@ model Course {
   createdUser     User          @relation("courses_created", fields: [created_by], references: [id])
   updatedUser     User?         @relation("course_updated", fields: [updated_by], references: [id])
   deletedUser     User?         @relation("course_deleted", fields: [deleted_by], references: [id])
+
+  faculty         Faculty       @relation(fields: [faculty_id], references: [id])
+  major           Major         @relation(fields: [major_id], references: [id])
 
   lessons         Lesson[]
   students        StudentCourse[]
