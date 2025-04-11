@@ -144,7 +144,6 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
         },
         onError: (error: any) => {
             toast.error(`Thêm giảng viên thất bại`);
-            console.error('Thêm giảng viên thất bại:', error.message);
         },
     });
 
@@ -178,7 +177,6 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
         },
         onError: (error: any) => {
             toast.error(`Cập nhật giảng viên thất bại`);
-            console.error('Cập nhật giảng viên thất bại:', error.message);
         },
     });
 
@@ -211,7 +209,6 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
         },
         onError: (error: any) => {
             toast.error(`Xóa giảng viên thất bại`);
-            console.error('Xóa giảng viên thất bại:', error.message);
         },
     });
 

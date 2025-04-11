@@ -33,6 +33,17 @@ async function getAll({
     return res.data;
 }
 
+
+async function getByLecturerId(lecturer_id: string) {
+    const res = await axiosJWT.get(`${API_URL}/courses/get-by-lecturer-id/${lecturer_id}`);
+    return res.data;
+}
+
+async function getById(id: string) {
+    const res = await axiosJWT.get(`${API_URL}/courses/get-by-id/${id}`);
+    return res.data;
+}
+
 async function create(data: any) {
     const res = await axiosJWT.post(`${API_URL}/courses/create`, data);
     return res.data;
@@ -58,8 +69,10 @@ async function restore(id: string) {
     return res.data;
 }
 
-const courseService = {
+export const courseService = {
     getAll,
+    getByLecturerId,
+    getById,
     create,
     update, 
     deleteCourse,

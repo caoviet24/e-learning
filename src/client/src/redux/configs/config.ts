@@ -48,7 +48,7 @@ export const localStorageReducer = combineReducers({
 });
 
 export const sessionStorageReducer = combineReducers({
-    account: persistReducer({ ...sessionStorageConfig, key: 'account' }, accountReducer),
+    default: defaultReducer,
 });
 
 export const indexedDBReducer = combineReducers({
@@ -59,7 +59,7 @@ export const cookieStorageReducer = combineReducers({
     default: defaultReducer,
 });
 
-// Gộp tất cả lại thành rootReducer
+
 export const rootReducer = combineReducers({
     localStorage: localStorageReducer,
     sessionStorage: sessionStorageReducer,

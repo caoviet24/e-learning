@@ -89,7 +89,6 @@ export default function FacultyDiaLog({ open, faculty, mode, onClose, onSuccess 
         },
         onError: (error) => {
             toast.error('Thêm khoa thất bại');
-            console.error('Thêm khoa thất bại:', error);
         },
     });
 
@@ -128,7 +127,7 @@ export default function FacultyDiaLog({ open, faculty, mode, onClose, onSuccess 
         },
         onError: (error) => {
             toast.error('Cập nhật khoa thất bại');
-            console.error('Cập nhật khoa thất bại:', error);
+
         },
     });
 
@@ -163,7 +162,6 @@ export default function FacultyDiaLog({ open, faculty, mode, onClose, onSuccess 
         },
         onError: (error) => {
             toast.error('Xóa khoa thất bại');
-            console.error('Xóa khoa thất bại:', error);
         },
     });
 

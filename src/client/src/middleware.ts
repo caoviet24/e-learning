@@ -4,7 +4,6 @@ import type { NextRequest } from 'next/server';
 import { Role } from '@/types/enum';
 import { JwtPayload } from './types';
 
-
 export function middleware(request: NextRequest) {
     const isAuthenticated = request.cookies.has('access_token');
     const token = request.cookies.get('access_token')?.value;
@@ -20,10 +19,6 @@ export function middleware(request: NextRequest) {
     }
 
     console.log('Role:', role);
-    
-
-
-    
 
     // Public paths that don't require authentication
     const publicPaths = ['/auth/sign-in', '/auth/forget-password', '/auth/sign-up', '/not-found'];
@@ -43,8 +38,8 @@ export function middleware(request: NextRequest) {
         if (role === Role.LECTURER) {
             return NextResponse.redirect(new URL('/lecturer', request.url));
         }
-        
-        if(role === Role.ADMIN) {
+
+        if (role === Role.ADMIN) {
             return NextResponse.redirect(new URL('/admin', request.url));
         }
         return NextResponse.redirect(new URL('/not-found', request.url));

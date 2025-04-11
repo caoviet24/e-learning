@@ -52,11 +52,9 @@ export default function SignUpPage() {
 
     const registerMutation = useMutation({
         mutationFn: (data: any) => accountService.register(data),
-        onSuccess: (res) => {
-            Cookies.set('access_token', res.access_token, { expires: 7 });
-            Cookies.set('refresh_token', res.refresh_token, { expires: 365 });
+        onSuccess: () => {
 
-            router.push('/');
+            router.push('/auth/sign-in');
         },
         onError: (error: any) => {
             toast.error(error.response.data.message, {

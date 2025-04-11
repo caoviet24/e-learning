@@ -108,7 +108,6 @@ export default function ClassDiaLog({ open, class: classData, mode, onClose, onS
         },
         onError: (error: any) => {
             toast.error(`Thêm lớp học thất bại`);
-            console.error('Thêm lớp học thất bại:', error.message);
         },
     });
 
@@ -142,7 +141,6 @@ export default function ClassDiaLog({ open, class: classData, mode, onClose, onS
         },
         onError: (error: any) => {
             toast.error(`Cập nhật lớp học thất bại`);
-            console.error('Cập nhật lớp học thất bại:', error.message);
         },
     });
 
@@ -175,7 +173,6 @@ export default function ClassDiaLog({ open, class: classData, mode, onClose, onS
         },
         onError: (error: any) => {
             toast.error(`Xóa lớp học thất bại`);
-            console.error('Xóa lớp học thất bại:', error.message);
         },
     });
 

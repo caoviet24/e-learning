@@ -32,7 +32,7 @@ export interface IUser {
     gender?: number;
     avatar?: string;
     phone_number?: string;
-  
+
     original_address?: string;
     current_address?: string;
     account: IAccount;
@@ -56,14 +56,17 @@ export interface IMajor {
 export interface ILecturer {
     id: string;
     lecturer_id?: string;
-    user: IUser;
+    faculty: {
+        id: string;
+        name: string;
+        code: string;
+    };
     major: {
         id: string;
         name: string;
         code: string;
-        is_deleted?: boolean;
-        faculty: IFaculty;
     };
+    user: IUser;
 }
 
 export interface IClass {
@@ -83,4 +86,9 @@ export interface IClass {
         lecturer_id?: string;
         user: IUser;
     };
+}
+
+
+export interface ICourse {
+    
 }

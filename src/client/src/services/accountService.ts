@@ -1,5 +1,6 @@
 import axiosJWT from '@/utils/axios.intercepter';
 import axios from 'axios';
+import { IUser } from '@/types';
 import Cookies from 'js-cookie';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -20,9 +21,23 @@ export const accountService = {
         return res.data;
     },
 
-    async logout() {
+    async logout(setUserFn?: (user: IUser | null) => void) {
         Cookies.remove('access_token');
         Cookies.remove('refresh_token');
+        if (setUserFn) {
+            setUserFn(null);
+        }
+        
         window.location.href = '/auth/sign-in';
     },
+
+    async updateProfile(userId: string, data: Partial<IUser>) {
+        const res = await axiosJWT.put(`${API_URL}/users/update/${userId}`, data);
+        return res.data;
+    },
+
+    async changePassword(userId: string, data: { currentPassword: string; newPassword: string; confirmPassword: string }) {
+        const res = await axiosJWT.put(`${API_URL}/users/change-password/${userId}`, data);
+        return res.data;
+    }
 };

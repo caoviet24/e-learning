@@ -24,6 +24,11 @@ export const lecturerService = {
         return res.data;
     },
 
+    async getById(id: string) {
+        const res = await axiosJWT.get(`${API_URL}/lecturers/get-by-id/${id}`);
+        return res.data;
+    },
+
   
     async create(data : any) {
         const res = await axiosJWT.post(`${API_URL}/lecturers/create`, data);

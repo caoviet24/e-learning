@@ -5,12 +5,12 @@ import { User, Home, Newspaper, FileText, Globe, ClipboardList, BookOpen, Bell, 
 import { ThemeToggle } from '../theme-toggle';
 import { useEffect, useState } from 'react';
 import { NotificationDrawer } from '../notification-drawer';
-import { accountService } from '@/services/accountService';
 import Cookies from 'js-cookie';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAppSelector } from '@/redux/store';
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
+import { useUser } from '@/hooks/useUser';
 
 interface NavItem {
     name: string;
@@ -27,18 +27,12 @@ interface NavbarProps {
 }
 
 export function NavbarLecturer({ isOpen, setIsOpen }: NavbarProps) {
-    const [username, setUsername] = useState<string | undefined>();
     const [notificationOpen, setNotificationOpen] = useState(false);
     const unreadCount = 3;
-    const { my_account } = useAppSelector((state) => state.sessionStorage.account);
-
-    useEffect(() => {
-        const usernameCookie = Cookies.get('username');
-        setUsername(usernameCookie);
-    }, []);
+    const { user, logout } = useUser();
 
     const handleLogout = () => {
-        accountService.logout();
+        logout();
     };
 
     const navigationItems: NavItem[] = [
@@ -69,15 +63,15 @@ export function NavbarLecturer({ isOpen, setIsOpen }: NavbarProps) {
                 `}
             >
                 <div className="h-full flex flex-col">
-                    <RenderWithCondition condition={!!my_account}>
+                    <RenderWithCondition condition={!!user}>
                         <div className="px-8 py-4 border-b md:hidden">
                             <div className="flex items-center gap-3">
                                 <Avatar>
-                                    <AvatarImage src={my_account?.user?.avatar} alt="Avatar" />
-                                    <AvatarFallback>{my_account?.username}</AvatarFallback>
+                                    <AvatarImage src={user?.avatar} alt="Avatar" />
+                                    <AvatarFallback>{user?.full_name}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <div className="font-medium">{my_account?.username}</div>
+                                    <div className="font-medium">{user?.full_name}</div>
                                     <div className="text-sm text-muted-foreground">Sinh viên</div>
                                 </div>
                             </div>
@@ -135,7 +129,7 @@ export function NavbarLecturer({ isOpen, setIsOpen }: NavbarProps) {
 
                     {/* Footer Actions */}
                     <div className="p-4 border-t space-y-4">
-                        <RenderWithCondition condition={!!my_account}>
+                        <RenderWithCondition condition={!!user}>
                             <button
                                 onClick={handleLogout}
                                 className="flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium text-red-500 rounded-lg hover:bg-accent hover:text-red-600 transition-colors w-full md:hidden"
@@ -149,12 +143,7 @@ export function NavbarLecturer({ isOpen, setIsOpen }: NavbarProps) {
                 </div>
             </nav>
 
-            {isOpen && (
-                <div
-                    className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 md:hidden"
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
+            {isOpen && <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 md:hidden" onClick={() => setIsOpen(false)} />}
             <NotificationDrawer open={notificationOpen} onOpenChange={setNotificationOpen} />
         </div>
     );

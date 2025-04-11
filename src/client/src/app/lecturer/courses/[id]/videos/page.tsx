@@ -12,10 +12,11 @@ import { useParams } from 'next/navigation';
 import { Select, SelectContent, SelectTrigger, SelectGroup, SelectItem, SelectLabel } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { videoService } from '@/services/videoService';
-import { toast } from 'sonner';
+import { toast } from 'react-toastify';
 
 export default function CourseVideosPage() {
-    const { id } = useParams();
+    // Changed from id to slug to match folder structure
+    const { slug } = useParams();
     const [title, setTitle] = React.useState('');
     const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
     const [uploadId, setUploadId] = React.useState<string>('');
@@ -23,8 +24,8 @@ export default function CourseVideosPage() {
 
     // Fetch videos
     const { data: videosData, isLoading } = useQuery({
-        queryKey: ['videos', id],
-        queryFn: () => videoService.getVideos(id as string),
+        queryKey: ['videos', slug],
+        queryFn: () => videoService.getVideos(slug as string),
     });
 
     // Upload video mutation
@@ -38,7 +39,7 @@ export default function CourseVideosPage() {
                 toast.success('Video uploaded successfully');
                 setTitle('');
                 setSelectedFile(null);
-                queryClient.invalidateQueries({ queryKey: ['videos', id] });
+                queryClient.invalidateQueries({ queryKey: ['videos', slug] });
             }
         },
         onError: (error) => {
@@ -52,7 +53,7 @@ export default function CourseVideosPage() {
         mutationFn: (videoId: string) => videoService.deleteVideo(videoId),
         onSuccess: () => {
             toast.success('Video deleted successfully');
-            queryClient.invalidateQueries({ queryKey: ['videos', id] });
+            queryClient.invalidateQueries({ queryKey: ['videos', slug] });
         },
         onError: (error) => {
             toast.error('Failed to delete video');
@@ -79,7 +80,7 @@ export default function CourseVideosPage() {
         uploadMutation.mutate({
             title,
             file: selectedFile,
-            course_id: id as string,
+            course_id: slug as string,
         });
     };
 
@@ -92,7 +93,7 @@ export default function CourseVideosPage() {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="mb-6">
-                <Link href={`/lecturer/courses/${id}`}>
+                <Link href={`/lecturer/courses/${slug}`}>
                     <Button variant="ghost">
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         Quay lại khóa học
@@ -156,7 +157,7 @@ export default function CourseVideosPage() {
                                 setTitle('');
                                 setSelectedFile(null);
                                 setUploadId('');
-                                queryClient.invalidateQueries({ queryKey: ['videos', id] });
+                                queryClient.invalidateQueries({ queryKey: ['videos', slug] });
                             }}
                         />
                     </div>

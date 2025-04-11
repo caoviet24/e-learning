@@ -6,13 +6,11 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { accountService } from '@/services/accountService';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-
-import Cookies from 'js-cookie';
 import { Loader2 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
+import { accountService } from '@/services/accountService';
 
 type FormData = {
     username: string;
@@ -20,7 +18,11 @@ type FormData = {
     role: Role;
 };
 
+import Cookies from 'js-cookie';
+
 export default function LoginPage() {
+    const router = useRouter();
+
     const [formData, setFormData] = useState<FormData>({
         username: '',
         password: '',
@@ -33,8 +35,6 @@ export default function LoginPage() {
         [Role.ADMIN]: 'Quản trị viên',
     };
 
-    const router = useRouter();
-
     const handleOnChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
             ...formData,
@@ -43,11 +43,12 @@ export default function LoginPage() {
     };
 
     const loginMutation = useMutation({
+        mutationKey: ['login'],
         mutationFn: (data: any) => accountService.login(data),
-        onSuccess: (res) => {
-            Cookies.set('access_token', res.access_token, { expires: 7 });
-            Cookies.set('refresh_token', res.refresh_token, { expires: 365 });
+        onSuccess: (data) => {
 
+            Cookies.set('access_token', data.access_token)
+            Cookies.set('refresh_token', data.refresh_token);
             router.push('/');
         },
         onError: (error: any) => {
@@ -66,6 +67,7 @@ export default function LoginPage() {
     const handleLogin = async () => {
         loginMutation.mutate(formData);
     };
+
     return (
         <div className="w-full max-w-md space-y-8 px-4 rounded-lg p-6">
             <div className="text-center flex items-center flex-col space-y-2">
@@ -106,7 +108,12 @@ export default function LoginPage() {
                     </Select>
                 </div>
                 <div className="relative">
-                    <Button type="button" disabled={loginMutation.isPending} className={`${loginMutation.isPending && 'opacity-40'} w-full`} onClick={handleLogin}>
+                    <Button
+                        type="button"
+                        disabled={loginMutation.isPending}
+                        className={`${loginMutation.isPending && 'opacity-40'} w-full`}
+                        onClick={handleLogin}
+                    >
                         Đăng nhập
                     </Button>
                     {loginMutation.isPending && (

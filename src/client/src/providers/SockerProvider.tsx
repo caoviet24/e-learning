@@ -15,24 +15,24 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const socketRef = useRef<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
-    useEffect(() => {
-      const socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
-      socketRef.current = socket;
+    // useEffect(() => {
+    //   const socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+    //   socketRef.current = socket;
     
-      socket.on('connect', () => {
-        setIsConnected(true);
-        console.log('Socket connected');
-      });
+    //   socket.on('connect', () => {
+    //     setIsConnected(true);
+    //     console.log('Socket connected');
+    //   });
     
-      socket.on('disconnect', () => {
-        setIsConnected(false);
-        console.log('Socket disconnected');
-      });
+    //   socket.on('disconnect', () => {
+    //     setIsConnected(false);
+    //     console.log('Socket disconnected');
+    //   });
     
-      return () => {
-        socket.disconnect();
-      };
-    }, []);
+    //   return () => {
+    //     socket.disconnect();
+    //   };
+    // }, []);
 
     const on = (event: string, callback: (...args: any[]) => void) => {
         socketRef.current?.on(event, callback);
