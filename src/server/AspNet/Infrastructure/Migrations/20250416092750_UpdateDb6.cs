@@ -5,18 +5,24 @@
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDb2 : Migration
+    public partial class UpdateDb6 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-
+            migrationBuilder.RenameColumn(
+                name: "Thumbnail",
+                table: "Courses",
+                newName: "thumbNail");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
+            migrationBuilder.RenameColumn(
+                name: "thumbNail",
+                table: "Courses",
+                newName: "Thumbnail");
         }
     }
 }

@@ -7,12 +7,12 @@ namespace Domain.Common
 {
     public abstract class AuditableEntity : BaseEnity
     {
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public string CreatedBy { get; set; } = null!;
-        public DateTime? UpdatedAt { get; set; }
-        public string? UpdatedBy { get; set; }
-        public bool? IsDeleted { get; set; }
-        public string? DeletedBy { get; set; }
-        public DateTime? DeletedAt { get; set; }
+        public DateTime createdAt { get; set; } = DateTime.UtcNow;
+        public string createdBy { get; set; } = null!;
+        public DateTime? updatedAt { get; set; }
+        public string? updatedBy { get; set; }
+        public bool? isDeleted { get; set; }
+        public string? deletedBy { get; set; }
+        public DateTime? deletedAt { get; set; }
     }
 }

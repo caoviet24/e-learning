@@ -44,10 +44,19 @@ namespace Application.Common.Behaviors
             // Check if user has required roles
             foreach (var attribute in authorizeAttributes)
             {
-                if (!string.IsNullOrEmpty(attribute.Role))
+                if (attribute.Roles != null && attribute.Roles.Length > 0)
                 {
-                    var hasRole = _currentUser.IsInRole(attribute.Role);
-                    if (!hasRole)
+                    bool hasAnyRole = false;
+                    foreach (var role in attribute.Roles)
+                    {
+                        if (!string.IsNullOrEmpty(role) && _currentUser.IsInRole(role))
+                        {
+                            hasAnyRole = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasAnyRole)
                     {
                         throw new ForbiddenAccessException();
                     }

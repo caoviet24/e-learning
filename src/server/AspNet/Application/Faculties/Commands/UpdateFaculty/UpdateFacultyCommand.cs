@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Application.Common.DTOs;
 using Application.Common.Sercurity;
 using AutoMapper;
+using Domain.Entites;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
@@ -15,8 +16,8 @@ namespace Application.Faculties.Commands.UpdateFaculty
     public class UpdateFacultyCommand : IRequest<Response<FacultyDto>>
     {
         public string Id { get; set; } = null!;
-        public string Name { get; set; } = null!;
-        public string Code { get; set; } = null!;
+        public string name { get; set; } = null!;
+        public string code { get; set; } = null!;
     }
 
     public class UpdateFacultyCommandHandler(IUnitOfWork unitOfWork, IMapper mapper) : IRequestHandler<UpdateFacultyCommand, Response<FacultyDto>>
@@ -32,11 +33,13 @@ namespace Application.Faculties.Commands.UpdateFaculty
             }
 
 
-            if (request.Name == faculty.Name && request.Code == faculty.Code)
+            if (request.name == faculty.name && request.code == faculty.code)
             {
                 throw new BadRequestException("Tên, mã khoa đã tồn tại");
             }
 
+            faculty.name = request.name;
+            faculty.code = request.code;
 
             var result = await unitOfWork.Faculties.UpdateAsync(faculty);
             if (result == null)
@@ -48,6 +51,7 @@ namespace Application.Faculties.Commands.UpdateFaculty
             return new Response<FacultyDto>
             {
                 Data = data,
+                action = Domain.Enums.Action.UPDATE.ToString(),
                 Message = "Cập nhật khoa thành công",
                 Ok = true,
             };

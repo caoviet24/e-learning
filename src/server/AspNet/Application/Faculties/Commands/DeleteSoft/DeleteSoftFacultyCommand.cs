@@ -39,6 +39,7 @@ namespace Application.Faculties.Commands.DeleteSoft
             return new Response<FacultyDto>
             {
                 Data = data,
+                action = Domain.Enums.Action.DELETE_SOFT.ToString(),
                 Message = "Xóa tạm thời khoa thành công",
                 Ok = true,
             };

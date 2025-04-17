@@ -13,9 +13,19 @@ namespace Infrastructure.data.Repositories
     {
         public async Task<Lecturer> AddAsync(Lecturer lecturer)
         {
-            var result = context.Lecturers.AddAsync(lecturer);
+            var result = await context.Lecturers.AddAsync(lecturer);
             await context.SaveChangesAsync();
-            return result.Result.Entity;
+
+            return await context.Lecturers
+                .Include(l => l.Faculty)
+                .Include(l => l.Major)
+                .Include(l => l.User)
+                .FirstAsync(l => l.cardId == result.Entity.cardId);
+        }
+
+        public async Task<int> CountAsync()
+        {
+            return await context.Lecturers.CountAsync();
         }
 
         public async Task<Lecturer> DeleteAsync(Lecturer lecturer)
@@ -27,34 +37,38 @@ namespace Infrastructure.data.Repositories
 
         public async Task<Lecturer> DeleteSoftAsync(Lecturer lecturer)
         {
-            lecturer.User.IsDeleted = true;
+            lecturer.User.isDeleted = true;
             var result = context.Lecturers.Update(lecturer);
             await context.SaveChangesAsync();
             return result.Entity;
         }
 
-        public async Task<(IEnumerable<Lecturer> Items, int TotalCount, int PageNumber, int PageSize)> GetAllAsync(int pageNumber = 1, int pageSize = 10, string? search = null, bool? isDeleted = false, string? facultyId = null, string? majorId = null)
+        public async Task<(IEnumerable<Lecturer> Items, int totalRecords, int pageNumber, int pageSize)> GetAllAsync(int pageNumber = 1, int pageSize = 10, string? search = null, string? facultyId = null, string? majorId = null, bool? isDeleted = null)
         {
-            var query = context.Lecturers.AsQueryable();
+            var query = context.Lecturers
+                .Include(l => l.Faculty)
+                .Include(l => l.Major)
+                .Include(l => l.User)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(l => l.User != null && l.User.FullName.Contains(search));
+                query = query.Where(u => u.User.fullName != null && u.User.fullName.Contains(search));
             }
 
-            if (isDeleted.HasValue)
+            if (isDeleted != null)
             {
-                query = query.Where(l => l.User.IsDeleted == isDeleted);
+                query = query.Where(l => l.User.isDeleted == isDeleted);
             }
 
             if (!string.IsNullOrEmpty(facultyId))
             {
-                query = query.Where(l => l.FacultyId == facultyId);
+                query = query.Where(l => l.facultyId == facultyId);
             }
 
             if (!string.IsNullOrEmpty(majorId))
             {
-                query = query.Where(l => l.MajorId == majorId);
+                query = query.Where(l => l.majorId == majorId);
             }
 
             var totalCount = await query.CountAsync();
@@ -76,25 +90,27 @@ namespace Infrastructure.data.Repositories
         {
             return await context.Lecturers
                 .Include(l => l.User)
-                .FirstOrDefaultAsync(l => l.UserId == id);
+                .FirstOrDefaultAsync(l => l.userId == id);
         }
+
+
 
         public async Task<Lecturer?> GetByNameAsync(string name)
         {
             return await context.Lecturers
                 .Include(l => l.User)
-                .FirstOrDefaultAsync(l => l.User.FullName == name);
+                .FirstOrDefaultAsync(l => l.User.fullName == name);
         }
 
         public async Task<bool> HasDependentEntitiesAsync(string id)
         {
-            var hasCourse = await context.Courses.AnyAsync(c => c.CreatedBy == id);
+            var hasCourse = await context.Courses.AnyAsync(c => c.createdBy == id);
             return hasCourse;
         }
 
         public Task<Lecturer> RestoreAsync(Lecturer lecturer)
         {
-            lecturer.User.IsDeleted = false;
+            lecturer.User.isDeleted = false;
             var result = context.Lecturers.Update(lecturer);
             context.SaveChangesAsync();
             return Task.FromResult(result.Entity);

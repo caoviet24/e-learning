@@ -8,18 +8,18 @@ namespace Domain.Entites
 {
     public class Course : AuditableEntity
     {
-        public string Title { get; set; } = null!;
-        public string Description { get; set; } = null!;
-        public string Thumbnail { get; set; } = null!;
-        public bool IsActive { get; set; }
-        public string Status { get; set; } = null!;
-        public string FacultyId { get; set; } = null!;
-        public string MajorId { get; set; } = null!;
+        public string title { get; set; } = null!;
+        public string description { get; set; } = null!;
+        public string thumbNail { get; set; } = null!;
+        public bool isActive { get; set; }
+        public string status { get; set; } = null!;
+        public string facultyId { get; set; } = null!;
+        public string majorId { get; set; } = null!;
         public virtual Faculty Faculty { get; set; } = null!;
         public virtual Major Major { get; set; } = null!;
         public virtual User User { get; set; } = null!;
-
         public virtual ICollection<Student> Students { get; set; } = new HashSet<Student>();
         public virtual ICollection<Lesson> Lessons { get; set; } = new HashSet<Lesson>();
+        public virtual ICollection<Exam> Exams { get; set; } = new HashSet<Exam>();
     }
 }

@@ -44,7 +44,7 @@ namespace WebApi.Logging
             _config = config;
         }
 
-        public IDisposable BeginScope<TState>(TState state) => default!;
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
 
         public bool IsEnabled(LogLevel logLevel)
         {

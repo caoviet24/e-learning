@@ -8,24 +8,37 @@ namespace Domain.Entites
 {
     public class User : AuditableEntity
     {
-        public string Username { get; set; } = null!;
-        public string Password { get; set; } = null!;
-        public string Role { get; set; } = null!;
-        public string? FullName { get; set; }
-        public string? Nickname { get; set; }
-        public byte? Gender { get; set; }
-        public DateTime? Birth { get; set; }
-        public string? Avatar { get; set; } = null!;
-        public string? Email { get; set; } = null!;
-        public string? Phone { get; set; } = null!;
+        public string username { get; set; } = null!;
+        public string password { get; set; } = null!;
+        public string role { get; set; } = null!;
+        public string? fullName { get; set; }
+        public string? nickname { get; set; }
+        public byte? gender { get; set; }
+        public DateTime? birth { get; set; }
+        public string? avatar { get; set; } = null!;
+        public string? currentAddress { get; set; } = null!;
+        public string? email { get; set; } = null!;
+        public string? phone { get; set; } = null!;
         public virtual Student Student { get; set; } = null!;
         public virtual Lecturer Lecturer { get; set; } = null!;
         public virtual ICollection<Faculty> Faculties { get; set; } = new HashSet<Faculty>();
         public virtual ICollection<Major> Majors { get; set; } = new HashSet<Major>();
         public virtual ICollection<Class> Classes { get; set; } = new HashSet<Class>();
         public virtual ICollection<Course> Courses { get; set; } = new HashSet<Course>();
+
         public ICollection<Notify> CreatedNotifies { get; set; } = new HashSet<Notify>();
         public ICollection<Notify> ReceivedNotifies { get; set; } = new HashSet<Notify>();
+
+        public virtual ICollection<Exam> CreatedUserExams { get; set; } = new HashSet<Exam>();
+        public virtual ICollection<Exam> TesterExams { get; set; } = new HashSet<Exam>();
+        public virtual ICollection<ExamResultByUser> ExamResultsByUser { get; set; } = new HashSet<ExamResultByUser>();
+
+        public virtual ICollection<Post> Posts { get; set; } = new HashSet<Post>();
+        public virtual ICollection<SavedPosts> SavedPosts { get; set; } = new HashSet<SavedPosts>();
+        public virtual ICollection<LikePost> LikePosts { get; set; } = new HashSet<LikePost>();
+        public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
+        public virtual ICollection<ReplyComment> ReplyCommentsSender { get; set; } = new HashSet<ReplyComment>();
+        public virtual ICollection<ReplyComment> ReplyCommentsReceiver { get; set; } = new HashSet<ReplyComment>();
 
     }
 }

@@ -10,15 +10,15 @@ namespace Domain.Interfaces
     /// </summary>
     public interface IUnitOfWork : IDisposable
     {
-        /// Repository for managing user entities
+        /// Repository for managing entities
         IUserRepository Users { get; }
-        
-        /// Repository for managing faculty entities
         IFacultyRepository Faculties { get; }
-        
-        /// Repository for managing major entities
         IMajorRepository Majors { get; }
-        
+        IClassRepository Classes { get; }
+        ILecturerRepository Lecturers { get; }
+        IStudentRepository Students { get; }
+        ICourseRepository Courses { get; }
+
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();

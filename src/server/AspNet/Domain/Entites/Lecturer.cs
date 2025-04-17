@@ -7,11 +7,13 @@ namespace Domain.Entites
 {
     public class Lecturer
     {
-        public string CardId { get; set; } = null!;
-        public string ClassId { get; set; } = null!;
-        public string MajorId { get; set; } = null!;
-        public string FacultyId { get; set; } = null!;
-        public string UserId { get; set; } = null!;
+        public string cardId { get; set; } = null!;
+        public string majorId { get; set; } = null!;
+        public string facultyId { get; set; } = null!;
+        public string userId { get; set; } = null!;
+        public string position { get; set; } = null!;
+        public string status { get; set; } = null!;
+        public DateTime joinedAt { get; set; }
         public virtual Class Class { get; set; } = null!;
         public virtual Major Major { get; set; } = null!;
         public virtual Faculty Faculty { get; set; } = null!;

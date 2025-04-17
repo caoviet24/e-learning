@@ -14,7 +14,6 @@ using Application.Faculties.Commands.DeleteSoft;
 
 namespace WebApi.Controllers
 {
-    [ApiController]
     [Route("faculties")]
     public class FacultyController(ISender sender, ILogger<FacultyController> logger) : ControllerBase
     {
@@ -38,25 +37,27 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> Update([FromBody] UpdateFacultyCommand command)
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateFacultyCommand command)
         {
+            command.Id = id;
             return Ok(await sender.Send(command));
         }
 
         [HttpDelete("delete/{Id}")]
-        public async Task<IActionResult> Delete([FromQuery] DeleteFacultyCommand command)
+        public async Task<IActionResult> Delete(DeleteFacultyCommand command)
         {
+            logger.LogInformation($"Deleting faculty with ID: {command.Id}");
             return Ok(await sender.Send(command));
         }
 
         [HttpDelete("delete-soft/{Id}")]
-        public async Task<IActionResult> DeleteSoft([FromQuery] DeleteSoftFacultyCommand command)
+        public async Task<IActionResult> DeleteSoft(DeleteSoftFacultyCommand command)
         {
             return Ok(await sender.Send(command));
         }
 
         [HttpPut("restore/{Id}")]
-        public async Task<IActionResult> Restore([FromQuery] RestoreFacultyCommand command)
+        public async Task<IActionResult> Restore(RestoreFacultyCommand command)
         {
             return Ok(await sender.Send(command));
         }

@@ -8,11 +8,11 @@ namespace Domain.Interfaces
 {
     public interface IFacultyRepository
     {
-        Task<(IEnumerable<Faculty> Items, int TotalCount, int PageNumber, int PageSize)> GetAllAsync(
+        Task<(IEnumerable<Faculty> Items, int totalRecords, int pageNumber, int pageSize)> GetAllAsync(
             int pageNumber = 1,
             int pageSize = 10,
             string? search = null,
-            bool? isDeleted = false);
+            bool? isDeleted = null);
         Task<Faculty?> GetByIdAsync(string id);
         Task<Faculty?> GetByNameAsync(string name);
         Task<Faculty?> GetByCodeAsync(string code);

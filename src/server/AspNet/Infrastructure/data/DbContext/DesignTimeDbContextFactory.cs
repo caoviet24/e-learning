@@ -11,20 +11,15 @@ namespace Infrastructure.Data.DbContext
     {
         public ApplicationDbContext CreateDbContext(string[] args)
         {
-            // Get environment
             string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-
-            // Build configuration
             IConfigurationRoot configuration = new ConfigurationBuilder()
                 .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../WebApi"))
                 .AddJsonFile("appsettings.json", optional: false)
                 .AddJsonFile($"appsettings.{environment}.json", optional: true)
                 .Build();
 
-            // Get connection string
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            // Create options builder
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             optionsBuilder.UseNpgsql(connectionString);
 

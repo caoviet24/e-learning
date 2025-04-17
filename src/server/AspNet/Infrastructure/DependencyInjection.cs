@@ -5,7 +5,6 @@ using Infrastructure.data.Repositories;
 using Infrastructure.Data.DbContext;
 using Infrastructure.Data.Interceptor;
 using Infrastructure.Data.Repositories;
-using Infrastructure.ExternalServices;
 using Infrastructure.Redis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -14,6 +13,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using StackExchange.Redis;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging;
+using Infrastructure.Configurations;
+using Infrastructure.Services;
+using Infrastructure.ExternalServices;
 
 namespace Infrastructure;
 
@@ -21,22 +24,33 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructureService(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        {
+            options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
+            options.UseNpgsql(connectionString);
+            options.LogTo(_ => { }, LogLevel.None);
+        });
+        services.Configure<JwtConfiguration>(configuration.GetSection("Jwt"));
+        services.AddScoped<ISaveChangesInterceptor, AuditableInterceptor>();
+        services.AddScoped<ApplicationDbContextInitialiser>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
-        services.AddSingleton<TimeProvider>(TimeProvider.System);
         services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IEmailService, EmailService>();
 
-        services.AddScoped<ISaveChangesInterceptor, AuditableInterceptor>();
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IFacultyRepository, FacultyRepository>();
         services.AddScoped<IMajorRepository, MajorRepository>();
+        // services.AddScoped<IClassRepository, ClassRepository>();
         services.AddScoped<ILecturerRepository, LecturerRepository>();
-        
-        services.AddScoped<ApplicationDbContextInitialiser>();
+        // services.AddScoped<IStudentRepository, StudentRepository>();
+        services.AddScoped<ICourseRepository, CourseRepository>();
+
+
 
         services.AddAuthentication(opt =>
         {
@@ -58,8 +72,6 @@ public static class DependencyInjection
             };
         });
 
-
-        // Configure Redis
         services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
             var configuration = sp.GetRequiredService<IConfiguration>();

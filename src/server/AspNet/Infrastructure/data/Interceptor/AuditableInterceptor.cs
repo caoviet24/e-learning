@@ -40,28 +40,29 @@ namespace Infrastructure.Data.Interceptor
             if (context == null) return;
 
             var currentUser = _user.getCurrentUser();
-            var currentTime = _timeProvider.GetUtcNow().DateTime;
 
             foreach (var entry in context.ChangeTracker.Entries<AuditableEntity>())
             {
                 if (entry.State == EntityState.Added)
                 {
-                    entry.Entity.CreatedBy = currentUser;
-                    entry.Entity.CreatedAt = currentTime;
+                    entry.Entity.createdBy = currentUser;
+                    entry.Entity.createdAt = DateTime.UtcNow;
+                    entry.Entity.isDeleted = false;
                 }
 
                 if (entry.State == EntityState.Modified)
                 {
-                    entry.Entity.UpdatedBy = currentUser;
-                    entry.Entity.UpdatedAt = currentTime;
-                }
-
-                if (entry.State == EntityState.Deleted)
-                {
-                    entry.State = EntityState.Modified;
-                    entry.Entity.IsDeleted = true;
-                    entry.Entity.DeletedBy = currentUser;
-                    entry.Entity.DeletedAt = currentTime;
+                    if (entry.Entity.isDeleted == true)
+                    {
+                        entry.Entity.isDeleted = true;
+                        entry.Entity.deletedBy = currentUser;
+                        entry.Entity.deletedAt = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        entry.Entity.updatedBy = currentUser;
+                        entry.Entity.updatedAt = DateTime.UtcNow;
+                    }
                 }
             }
         }

@@ -8,20 +8,17 @@ namespace Application.Common.DTOs
     public class MajorDto
     {
         public string Id { get; set; } = null!;
-        public string Name { get; set; } = null!;
-        public string Code { get; set; } = null!;
-        public string FacultyId { get; set; } = null!;
-        public string? FacultyName { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public bool? IsDeleted { get; set; }
+        public string name { get; set; } = null!;
+        public string code { get; set; } = null!;
+        public bool? isDeleted { get; set; }
     }
 
-    public class MajorListDto
+    public class MajorDtoWithFaculty
     {
-        public IEnumerable<MajorDto> Items { get; set; } = new List<MajorDto>();
-        public int TotalCount { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
+        public string Id { get; set; } = null!;
+        public string name { get; set; } = null!;
+        public string code { get; set; } = null!;
+        public bool? isDeleted { get; set; }
+        public FacultyDto? faculty { get; set; }
     }
 }

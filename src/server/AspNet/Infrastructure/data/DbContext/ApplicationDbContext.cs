@@ -27,6 +27,16 @@ namespace Infrastructure.data.context
         public DbSet<Notify> Notifications { get; set; } = null!;
         public DbSet<Student> Students { get; set; } = null!;
         public DbSet<Class> Classes { get; set; } = null!;
+        public DbSet<Exam> Exams { get; set; } = null!;
+        public DbSet<ExamQuestion> ExamQuestions { get; set; } = null!;
+        public DbSet<ExamResultByUser> ExamResultsByUser { get; set; } = null!;
+        public DbSet<Post> Posts { get; set; } = null!;
+        public DbSet<SavedPosts> SavedPosts { get; set; } = null!;
+        public DbSet<Comment> Comments { get; set; } = null!;
+        public DbSet<ReplyComment> ReplyComments { get; set; } = null!;
+        public DbSet<LikePost> LikePosts { get; set; } = null!;
+
+
 
         /// <summary>
         /// Configures the entity models and their relationships
@@ -35,7 +45,7 @@ namespace Infrastructure.data.context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
+
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -44,43 +54,43 @@ namespace Infrastructure.data.context
             modelBuilder.Entity<Lecturer>(entity =>
             {
                 entity.ToTable("Lecturers");
-                entity.HasKey(e => e.CardId);
+                entity.HasKey(e => e.cardId);
 
                 entity.HasOne(e => e.User)
                     .WithOne(u => u.Lecturer)
-                    .HasForeignKey<Lecturer>(e => e.UserId)
+                    .HasForeignKey<Lecturer>(e => e.userId)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Faculty)
                     .WithMany(f => f.Lecturers)
-                    .HasForeignKey(e => e.FacultyId)
+                    .HasForeignKey(e => e.facultyId)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Major)
                     .WithMany(m => m.Lecturers)
-                    .HasForeignKey(e => e.MajorId)
+                    .HasForeignKey(e => e.majorId)
                     .OnDelete(DeleteBehavior.Restrict);
-                    
+
             });
 
             modelBuilder.Entity<Student>(entity =>
             {
                 entity.ToTable("Students");
-                entity.HasKey(e => e.CardId);
+                entity.HasKey(e => e.cardId);
 
                 entity.HasOne(e => e.User)
                     .WithOne(u => u.Student)
-                    .HasForeignKey<Student>(e => e.UserId)
+                    .HasForeignKey<Student>(e => e.userId)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Faculty)
                    .WithMany(f => f.Students)
-                   .HasForeignKey(e => e.FacultyId)
+                   .HasForeignKey(e => e.facultyId)
                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Major)
                     .WithMany(m => m.Students)
-                    .HasForeignKey(e => e.MajorId)
+                    .HasForeignKey(e => e.majorId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -91,9 +101,9 @@ namespace Infrastructure.data.context
 
                 entity.HasOne(e => e.User)
                     .WithMany(u => u.Faculties)
-                    .HasForeignKey(e => e.CreatedBy)
+                    .HasForeignKey(e => e.createdBy)
                     .OnDelete(DeleteBehavior.Restrict);
-                
+
             });
 
             modelBuilder.Entity<Major>(entity =>
@@ -102,12 +112,12 @@ namespace Infrastructure.data.context
 
                 entity.HasOne(e => e.User)
                     .WithMany(u => u.Majors)
-                    .HasForeignKey(e => e.CreatedBy)
+                    .HasForeignKey(e => e.createdBy)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Faculty)
                     .WithMany(m => m.Majors)
-                    .HasForeignKey(m => m.FacultyId)
+                    .HasForeignKey(m => m.facultyId)
                     .OnDelete(DeleteBehavior.Restrict);
 
             });
@@ -118,17 +128,17 @@ namespace Infrastructure.data.context
 
                 entity.HasOne(e => e.Faculty)
                       .WithMany(f => f.Classes)
-                      .HasForeignKey(e => e.FacultyId)
+                      .HasForeignKey(e => e.facultyId)
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Major)
                       .WithMany(m => m.Classes)
-                      .HasForeignKey(e => e.MajorId)
+                      .HasForeignKey(e => e.majorId)
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Lecturer)
                         .WithOne(l => l.Class)
-                        .HasForeignKey<Class>(e => e.LecturerId)
+                        .HasForeignKey<Class>(e => e.lecturerId)
                         .OnDelete(DeleteBehavior.Restrict);
 
             });
@@ -139,17 +149,17 @@ namespace Infrastructure.data.context
 
                 entity.HasOne(e => e.Faculty)
                     .WithMany(f => f.Courses)
-                    .HasForeignKey(e => e.FacultyId)
+                    .HasForeignKey(e => e.facultyId)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Major)
                     .WithMany(f => f.Courses)
-                    .HasForeignKey(e => e.MajorId)
+                    .HasForeignKey(e => e.majorId)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.User)
                         .WithMany(e => e.Courses)
-                        .HasForeignKey(e => e.CreatedBy)
+                        .HasForeignKey(e => e.createdBy)
                         .OnDelete(DeleteBehavior.Restrict);
 
             });
@@ -160,65 +170,208 @@ namespace Infrastructure.data.context
 
                 entity.HasOne(e => e.Course)
                     .WithMany(c => c.Lessons)
-                    .HasForeignKey(e => e.CourseId)
+                    .HasForeignKey(e => e.courseId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
-            
-            
-            
+
+
+
             modelBuilder.Entity<Notify>(entity =>
             {
                 entity.HasKey(e => e.Id);
 
                 entity.HasOne(e => e.Faculty)
                       .WithMany(f => f.Notifies)
-                      .HasForeignKey(e => e.FacultyId)
+                      .HasForeignKey(e => e.facultyId)
                       .OnDelete(DeleteBehavior.Restrict)
                       .IsRequired(false);
 
                 entity.HasOne(e => e.Major)
                       .WithMany(m => m.Notifies)
-                      .HasForeignKey(e => e.MajorId)
+                      .HasForeignKey(e => e.majorId)
                       .OnDelete(DeleteBehavior.Restrict)
                       .IsRequired(false);
 
                 entity.HasOne(e => e.Class)
                       .WithMany(c => c.Notifies)
-                      .HasForeignKey(e => e.ClassId)
+                      .HasForeignKey(e => e.classId)
                       .OnDelete(DeleteBehavior.Restrict)
                       .IsRequired(false);
 
                 entity.HasOne(e => e.Sender)
                       .WithMany(u => u.CreatedNotifies)
-                      .HasForeignKey(e => e.CreatedBy)
+                      .HasForeignKey(e => e.createdBy)
                       .OnDelete(DeleteBehavior.Restrict)
                       .IsRequired(false);
 
                 entity.HasOne(e => e.Receiver)
                         .WithMany(u => u.ReceivedNotifies)
-                        .HasForeignKey(e => e.ReceiverId)
+                        .HasForeignKey(e => e.receiverId)
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired(false);
             });
 
-            // Configure global query filters for soft delete
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            modelBuilder.Entity<Exam>(entity =>
             {
-                if (typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
-                {
-                    var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
-                    var property = System.Linq.Expressions.Expression.Property(parameter, "IsDeleted");
-                    var nullConstant = System.Linq.Expressions.Expression.Constant(null, typeof(bool?));
-                    var falseConstant = System.Linq.Expressions.Expression.Constant(false, typeof(bool?)); 
+                entity.HasKey(e => e.Id);
 
-                    var nullCheck = System.Linq.Expressions.Expression.Equal(property, nullConstant);
-                    var falseCheck = System.Linq.Expressions.Expression.Equal(property, falseConstant);
-                    var orExpression = System.Linq.Expressions.Expression.OrElse(nullCheck, falseCheck);
+                entity.HasOne(e => e.Faculty)
+                      .WithMany(f => f.Exams)
+                      .HasForeignKey(e => e.facultyId)
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired(false);
 
-                    var lambda = System.Linq.Expressions.Expression.Lambda(orExpression, parameter);
-                    entityType.SetQueryFilter(lambda);
-                }
-            }
+                entity.HasOne(e => e.Major)
+                      .WithMany(m => m.Exams)
+                      .HasForeignKey(e => e.majorId)
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired(false);
+
+                entity.HasOne(e => e.Class)
+                      .WithMany(c => c.Exams)
+                      .HasForeignKey(e => e.classId)
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired(false);
+
+                entity.HasOne(e => e.Course)
+                      .WithMany(c => c.Exams)
+                      .HasForeignKey(e => e.courseId)
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired(false);
+
+                entity.HasOne(e => e.Tester)
+                        .WithMany(u => u.TesterExams)
+                        .HasForeignKey(e => e.testerId)
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.CreatedUser)
+                        .WithMany(u => u.CreatedUserExams)
+                        .HasForeignKey(e => e.createdBy)
+                        .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ExamQuestion>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.Exam)
+                      .WithMany(e => e.ExamQuestions)
+                      .HasForeignKey(e => e.examId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<ExamResultByUser>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.User)
+                      .WithMany(u => u.ExamResultsByUser)
+                      .HasForeignKey(e => e.createdBy)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Exam)
+                      .WithMany(e => e.ExamResults)
+                      .HasForeignKey(e => e.examId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+
+            modelBuilder.Entity<Post>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.Author)
+                      .WithMany(u => u.Posts)
+                      .HasForeignKey(e => e.createdBy)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Major)
+                      .WithMany(m => m.Posts)
+                      .HasForeignKey(e => e.majorId)
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired(false);
+
+                entity.HasOne(e => e.Faculty)
+                      .WithMany(c => c.Posts)
+                      .HasForeignKey(e => e.facultyId)
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired(false);
+
+            });
+
+            modelBuilder.Entity<SavedPosts>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.User)
+                      .WithMany(u => u.SavedPosts)
+                      .HasForeignKey(e => e.createdBy)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Post)
+                      .WithMany(p => p.SavedPosts)
+                      .HasForeignKey(e => e.postId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Comment>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.Sender)
+                      .WithMany(u => u.Comments)
+                      .HasForeignKey(e => e.createdBy)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Post)
+                      .WithMany(p => p.Comments)
+                      .HasForeignKey(e => e.postId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ReplyComment>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.Sender)
+                      .WithMany(u => u.ReplyCommentsSender)
+                      .HasForeignKey(e => e.createdBy)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Receiver)
+                      .WithMany(u => u.ReplyCommentsReceiver)
+                      .HasForeignKey(e => e.receiverId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Comment)
+                      .WithMany(c => c.ReplyComments)
+                      .HasForeignKey(e => e.commentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+
+
+
+            // Enable filtering for soft delete
+            // foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            // {
+            //     if (typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
+            //     {
+            //         var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
+            //         var property = System.Linq.Expressions.Expression.Property(parameter, "isDeleted");
+            //         var nullConstant = System.Linq.Expressions.Expression.Constant(null, typeof(bool?));
+            //         var falseConstant = System.Linq.Expressions.Expression.Constant(false, typeof(bool?));
+
+            //         var nullCheck = System.Linq.Expressions.Expression.Equal(property, nullConstant);
+            //         var falseCheck = System.Linq.Expressions.Expression.Equal(property, falseConstant);
+            //         var orExpression = System.Linq.Expressions.Expression.OrElse(nullCheck, falseCheck);
+
+            //         var lambda = System.Linq.Expressions.Expression.Lambda(orExpression, parameter);
+            //         entityType.SetQueryFilter(lambda);
+            //     }
+            // }
 
         }
     }

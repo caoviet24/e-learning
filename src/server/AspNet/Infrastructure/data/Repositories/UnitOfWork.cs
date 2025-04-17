@@ -18,7 +18,10 @@ namespace Infrastructure.Data.Repositories
         private IUserRepository? _userRepository;
         private IFacultyRepository? _facultyRepository;
         private IMajorRepository? _majorRepository;
+        private IClassRepository? _classRepository;
         private ILecturerRepository? _lecturerRepository;
+        private IStudentRepository? _studentRepository;
+        private ICourseRepository? _courseRepository;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -28,7 +31,10 @@ namespace Infrastructure.Data.Repositories
         public IUserRepository Users => _userRepository ??= new UserRepository(_context);
         public IFacultyRepository Faculties => _facultyRepository ??= new FacultyRepository(_context);
         public IMajorRepository Majors => _majorRepository ??= new MajorRepository(_context);
+        public IClassRepository Classes => _classRepository ??= new ClassRepository(_context);
         public ILecturerRepository Lecturers => _lecturerRepository ??= new LecturerRepository(_context);
+        public IStudentRepository Students => _studentRepository ??= new StudentRepository(_context);
+        public ICourseRepository Courses => _courseRepository ??= new CourseRepository(_context);
 
 
         public async Task<int> SaveChangesAsync()

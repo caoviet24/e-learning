@@ -14,13 +14,13 @@ namespace Application.Faculties.Commands.UpdateFaculty
                 .NotEmpty()
                 .WithMessage("ID khoa không được để trống.");
 
-            RuleFor(x => x.Name)
+            RuleFor(x => x.name)
                 .NotEmpty()
                 .WithMessage("Tên khoa không được để trống.")
                 .MaximumLength(200)
                 .WithMessage("Tên khoa không được vượt quá 200 ký tự.");
 
-            RuleFor(x => x.Code)
+            RuleFor(x => x.code)
                 .NotEmpty()
                 .WithMessage("Mã khoa không được để trống.")
                 .MaximumLength(50)

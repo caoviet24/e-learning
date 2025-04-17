@@ -12,7 +12,7 @@ using MediatR;
 
 namespace Application.Faculties.Commands.CreateFaculty
 {
-    [Authorize(Role = "ADMIN")]
+    [Authorize]
     public class CreateFacultyCommand : IRequest<Response<FacultyDto>>
     {
         public string Name { get; set; } = null!;
@@ -47,6 +47,7 @@ namespace Application.Faculties.Commands.CreateFaculty
             return new Response<FacultyDto>
             {
                 Data = data,
+                action = Domain.Enums.Action.CREATE.ToString(),
                 Message = "Thêm khoa thành công",
                 Ok = true,
             };

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Application.Common.DTOs;
 using Application.Common.Sercurity;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
@@ -29,7 +30,7 @@ namespace Application.Faculties.Commands.RestoreFaculty
                 throw new NotFoundException($"Không tìm thấy khoa với ID: {request.Id}");
             }
 
-            if (faculty.IsDeleted != true)
+            if (faculty.isDeleted != true)
             {
                 throw new BadRequestException("Khoa này chưa bị xóa.");
             }
@@ -47,6 +48,7 @@ namespace Application.Faculties.Commands.RestoreFaculty
             return new Response<FacultyDto>
             {
                 Data = data,
+                action = Domain.Enums.Action.RESTORE.ToString(),
                 Message = "Khôi phục khoa thành công",
                 Ok = true,
             };

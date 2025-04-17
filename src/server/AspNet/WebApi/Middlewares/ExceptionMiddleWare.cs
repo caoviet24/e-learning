@@ -44,7 +44,7 @@ namespace WebApi.Middlewares
 
             var result = JsonSerializer.Serialize(new
             {
-                Success = false,
+                Ok = false,
                 statusCode = response.StatusCode,
                 message = exception.Message,
                 // stackTrace = _env.IsDevelopment() ? exception.StackTrace : null

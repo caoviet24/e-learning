@@ -15,41 +15,43 @@ namespace Infrastructure.data.Repositories
         {
             var result = await context.Majors.AddAsync(major);
             await context.SaveChangesAsync();
-            return result.Entity;
+            return await context.Majors.Include(m => m.Faculty).FirstAsync(m => m.Id == major.Id)
+                   ?? throw new InvalidOperationException("Major not found after insert");
         }
 
         public async Task<Major> DeleteAsync(Major major)
         {
-            var result = context.Majors.Update(major);
+            var result = context.Majors.Remove(major);
             await context.SaveChangesAsync();
-            return result.Entity;
+            return result != null ? major : throw new InvalidOperationException("Major not found after delete");
         }
 
         public async Task<Major> DeleteSoftAsync(Major major)
         {
-            major.IsDeleted = true;
+            major.isDeleted = true;
             var result = context.Majors.Update(major);
             await context.SaveChangesAsync();
-            return result.Entity;
+            return await context.Majors.Include(m => m.Faculty).FirstAsync(m => m.Id == major.Id)
+                   ?? throw new InvalidOperationException("Major not found after delete-soft");
         }
 
-        public async Task<(IEnumerable<Major> Items, int TotalCount, int PageNumber, int PageSize)> GetAllAsync(int pageNumber = 1, int pageSize = 10, string? search = null, bool? isDeleted = false, string? facultyId = null)
+        public async Task<(IEnumerable<Major> Items, int totalCount, int pageNumber, int pageSize)> GetAllAsync(int pageNumber = 1, int pageSize = 10, string? search = null, bool? isDeleted = null, string? facultyId = null)
         {
-            var query = context.Majors.AsQueryable();
+            var query = context.Majors.Include(m => m.Faculty).AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(m => m.Name.Contains(search) || m.Code.Contains(search));
+                query = query.Where(m => m.name.Contains(search) || m.code.Contains(search));
             }
 
-            if (isDeleted.HasValue)
+            if (isDeleted != null)
             {
-                query = query.Where(m => m.IsDeleted == isDeleted);
+                query = query.Where(m => m.isDeleted == isDeleted);
             }
 
             if (!string.IsNullOrEmpty(facultyId))
             {
-                query = query.Where(m => m.FacultyId == facultyId);
+                query = query.Where(m => m.facultyId == facultyId);
             }
 
             var totalCount = await query.CountAsync();
@@ -69,39 +71,46 @@ namespace Infrastructure.data.Repositories
 
         public async Task<Major?> GetByCodeAsync(string code)
         {
-            return await context.Majors.FirstOrDefaultAsync(m => m.Code == code);
+            return await context.Majors.Include(m => m.Faculty).FirstOrDefaultAsync(m => m.code == code);
         }
 
         public async Task<IEnumerable<Major>> GetByFacultyIdAsync(string facultyId)
         {
-            return await context.Majors.Where(m => m.FacultyId == facultyId).ToListAsync(); ;
+            return await context.Majors.Include(m => m.Faculty).Where(m => m.facultyId == facultyId).ToListAsync();
         }
 
         public async Task<Major?> GetByIdAsync(string id)
         {
-            return await context.Majors.FindAsync(id);
+            return await context.Majors.Include(m => m.Faculty).FirstOrDefaultAsync(m => m.Id == id);
+        }
+
+        public async Task<Major?> GetByNameAsync(string name)
+        {
+            return await context.Majors.Include(m => m.Faculty).FirstOrDefaultAsync(m => m.name == name);
         }
 
         public async Task<bool> HasDependentEntitiesAsync(string id)
         {
-            var hasLecturer = await context.Lecturers.AnyAsync(l => l.MajorId == id);
-            var hasStudent = await context.Students.AnyAsync(s => s.MajorId == id);
+            var hasLecturer = await context.Lecturers.AnyAsync(l => l.majorId == id);
+            var hasStudent = await context.Students.AnyAsync(s => s.majorId == id);
             return hasLecturer || hasStudent;
         }
 
         public async Task<Major> RestoreAsync(Major major)
         {
-            major.IsDeleted = false;
+            major.isDeleted = false;
             var result = context.Majors.Update(major);
             await context.SaveChangesAsync();
-            return result.Entity;
+            return await context.Majors.Include(m => m.Faculty).FirstAsync(m => m.Id == major.Id)
+                   ?? throw new InvalidOperationException("Major not found after restore");
         }
 
         public async Task<Major> UpdateAsync(Major major)
         {
             var result = context.Majors.Update(major);
             await context.SaveChangesAsync();
-            return result.Entity;
+            return await context.Majors.Include(m => m.Faculty).FirstAsync(m => m.Id == major.Id)
+                   ?? throw new InvalidOperationException("Major not found after update");
         }
     }
 }

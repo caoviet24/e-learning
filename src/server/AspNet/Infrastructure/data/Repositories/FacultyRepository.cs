@@ -11,7 +11,7 @@ namespace Infrastructure.data.Repositories
 {
     public class FacultyRepository(ApplicationDbContext context) : IFacultyRepository
     {
-        
+
         public async Task<Faculty> AddAsync(Faculty faculty)
         {
             var result = await context.Faculties.AddAsync(faculty);
@@ -27,24 +27,29 @@ namespace Infrastructure.data.Repositories
         }
         public async Task<Faculty> DeleteSoftAsync(Faculty faculty)
         {
-            faculty.IsDeleted = true;
+            faculty.isDeleted = true;
             var result = context.Faculties.Update(faculty);
             await context.SaveChangesAsync();
             return result.Entity;
         }
 
-        public async Task<(IEnumerable<Faculty> Items, int TotalCount, int PageNumber, int PageSize)> GetAllAsync(int pageNumber = 1, int pageSize = 10, string? search = null, bool? isDeleted = false)
+        public async Task<(IEnumerable<Faculty> Items, int totalRecords, int pageNumber, int pageSize)> GetAllAsync(
+            int pageNumber = 1,
+            int pageSize = 10,
+            string? search = null,
+            bool? isDeleted = null
+        )
         {
             var query = context.Faculties.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(f => f.Name.Contains(search) || f.Code.Contains(search));
+                query = query.Where(f => f.name.Contains(search) || f.code.Contains(search));
             }
 
-            if (isDeleted.HasValue)
+            if (isDeleted != null)
             {
-                query = query.Where(f => f.IsDeleted == isDeleted);
+                query = query.Where(f => f.isDeleted == isDeleted);
             }
 
             var totalCount = await query.CountAsync();
@@ -62,9 +67,10 @@ namespace Infrastructure.data.Repositories
             return (items, totalCount, pageNumber, pageSize);
         }
 
+
         public Task<Faculty?> GetByCodeAsync(string code)
         {
-            return context.Faculties.FirstOrDefaultAsync(f => f.Code == code);
+            return context.Faculties.FirstOrDefaultAsync(f => f.code == code);
         }
 
         public Task<Faculty?> GetByIdAsync(string id)
@@ -74,20 +80,20 @@ namespace Infrastructure.data.Repositories
 
         public Task<Faculty?> GetByNameAsync(string name)
         {
-            return context.Faculties.FirstOrDefaultAsync(f => f.Name == name);
+            return context.Faculties.FirstOrDefaultAsync(f => f.name == name);
         }
 
         public async Task<bool> HasDependentEntitiesAsync(string id)
         {
-            var hasMajor = await context.Majors.AnyAsync(m => m.FacultyId == id);
-            var hasLecturer = await context.Lecturers.AnyAsync(l => l.FacultyId == id);
-            var hasStudent = await context.Students.AnyAsync(s => s.FacultyId == id);
+            var hasMajor = await context.Majors.AnyAsync(m => m.facultyId == id);
+            var hasLecturer = await context.Lecturers.AnyAsync(l => l.facultyId == id);
+            var hasStudent = await context.Students.AnyAsync(s => s.facultyId == id);
             return hasMajor || hasLecturer || hasStudent;
         }
 
         public async Task<Faculty> RestoreAsync(Faculty faculty)
         {
-            faculty.IsDeleted = false;
+            faculty.isDeleted = false;
             var result = context.Faculties.Update(faculty);
             await context.SaveChangesAsync();
             return result.Entity;

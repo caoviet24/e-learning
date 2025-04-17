@@ -4,11 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Application.Common.DTOs;
 using Application.Common.Interfaces;
-using Application.Common.Sercurity;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
-using System.Text.Json;
+
 
 namespace Application.Identites.Commands.SignIn
 {
@@ -30,21 +29,35 @@ namespace Application.Identites.Commands.SignIn
                 throw new NotFoundException("Tài khoản không tồn tại");
             }
 
-            var mathedPassword = BCrypt.Net.BCrypt.Verify(request.Password, exitUser.Password);
-            var isValidRole = exitUser.Role.Equals(request.Role, StringComparison.OrdinalIgnoreCase);
-            if (!mathedPassword || !isValidRole)
+            var isMathPassword = BCrypt.Net.BCrypt.Verify(request.Password, exitUser.password);
+            if (!isMathPassword)
             {
-                throw new BadRequestException("Thông tin đăng nhập không chính xác");
+                throw new BadRequestException("Mật khẩu không đúng");
             }
-            
+            if (exitUser.isDeleted == true)
+            {
+                throw new BadRequestException("Tài khoản đã bị xóa");
+            }
+
+            if (request.Role != exitUser.role)
+            {
+                throw new BadRequestException("Thông tin tài khoản không đúng");
+            }
+
+
+
             var accessToken = jwtService.generateAccessToken(exitUser);
             var refreshToken = jwtService.generateRefreshToken(exitUser);
-            
-            
+
             var expiry = TimeSpan.FromDays(30);
-            await redisService.SetStringAsync($"refresh_token:{exitUser.Id}", refreshToken, expiry);
-            await redisService.SetStringAsync($"refresh_token_lookup:{refreshToken}", exitUser.Id, expiry);
-            
+            var tasks = new[]
+            {
+                redisService.SetStringAsync($"refresh_token:{exitUser.Id}", refreshToken, expiry),
+                redisService.SetStringAsync($"refresh_token_lookup:{refreshToken}", exitUser.Id, expiry)
+            };
+
+            await Task.WhenAll(tasks);
+
             return new TokenDto
             {
                 accessToken = accessToken,

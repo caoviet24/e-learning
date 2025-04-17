@@ -19,31 +19,15 @@ namespace WebApi.Services
 
         public string getCurrentUser()
         {
-            var user = _httpContextAccessor.HttpContext?.User;
-            
-            if (user == null || !user.Claims.Any())
+            var userId = _httpContextAccessor.HttpContext?.User?.Claims?
+                .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
             {
-                _logger.LogWarning("User context or claims are null/empty");
+                _logger.LogWarning("User ID not found in claims.");
                 return string.Empty;
             }
 
-            // Try to find the nameidentifier claim (standard claim type for user ID)
-            string userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            // If not found, try the "nameid" claim (which is in your JWT token)
-            if (string.IsNullOrEmpty(userId))
-            {
-                userId = user.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value ?? string.Empty;
-            }
-
-            _logger.LogInformation($"UserId: {userId}");
-            
-            // Log all claims for debugging
-            foreach (var claim in user.Claims)
-            {
-                _logger.LogDebug($"Claim: {claim.Type} = {claim.Value}");
-            }
-            
             return userId;
         }
         

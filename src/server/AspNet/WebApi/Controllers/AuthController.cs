@@ -1,27 +1,24 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Application.Identites.Commands.SignIn;
 using Application.Common.Interfaces;
+using Application.Identites.Commands.SignIn;
+using Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using Domain.Exceptions;
 
 namespace WebApi.Controllers
 {
     [ApiController]
     [Route("auth")]
-    public class Auth : ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly ISender _sender;
-        private readonly ILogger<Auth> _logger;
+        private readonly ILogger<AuthController> _logger;
 
-        public Auth(ISender sender, ILogger<Auth> logger)
+        public AuthController(ISender sender, ILogger<AuthController> logger)
         {
             _sender = sender;
             _logger = logger;
@@ -31,14 +28,15 @@ namespace WebApi.Controllers
         public async Task<IActionResult> Login([FromBody] SignInCommand command)
         {
             var result = await _sender.Send(command);
-            return Ok(new { 
+            return Ok(new
+            {
                 message = "Đăng nhập thành công",
                 success = true,
-                access_token = result.accessToken,
-                refresh_token = result.refreshToken
+                accessToken = result.accessToken,
+                refreshToken = result.refreshToken
             });
         }
-        
+
         // [HttpPost("register")]
         // public async Task<IActionResult> Register([FromBody] RegisterCommand command)
         // {
@@ -48,8 +46,8 @@ namespace WebApi.Controllers
         //         success = true
         //     });
         // }
-        
-        [HttpPost("refresh")]
+
+        [HttpGet("refresh")]
         public async Task<IActionResult> RefreshToken()
         {
             var refreshToken = HttpContext.Request.Headers["refresh_token"].ToString();
@@ -57,13 +55,14 @@ namespace WebApi.Controllers
             {
                 return Unauthorized(new { message = "No refresh token provided", success = false });
             }
-            
+
             try
             {
                 var authService = HttpContext.RequestServices.GetRequiredService<IIdentitiesService>();
                 var result = await authService.RefreshToken(refreshToken);
-                
-                return Ok(new {
+
+                return Ok(new
+                {
                     accessToken = result.accessToken,
                     refreshToken = result.refreshToken
                 });
@@ -72,12 +71,9 @@ namespace WebApi.Controllers
             {
                 return BadRequest(new { message = ex.Message, success = false });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred while refreshing token", success = false });
-            }
         }
-        
+
+        [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> GetCurrentUser()
         {

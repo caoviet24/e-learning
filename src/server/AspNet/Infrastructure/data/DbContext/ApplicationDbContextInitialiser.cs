@@ -55,7 +55,7 @@ namespace Infrastructure.Data.DbContext
         {
             // Default user
             var adminRoleString = Role.ADMIN.ToString();
-            var adminExists = await _context.Users.AnyAsync(u => u.Role == adminRoleString);
+            var adminExists = await _context.Users.AnyAsync(u => u.role == adminRoleString);
             if (adminExists)
             {
                 _logger.LogInformation("Admin user already exists. Skipping seeding.");
@@ -65,21 +65,18 @@ namespace Infrastructure.Data.DbContext
 
             if (!adminExists)
             {
-                // Create admin user with the ADMIN role
-                // Password "1234456" is hashed using BCrypt but stored elsewhere since User entity doesn't have username/password fields
-                // In a real application, you would store this in a separate auth table or use Identity
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword("123456");
                 _logger.LogInformation($"Created admin user with password hash: {hashedPassword}");
                 
                 var admin = new User
                 {
-                    Username = "admin",
-                    Password = hashedPassword,
-                    Role = adminRoleString,
-                    
-                    CreatedBy = "system",
-                    CreatedAt = DateTime.UtcNow,
-                    IsDeleted = false
+                    username = "admin",
+                    password = hashedPassword,
+                    role = adminRoleString,
+
+                    createdBy = "system",
+                    createdAt = DateTime.UtcNow,
+                    isDeleted = false
                 };
 
                 _context.Users.Add(admin);

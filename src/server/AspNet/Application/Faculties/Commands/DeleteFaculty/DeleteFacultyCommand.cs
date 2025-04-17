@@ -8,6 +8,7 @@ using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Faculties.Commands.DeleteFaculty
 {
@@ -46,6 +47,7 @@ namespace Application.Faculties.Commands.DeleteFaculty
             return new Response<FacultyDto>
             {
                 Data = data,
+                action = Domain.Enums.Action.DELETE.ToString(),
                 Message = "Xóa khoa thành công",
                 Ok = true,
             };

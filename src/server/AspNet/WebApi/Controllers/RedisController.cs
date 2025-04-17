@@ -9,7 +9,6 @@ namespace WebApi.Controllers;
 public class RedisController : ControllerBase
 {
     private readonly IRedisService _redisService;
-
     public RedisController(IRedisService redisService)
     {
         _redisService = redisService;
@@ -35,7 +34,7 @@ public class RedisController : ControllerBase
 
         if (success)
         {
-            return Ok(Response<object>.Success(null, "Value stored successfully"));
+            return Ok(Response<object>.Success("", "Value stored successfully"));
         }
 
         return BadRequest(Response<object>.Fail("Failed to store value"));

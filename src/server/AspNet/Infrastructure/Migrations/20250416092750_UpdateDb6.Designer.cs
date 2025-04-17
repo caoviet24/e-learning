@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250411085536_InitDb")]
-    partial class InitDb
+    [Migration("20250416092750_UpdateDb6")]
+    partial class UpdateDb6
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,57 +30,57 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("createdAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
+                    b.Property<string>("createdBy")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTime?>("deletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeletedBy")
+                    b.Property<string>("deletedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("FacultyId")
+                    b.Property<string>("facultyId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool?>("isDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("LecturerId")
+                    b.Property<string>("lecturerId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("MajorId")
+                    b.Property<string>("majorId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime?>("updatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserId")
+                    b.Property<string>("updatedBy")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FacultyId");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("LecturerId")
+                    b.HasIndex("facultyId");
+
+                    b.HasIndex("lecturerId")
                         .IsUnique();
 
-                    b.HasIndex("MajorId");
-
-                    b.HasIndex("UserId");
+                    b.HasIndex("majorId");
 
                     b.ToTable("Classes");
                 });
@@ -90,62 +90,62 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("createdAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
+                    b.Property<string>("createdBy")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTime?>("deletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeletedBy")
+                    b.Property<string>("deletedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("description")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FacultyId")
+                    b.Property<string>("facultyId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool>("isActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool?>("isDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("MajorId")
+                    b.Property<string>("majorId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Thumbnail")
+                    b.Property<string>("thumbNail")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("title")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime?>("updatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UpdatedBy")
+                    b.Property<string>("updatedBy")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedBy");
+                    b.HasIndex("createdBy");
 
-                    b.HasIndex("FacultyId");
+                    b.HasIndex("facultyId");
 
-                    b.HasIndex("MajorId");
+                    b.HasIndex("majorId");
 
                     b.ToTable("Courses");
                 });
@@ -155,71 +155,78 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("code")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("createdAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
+                    b.Property<string>("createdBy")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTime?>("deletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeletedBy")
+                    b.Property<string>("deletedBy")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool?>("isDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime?>("updatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UpdatedBy")
+                    b.Property<string>("updatedBy")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedBy");
+                    b.HasIndex("createdBy");
 
                     b.ToTable("Faculties");
                 });
 
             modelBuilder.Entity("Domain.Entites.Lecturer", b =>
                 {
-                    b.Property<string>("CardId")
+                    b.Property<string>("cardId")
                         .HasColumnType("text");
 
-                    b.Property<string>("ClassId")
+                    b.Property<string>("facultyId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FacultyId")
+                    b.Property<DateTime>("joinedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("majorId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("MajorId")
+                    b.Property<string>("position")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("UserId")
+                    b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("CardId");
+                    b.Property<string>("userId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.HasIndex("FacultyId");
+                    b.HasKey("cardId");
 
-                    b.HasIndex("MajorId");
+                    b.HasIndex("facultyId");
 
-                    b.HasIndex("UserId")
+                    b.HasIndex("majorId");
+
+                    b.HasIndex("userId")
                         .IsUnique();
 
                     b.ToTable("Lecturers", (string)null);
@@ -230,29 +237,29 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("CourseId")
+                    b.Property<string>("courseId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("description")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Thumbnail")
+                    b.Property<string>("thumbnail")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("title")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("UrlVideo")
+                    b.Property<string>("urlVideo")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CourseId");
+                    b.HasIndex("courseId");
 
                     b.ToTable("Lessons");
                 });
@@ -262,45 +269,45 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("code")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("createdAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
+                    b.Property<string>("createdBy")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTime?>("deletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeletedBy")
+                    b.Property<string>("deletedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("FacultyId")
+                    b.Property<string>("facultyId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool?>("isDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime?>("updatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UpdatedBy")
+                    b.Property<string>("updatedBy")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedBy");
+                    b.HasIndex("createdBy");
 
-                    b.HasIndex("FacultyId");
+                    b.HasIndex("facultyId");
 
                     b.ToTable("Majors");
                 });
@@ -310,113 +317,122 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("ClassId")
+                    b.Property<string>("LecturercardId")
                         .HasColumnType("text");
 
-                    b.Property<string>("Content")
+                    b.Property<string>("StudentcardId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("classId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("content")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("createdAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
+                    b.Property<string>("createdBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTime?>("deletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeletedBy")
+                    b.Property<string>("deletedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("FacultyId")
+                    b.Property<string>("facultyId")
                         .HasColumnType("text");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool?>("isDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsForAll")
+                    b.Property<bool>("isForAll")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsRead")
+                    b.Property<bool>("isRead")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("LecturerCardId")
+                    b.Property<string>("majorId")
                         .HasColumnType("text");
 
-                    b.Property<string>("MajorId")
+                    b.Property<string>("receiverId")
                         .HasColumnType("text");
 
-                    b.Property<string>("ReceiverId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("StudentCardId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
+                    b.Property<string>("title")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime?>("updatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UpdatedBy")
+                    b.Property<string>("updatedBy")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClassId");
+                    b.HasIndex("LecturercardId");
 
-                    b.HasIndex("CreatedBy");
+                    b.HasIndex("StudentcardId");
 
-                    b.HasIndex("FacultyId");
+                    b.HasIndex("classId");
 
-                    b.HasIndex("LecturerCardId");
+                    b.HasIndex("createdBy");
 
-                    b.HasIndex("MajorId");
+                    b.HasIndex("facultyId");
 
-                    b.HasIndex("ReceiverId");
+                    b.HasIndex("majorId");
 
-                    b.HasIndex("StudentCardId");
+                    b.HasIndex("receiverId");
 
                     b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("Domain.Entites.Student", b =>
                 {
-                    b.Property<string>("CardId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ClassId")
-                        .IsRequired()
+                    b.Property<string>("cardId")
                         .HasColumnType("text");
 
                     b.Property<string>("CourseId")
                         .HasColumnType("text");
 
-                    b.Property<string>("FacultyId")
+                    b.Property<string>("classId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("MajorId")
+                    b.Property<string>("facultyId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("UserId")
+                    b.Property<DateTime?>("graduatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("joinedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("majorId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("CardId");
+                    b.Property<string>("status")
+                        .HasColumnType("text");
 
-                    b.HasIndex("ClassId");
+                    b.Property<string>("userId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("cardId");
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("FacultyId");
+                    b.HasIndex("classId");
 
-                    b.HasIndex("MajorId");
+                    b.HasIndex("facultyId");
 
-                    b.HasIndex("UserId")
+                    b.HasIndex("majorId");
+
+                    b.HasIndex("userId")
                         .IsUnique();
 
                     b.ToTable("Students", (string)null);
@@ -427,63 +443,61 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("Avatar")
-                        .IsRequired()
+                    b.Property<string>("avatar")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("Birth")
+                    b.Property<DateTime?>("birth")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("createdAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
+                    b.Property<string>("createdBy")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<string>("currentAddress")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("deletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeletedBy")
+                    b.Property<string>("deletedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
+                    b.Property<string>("email")
                         .HasColumnType("text");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
+                    b.Property<string>("fullName")
                         .HasColumnType("text");
 
-                    b.Property<byte>("Gender")
+                    b.Property<byte?>("gender")
                         .HasColumnType("smallint");
 
-                    b.Property<bool?>("IsDeleted")
+                    b.Property<bool?>("isDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Nickname")
+                    b.Property<string>("nickname")
+                        .HasColumnType("text");
+
+                    b.Property<string>("password")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("phone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("role")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime?>("updatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UpdatedBy")
+                    b.Property<string>("updatedBy")
                         .HasColumnType("text");
 
-                    b.Property<string>("Username")
+                    b.Property<string>("username")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -494,27 +508,27 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entites.Class", b =>
                 {
+                    b.HasOne("Domain.Entites.User", "User")
+                        .WithMany("Classes")
+                        .HasForeignKey("UserId");
+
                     b.HasOne("Domain.Entites.Faculty", "Faculty")
                         .WithMany("Classes")
-                        .HasForeignKey("FacultyId")
+                        .HasForeignKey("facultyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entites.Lecturer", "Lecturer")
                         .WithOne("Class")
-                        .HasForeignKey("Domain.Entites.Class", "LecturerId")
+                        .HasForeignKey("Domain.Entites.Class", "lecturerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entites.Major", "Major")
                         .WithMany("Classes")
-                        .HasForeignKey("MajorId")
+                        .HasForeignKey("majorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("Domain.Entites.User", "User")
-                        .WithMany("Classes")
-                        .HasForeignKey("UserId");
 
                     b.Navigation("Faculty");
 
@@ -529,19 +543,19 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entites.User", "User")
                         .WithMany("Courses")
-                        .HasForeignKey("CreatedBy")
+                        .HasForeignKey("createdBy")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entites.Faculty", "Faculty")
                         .WithMany("Courses")
-                        .HasForeignKey("FacultyId")
+                        .HasForeignKey("facultyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entites.Major", "Major")
                         .WithMany("Courses")
-                        .HasForeignKey("MajorId")
+                        .HasForeignKey("majorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -556,7 +570,7 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entites.User", "User")
                         .WithMany("Faculties")
-                        .HasForeignKey("CreatedBy")
+                        .HasForeignKey("createdBy")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -567,19 +581,19 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entites.Faculty", "Faculty")
                         .WithMany("Lecturers")
-                        .HasForeignKey("FacultyId")
+                        .HasForeignKey("facultyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entites.Major", "Major")
                         .WithMany("Lecturers")
-                        .HasForeignKey("MajorId")
+                        .HasForeignKey("majorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entites.User", "User")
                         .WithOne("Lecturer")
-                        .HasForeignKey("Domain.Entites.Lecturer", "UserId")
+                        .HasForeignKey("Domain.Entites.Lecturer", "userId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -594,7 +608,7 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entites.Course", "Course")
                         .WithMany("Lessons")
-                        .HasForeignKey("CourseId")
+                        .HasForeignKey("courseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -605,13 +619,13 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entites.User", "User")
                         .WithMany("Majors")
-                        .HasForeignKey("CreatedBy")
+                        .HasForeignKey("createdBy")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entites.Faculty", "Faculty")
                         .WithMany("Majors")
-                        .HasForeignKey("FacultyId")
+                        .HasForeignKey("facultyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -622,38 +636,38 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entites.Notify", b =>
                 {
+                    b.HasOne("Domain.Entites.Lecturer", null)
+                        .WithMany("Notifies")
+                        .HasForeignKey("LecturercardId");
+
+                    b.HasOne("Domain.Entites.Student", null)
+                        .WithMany("Notifies")
+                        .HasForeignKey("StudentcardId");
+
                     b.HasOne("Domain.Entites.Class", "Class")
                         .WithMany("Notifies")
-                        .HasForeignKey("ClassId")
+                        .HasForeignKey("classId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.Entites.User", "Sender")
                         .WithMany("CreatedNotifies")
-                        .HasForeignKey("CreatedBy")
+                        .HasForeignKey("createdBy")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.Entites.Faculty", "Faculty")
                         .WithMany("Notifies")
-                        .HasForeignKey("FacultyId")
+                        .HasForeignKey("facultyId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Domain.Entites.Lecturer", null)
-                        .WithMany("Notifies")
-                        .HasForeignKey("LecturerCardId");
 
                     b.HasOne("Domain.Entites.Major", "Major")
                         .WithMany("Notifies")
-                        .HasForeignKey("MajorId")
+                        .HasForeignKey("majorId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.Entites.User", "Receiver")
                         .WithMany("ReceivedNotifies")
-                        .HasForeignKey("ReceiverId")
+                        .HasForeignKey("receiverId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Domain.Entites.Student", null)
-                        .WithMany("Notifies")
-                        .HasForeignKey("StudentCardId");
 
                     b.Navigation("Class");
 
@@ -668,31 +682,31 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entites.Student", b =>
                 {
-                    b.HasOne("Domain.Entites.Class", "Class")
-                        .WithMany("Students")
-                        .HasForeignKey("ClassId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Entites.Course", null)
                         .WithMany("Students")
                         .HasForeignKey("CourseId");
 
+                    b.HasOne("Domain.Entites.Class", "Class")
+                        .WithMany("Students")
+                        .HasForeignKey("classId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entites.Faculty", "Faculty")
                         .WithMany("Students")
-                        .HasForeignKey("FacultyId")
+                        .HasForeignKey("facultyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entites.Major", "Major")
                         .WithMany("Students")
-                        .HasForeignKey("MajorId")
+                        .HasForeignKey("majorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.Entites.User", "User")
                         .WithOne("Student")
-                        .HasForeignKey("Domain.Entites.Student", "UserId")
+                        .HasForeignKey("Domain.Entites.Student", "userId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

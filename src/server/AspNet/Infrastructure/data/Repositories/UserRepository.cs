@@ -9,24 +9,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.data.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository(ApplicationDbContext context) : IUserRepository
     {
-        private readonly ApplicationDbContext _context;
-
-        public UserRepository(ApplicationDbContext context)
+        public async Task<User?> AddAsync(User user)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            var result = await context.Users.AddAsync(user);
+            await context.SaveChangesAsync();
+            return result.Entity;
         }
 
         public async Task<User?> GetByIdAsync(string id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return await context.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<User?> GetByUsernameAsync(string username)
         {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == username);
+            return await context.Users
+                .FirstOrDefaultAsync(u => u.username == username);
         }
     }
 }
