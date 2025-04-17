@@ -19,13 +19,18 @@ import { Bounce, toast } from 'react-toastify';
 import Spinner from '@/components/spinner';
 import { uploadService } from '@/services/uploadService';
 import { ImageUpload } from '@/components/image-upload';
+import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from '@/components/ui/select';
+import { CourseStatus } from '@/types/const';
+import { ICourse, IResponse } from '@/types';
+import { redirect } from 'next/navigation';
 
 interface CoursePayLoad {
     title: string;
     description: string;
-    faculty_id: string;
+    facultyId: string;
     thumbnail?: string;
-    major_id: string;
+    majorId: string;
+    status: string;
 }
 
 const courseSchema = z.object({
@@ -36,20 +41,22 @@ const courseSchema = z.object({
         message: 'Mô tả không để trống',
     }),
     thumbnail: z.string().optional(),
-    faculty_id: z.string().min(1, {
+    facultyId: z.string().min(1, {
         message: 'Khoa không để trống',
     }),
-    major_id: z.string().min(1, {
+    majorId: z.string().min(1, {
         message: 'Chuyên ngành không để trống',
+    }),
+    status: z.string().min(1, {
+        message: 'Trạng thái không để trống',
     }),
 });
 
-export default function CoursePage({ params }: { params: { id: string } }) {
-    const { id } = params;
+export default function CoursePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(params);
 
     const [facultySelected, setFacultySelected] = useState<string>('');
     const [courseData, setCourseData] = useState<CoursePayLoad>();
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [newImage, setNewImage] = useState<string | null>(null);
 
     const {
@@ -62,64 +69,38 @@ export default function CoursePage({ params }: { params: { id: string } }) {
         defaultValues: {
             title: '',
             description: '',
-            faculty_id: '',
+            facultyId: '',
             thumbnail: '',
-            major_id: '',
+            majorId: '',
+            status: CourseStatus[0].value,
         },
     });
 
-    const { data: response, isSuccess } = useQuery({
+    const { data: response, isSuccess } = useQuery<IResponse<ICourse>>({
         queryKey: ['get-by-id', id],
         queryFn: () => courseService.getById(id),
         enabled: !!id && id !== 'new',
     });
 
     useEffect(() => {
-        if (isSuccess && response?.data) {
-            // API returns an array, take first item
-            const courseItem = Array.isArray(response.data) ? response.data[0] : response.data;
-            
-            // Transform data to match the form structure
-            const transformedData = {
-                title: courseItem.title,
-                description: courseItem.description,
-                faculty_id: courseItem.faculty?.id || '',
-                major_id: courseItem.major?.id || '',
-                thumbnail: courseItem.thumbnail || ''
-            };
-            
-            setCourseData(transformedData);
-            
-            // Set faculty selected for the major dropdown
-            if (courseItem.faculty?.id) {
-                setFacultySelected(courseItem.faculty.id);
-            }
-            
-            // Reset form with new values
-            reset(transformedData);
+        if (isSuccess) {
+            const data = response?.data;
+            reset({
+                title: data?.title,
+                description: data?.description,
+                facultyId: data?.facultyId,
+                majorId: data?.majorId,
+                thumbnail: data?.thumbNail,
+                status: data?.status,
+            });
+            setFacultySelected(data?.facultyId ? data?.facultyId : 'all');
         }
-    }, [isSuccess, response, reset]);
+    }, [isSuccess]);
 
     const handleChangeImage = async (file: File | null) => {
-        if (file) {
-            setImagePreview(URL.createObjectURL(file));
-            let url = await uploadService.uploadImage(file);
-            if (url) {
-                setNewImage(url);
-                setImagePreview(null);
-                reset({
-                    ...courseData,
-                    thumbnail: url,
-                });
-            }
-        }
-    };
-
-    const createCourse = useMutation({
-        mutationFn: (data: CoursePayLoad) => courseService.create(data),
-        onSuccess: (res) => {
-            const { data } = res;
-            toast.success(`Thêm khóa học thành công ${data?.title}`, {
+        setNewImage(null);
+        if (!file) {
+            toast.error('Vui lòng chọn hình ảnh', {
                 position: 'top-right',
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -130,6 +111,38 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                 theme: 'light',
                 transition: Bounce,
             });
+            return;
+        }
+
+        if (file) {
+            let url = await uploadService.uploadImage(file);
+            if (url) {
+                setNewImage(url);
+                reset({
+                    ...courseData,
+                    thumbnail: url,
+                });
+            }
+        }
+    };
+
+    const createCourse = useMutation({
+        mutationFn: (data: CoursePayLoad) => courseService.create(data),
+        onSuccess: (res: IResponse<ICourse>) => {
+            if (res.ok) {
+                toast.success(`Thêm khóa học thành công ${res.data?.title}`, {
+                    position: 'top-right',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: 'light',
+                    transition: Bounce,
+                });
+                // redirect('/lecturer/courses');
+            }
         },
         onError: () => {
             toast.error(`Thêm khóa học thất bại`, {
@@ -224,43 +237,65 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                         </div>
 
                         <div>
-                            <ImageUpload
-                                onChange={handleChangeImage}
-                                value={newImage || undefined}
-                                initialPreview={imagePreview || undefined}
-                                label="Hình ảnh khóa học"
-                                className="mb-4"
-                            />
+                            <ImageUpload onChange={handleChangeImage} value={newImage || undefined} label="Hình ảnh khóa học" className="mb-4" />
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Khoa</Label>
-                            <Controller
-                                name="faculty_id"
-                                control={control}
-                                render={({ field }) => (
-                                    <FacultySelect
-                                        value={field.value}
-                                        onSelectValue={(value) => {
-                                            field.onChange(value);
-                                            setFacultySelected(value);
-                                        }}
-                                    />
-                                )}
-                            />
-                            {errors.faculty_id && <p className="text-red-500 text-sm">{errors.faculty_id.message as string}</p>}
-                        </div>
+                        <div className="flex justify-between flex-wrap">
+                            <div className="space-y-2">
+                                <Label htmlFor="description">Khoa</Label>
+                                <Controller
+                                    name="facultyId"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <FacultySelect
+                                            value={field.value}
+                                            onSelectValue={(value) => {
+                                                field.onChange(value);
+                                                setFacultySelected(value);
+                                            }}
+                                        />
+                                    )}
+                                />
+                                {errors.facultyId && <p className="text-red-500 text-sm">{errors.facultyId.message as string}</p>}
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Ngành</Label>
-                            <Controller
-                                name="major_id"
-                                control={control}
-                                render={({ field }) => (
-                                    <MajorSelect value={field.value} onSelectValue={field.onChange} facultyId={facultySelected ? facultySelected : undefined} />
-                                )}
-                            />
-                            {errors.major_id && <p className="text-red-500 text-sm">{errors.major_id.message as string}</p>}
+                            <div className="space-y-2">
+                                <Label htmlFor="description">Ngành</Label>
+                                <Controller
+                                    name="majorId"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <MajorSelect
+                                            value={field.value}
+                                            onSelectValue={field.onChange}
+                                            facultyId={facultySelected ? facultySelected : undefined}
+                                        />
+                                    )}
+                                />
+                                {errors.majorId && <p className="text-red-500 text-sm">{errors.majorId.message as string}</p>}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="description">Trạng thái</Label>
+                                <Controller
+                                    name="status"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select value={field.value} onValueChange={field.onChange}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Chọn chuyên ngành" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {CourseStatus.map((status, idx) => (
+                                                    <SelectItem key={idx} value={status.value}>
+                                                        {status.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                                {errors.majorId && <p className="text-red-500 text-sm">{errors.majorId.message as string}</p>}
+                            </div>
                         </div>
 
                         <div className="flex justify-end gap-4">
@@ -269,13 +304,10 @@ export default function CoursePage({ params }: { params: { id: string } }) {
                                     Hủy
                                 </Button>
                             </Link>
-                            <Button
-                                type="submit"
-                                disabled={createCourse.isPending || updateCourse.isPending}
-                            >
+                            <Button type="submit" disabled={createCourse.isPending || updateCourse.isPending}>
                                 {createCourse.isPending || updateCourse.isPending ? (
                                     <div className="flex items-center gap-2">
-                                        <Spinner size={16} />
+                                        <Spinner size="sm" />
                                         Loading....
                                     </div>
                                 ) : id === 'new' ? (

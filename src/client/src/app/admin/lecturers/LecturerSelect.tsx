@@ -31,11 +31,11 @@ export default function LecturerSelect({
         queryKey: ['lecturers-options', facultyId, majorId],
         queryFn: () =>
             lecturerService.getAll({
-                page_number: 1,
-                page_size: 100,
-                faculty_id: facultyId,
-                major_id: majorId,
-                is_deleted: false,
+                pageNumber: 1,
+                pageSize: 100,
+                facultyId: facultyId,
+                majorId: majorId,
+                isDeleted: false,
             }),
         enabled: false,
     });
@@ -53,7 +53,7 @@ export default function LecturerSelect({
                 <SelectItem value="">Không chọn</SelectItem>
                 {lecturers?.data?.map((lecturer: ILecturer) => (
                     <SelectItem key={lecturer.id} value={lecturer.id}>
-                        {lecturer.user?.full_name} - {lecturer.lecturer_id}
+                        {lecturer.user?.fullName} - {lecturer.cardId}
                     </SelectItem>
                 ))}
             </SelectContent>

@@ -1,7 +1,7 @@
 import { accountService } from '@/services/accountService';
 import { IUser } from '@/types';
 import { useQuery } from '@tanstack/react-query';
-import { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { createContext, useEffect, useState, useMemo } from 'react';
 
 interface IUserContext {
     user: IUser | null;
@@ -24,24 +24,23 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         queryKey: ['auth'],
         queryFn: accountService.auth,
         enabled: !user,
-        retry: false,
     });
 
     useEffect(() => {
         if (isSuccess) {
-            setUser(data.user);
+            setUser(data);
         }
     }, [isSuccess]);
-    
 
-    const value = useMemo(
-        () => ({
-            user,
-            setUser,
-            logout: accountService.logout,
-        }),
-        [user],
+    return (
+        <UserContext.Provider
+            value={{
+                user,
+                setUser,
+                logout: accountService.logout,
+            }}
+        >
+            {children}
+        </UserContext.Provider>
     );
-
-    return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

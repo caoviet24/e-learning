@@ -34,19 +34,19 @@ export default function MajorSelect({ value, onSelectValue, facultyId }: MajorSe
         queryKey: ['majors', debouncedMajorSearch, facultyId],
         queryFn: () =>
             majorService.getAll({
-                page_number: 1,
-                page_size: 10,
-                is_deleted: false,
-                faculty_id: facultyId === 'all' || !facultyId ? undefined : facultyId,
+                pageNumber: 1,
+                pageSize: 10,
+                isDeleted: false,
+                facultyId: facultyId === 'all' || !facultyId ? undefined : facultyId,
                 search: searchMajor ? searchMajor : undefined,
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
-        enabled: !!debouncedMajorSearch || majorsStore.total_records <= 0 || !!facultyId,
+        enabled: !!debouncedMajorSearch || majorsStore.totalRecords <= 0 || !!facultyId,
     });
 
     useEffect(() => {
-        if (majorsStore.total_records > 0 && !majorsData && !isFetchMajorsSuccess) {
+        if (majorsStore.totalRecords > 0 && !majorsData && !isFetchMajorsSuccess) {
             setSearchMajorResult(majorsStore.data);
         }
     }, [majorsStore]);

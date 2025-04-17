@@ -3,9 +3,9 @@ import { ILecturer, IResponseList } from '@/types';
 
 const initStateLecturer = {
     data: [] as ILecturer[],
-    total_records: 0,
-    page_number: 0,
-    page_size: 0,
+    totalRecords: 0,
+    pageNumber: 0,
+    pageSize: 0,
 };
 
 export const lecturerSlice = createSlice({
@@ -41,7 +41,7 @@ export const lecturerSlice = createSlice({
         },
         setCreateLecturer: (state, action) => {
             state.lecturersStore.data.push(action.payload);
-            state.lecturersStore.total_records += 1;
+            state.lecturersStore.totalRecords += 1;
         },
         setUpdateLecturer: (state, action) => {
             const index = state.lecturersStore.data.findIndex((lecturer) => lecturer.id === action.payload.id);
@@ -51,10 +51,10 @@ export const lecturerSlice = createSlice({
         },
         setDeleteSoftLecturer: (state, action) => {
             state.lecturersStore.data = state.lecturersStore.data.filter((lecturer) => lecturer.id !== action.payload?.id);
-            state.lecturersStore.total_records -= 1;
+            state.lecturersStore.totalRecords -= 1;
             if (action.payload) {
                 state.lecturersStoreDeleted.data.push(action.payload);
-                state.lecturersStoreDeleted.total_records += 1;
+                state.lecturersStoreDeleted.totalRecords += 1;
             }
         },
         setRestoreLecturer: (state, action) => {
@@ -66,8 +66,8 @@ export const lecturerSlice = createSlice({
                 state.lecturersStore.data.push(restoredLecturer);
                 state.lecturersStoreDeleted.data.splice(index, 1);
             }
-            state.lecturersStore.total_records += 1;
-            state.lecturersStoreDeleted.total_records -= 1;
+            state.lecturersStore.totalRecords += 1;
+            state.lecturersStoreDeleted.totalRecords -= 1;
         },
     },
 });

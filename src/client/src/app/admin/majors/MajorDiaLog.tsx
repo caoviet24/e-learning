@@ -13,12 +13,13 @@ import { Input } from '@/components/ui/input';
 import { SearchIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
-import { setCreateMajor, setDeleteSoftMajor, setUpdateMajor, setRestoreMajor } from '@/redux/slices/major.slice';
+import { setCreateMajor, setDeleteSoftMajor, setUpdateMajor, setRestoreMajor, setDeleteMajor } from '@/redux/slices/major.slice';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { facultyService } from '@/services/facultyService';
 import useDebounce from '@/hooks/useDebounce';
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
 import FacultySelect from '../../../components/FacultySelect';
+import { Action } from '@/types/enum';
 
 interface MajorDialogProps {
     open: boolean;
@@ -29,9 +30,10 @@ interface MajorDialogProps {
 }
 
 interface MajorPayLoad {
+    id?: string;
     name: string;
     code: string;
-    faculty_id: string;
+    facultyId: string;
 }
 
 const MODE_OPTIONS = {
@@ -53,12 +55,15 @@ const MODE_OPTIONS = {
 };
 
 const majorSchema = z.object({
+    id: z.string().optional(),
     name: z.string().min(1, { message: 'Tên ngành không được để trống' }),
     code: z.string().min(1, { message: 'Mã ngành không được để trống' }),
-    faculty_id: z.string().min(1, { message: 'Khoa không được để trống' }),
+    facultyId: z.string().min(1, { message: 'Khoa không được để trống' }),
 });
 
 export default function MajorDiaLog({ open, major, mode, onClose, onSuccess }: MajorDialogProps) {
+    console.log('major', major);
+    
     const dispatch = useAppDispatch();
     const {
         control,
@@ -68,13 +73,14 @@ export default function MajorDiaLog({ open, major, mode, onClose, onSuccess }: M
     } = useForm<MajorPayLoad>({
         resolver: zodResolver(majorSchema),
         defaultValues: {
+            id: major?.id || '',
             name: major?.name || '',
             code: major?.code || '',
-            faculty_id: major?.faculty?.id || '',
+            facultyId: major?.faculty?.id || '',
         },
     });
 
-    const createMajor = useMutation<IResponse<IMajor>, Error, { name: string; code: string; faculty_id: string }>({
+    const createMajor = useMutation<IResponse<IMajor>, Error, { name: string; code: string; facultyId: string }>({
         mutationFn: (data) => majorService.create(data),
         onSuccess: (res) => {
             if (res.data) {
@@ -106,19 +112,20 @@ export default function MajorDiaLog({ open, major, mode, onClose, onSuccess }: M
                 return majorService.restore(data.id);
             }
             return majorService.update(data.id, {
+                id: data.id,
                 name: data.name,
                 code: data.code,
-                faculty_id: data.faculty_id,
+                facultyId: data.facultyId,
             });
         },
         onSuccess: (res: IResponse<IMajor>) => {
-            if (res.data) {
-                if (res.success && res.message && res.message.includes('Khôi phục')) {
+            if (res.ok) {
+                if (res.action === Action.RESTORE) {
                     dispatch(setRestoreMajor(res.data));
                 } else {
                     dispatch(setUpdateMajor(res.data));
                 }
-                toast.success(`${res.message.includes('Khôi phục') ? 'Khôi phục' : 'Cập nhật'} ngành ${res.data?.name} thành công`, {
+                toast.success(`${res.action === Action.RESTORE ? 'Khôi phục' : 'Cập nhật'} ngành ${res.data?.name} thành công`, {
                     position: 'top-right',
                     autoClose: 5000,
                     hideProgressBar: false,
@@ -147,12 +154,14 @@ export default function MajorDiaLog({ open, major, mode, onClose, onSuccess }: M
             return majorService.deleteSoft(data.id);
         },
         onSuccess: (res: IResponse<IMajor>) => {
-            if (res.data) {
-                if (res.data?.is_deleted) {
+            if (res.ok) {
+                if (res.action === Action.DELETE_SOFT) {
                     dispatch(setDeleteSoftMajor(res.data));
+                } else {
+                    dispatch(setDeleteMajor(res.data));
                 }
 
-                toast.success(`Xóa ngành ${res.data?.name} thành công`, {
+                toast.success(`${res.action === Action.DELETE_SOFT ? 'Xóa mềm' : 'Xóa vĩnh viễn'} chuyên ngành ${res.data?.name} thành công`, {
                     position: 'top-right',
                     autoClose: 5000,
                     hideProgressBar: false,
@@ -226,11 +235,11 @@ export default function MajorDiaLog({ open, major, mode, onClose, onSuccess }: M
                     <div className="space-y-2">
                         <label>Khoa</label>
                         <Controller
-                            name="faculty_id"
+                            name="facultyId"
                             control={control}
                             render={({ field }) => <FacultySelect value={field.value} onSelectValue={field.onChange} />}
                         />
-                        {errors.faculty_id && <p className="text-red-500 text-sm">{errors.faculty_id.message as string}</p>}
+                        {errors.facultyId && <p className="text-red-500 text-sm">{errors.facultyId.message as string}</p>}
                     </div>
                     <Button type="submit" className="w-full hover:opacity-50" disabled={isSubmitting}>
                         {isSubmitting ? 'Đang xử lý...' : 'Xác nhận'}

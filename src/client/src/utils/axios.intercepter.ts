@@ -1,10 +1,11 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
+import { redirect } from 'next/navigation';
 
 interface RefreshTokenResponse {
-    access_token: string;
-    refresh_token: string;
+    accessToken: string;
+    refreshToken: string;
 }
 
 function fetchRefreshToken(token: string): Promise<RefreshTokenResponse> {
@@ -18,7 +19,9 @@ function fetchRefreshToken(token: string): Promise<RefreshTokenResponse> {
             });
             resolve(res.data);
         } catch (error) {
-            reject(error);
+            Cookies.remove('accessToken');
+            Cookies.remove('refreshToken');
+            redirect('/auth/sign-in');
         }
     })
 }
@@ -31,23 +34,26 @@ function createAxiosJwtInstance() {
     
     axiosJWT.interceptors.request.use(
         async (config) => {
-            const accessToken = Cookies.get('access_token');
+            const accessToken = Cookies.get('accessToken');
             
             if (!accessToken) {
                 throw new Error('Access token is missing');
             }
             const decodedToken = jwtDecode(accessToken);
             if (decodedToken.exp && decodedToken.exp < new Date().getTime() / 1000) {
-                const refresh_token = Cookies.get('refresh_token')
+                const refreshToken = Cookies.get('refreshToken')
 
-                if (!refresh_token) {
+                if (!refreshToken) {
                     throw new Error('Refresh token is missing');
                 }
-                const res = await fetchRefreshToken(refresh_token);
+                const res = await fetchRefreshToken(refreshToken);
+
                 if (res) {
-                    Cookies.set('access_token', res.access_token);
-                    config.headers.Authorization = `Bearer ${res.access_token}`;
+                    Cookies.set('accessToken', res.accessToken);
+                    config.headers.Authorization = `Bearer ${res.accessToken}`;
                 }
+
+               
             } else {
                 config.headers.Authorization = `Bearer ${accessToken}`;
             }

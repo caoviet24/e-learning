@@ -27,7 +27,7 @@ import TableRowSkeleton from '@/components/table-row-skeleton';
 import ButtonHover from '@/components/ButtonHover';
 import FacultySelect from '@/components/FacultySelect';
 
-const PAGE_SIZE_OPTIONS = [
+const pageSize_OPTIONS = [
     { value: '1', label: '1 bản ghi' },
     { value: '5', label: '5 bản ghi' },
     { value: '10', label: '10 bản ghi' },
@@ -64,18 +64,18 @@ export default function MajorsPage() {
         queryKey: ['majors', currentPage, pageSize, tabOpened, debouncedMajorSearch, facultySeleted],
         queryFn: () =>
             majorService.getAll({
-                page_number: currentPage,
-                page_size: pageSize,
+                pageNumber: currentPage,
+                pageSize: pageSize,
                 search: debouncedMajorSearch,
-                is_deleted: tabOpened === 0 ? false : true,
-                faculty_id: facultySeleted === 'all' ? undefined : facultySeleted,
+                isDeleted: tabOpened === 0 ? false : true,
+                facultyId: facultySeleted === 'all' ? undefined : facultySeleted,
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
         enabled:
             !!debouncedMajorSearch ||
-            (tabOpened === 0 && majorsStore.total_records <= 0) ||
-            (tabOpened === 1 && majorsStoreDeleted.total_records <= 0) ||
+            (tabOpened === 0 && majorsStore.totalRecords <= 0) ||
+            (tabOpened === 1 && majorsStoreDeleted.totalRecords <= 0) ||
             facultySeleted !== 'all',
     });
 
@@ -96,7 +96,7 @@ export default function MajorsPage() {
 
     useEffect(() => {
         if (prevPageSize < pageSize) {
-            if (pageSize > majorsStore.total_records || pageSize > majorsStoreDeleted.total_records) {
+            if (pageSize > majorsStore.totalRecords || pageSize > majorsStoreDeleted.totalRecords) {
                 refetchMajors();
             }
         }
@@ -150,9 +150,9 @@ export default function MajorsPage() {
     const getIsLastPage = () => {
         const currentData = tabOpened === 0 ? majorsStore : majorsStoreDeleted;
         const totalRecords =
-            debouncedMajorSearch || pageSize > (currentData?.total_records ?? 0)
-                ? majorsData?.total_records ?? currentData?.total_records ?? 0
-                : currentData?.total_records ?? 0;
+            debouncedMajorSearch || pageSize > (currentData?.totalRecords ?? 0)
+                ? majorsData?.totalRecords ?? currentData?.totalRecords ?? 0
+                : currentData?.totalRecords ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
 
         return currentPage === totalPages;
@@ -162,9 +162,9 @@ export default function MajorsPage() {
         const items = [];
         const currentData = tabOpened === 0 ? majorsStore : majorsStoreDeleted;
         const totalRecords =
-            debouncedMajorSearch || pageSize > (currentData?.total_records ?? 0)
-                ? majorsData?.total_records ?? currentData?.total_records ?? 0
-                : currentData?.total_records ?? 0;
+            debouncedMajorSearch || pageSize > (currentData?.totalRecords ?? 0)
+                ? majorsData?.totalRecords ?? currentData?.totalRecords ?? 0
+                : currentData?.totalRecords ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
         const current = currentPage;
         const delta = 2;
@@ -404,16 +404,16 @@ export default function MajorsPage() {
                 </div>
 
                 {!isFetchMajorsLoading &&
-                    ((debouncedMajorSearch && (majorsData?.total_records ?? 0) > 0) ||
-                        (!debouncedMajorSearch && ((tabOpened === 0 ? majorsStore?.total_records : majorsStoreDeleted?.total_records) ?? 0) > 0)) && (
+                    ((debouncedMajorSearch && (majorsData?.totalRecords ?? 0) > 0) ||
+                        (!debouncedMajorSearch && ((tabOpened === 0 ? majorsStore?.totalRecords : majorsStoreDeleted?.totalRecords) ?? 0) > 0)) && (
                         <div className="mt-4 flex flex-col md:flex-row justify-between items-center">
                             <div className="mb-4 md:mb-0 flex items-center">
                                 <span className="text-sm text-gray-500 text-nowrap">
                                     Tổng số bản ghi:{' '}
                                     {debouncedMajorSearch ||
-                                    pageSize > ((tabOpened === 0 ? majorsStore?.total_records : majorsStoreDeleted?.total_records) ?? 0)
-                                        ? majorsData?.total_records ?? (tabOpened === 0 ? majorsStore?.total_records : majorsStoreDeleted?.total_records) ?? 0
-                                        : (tabOpened === 0 ? majorsStore?.total_records : majorsStoreDeleted?.total_records) ?? 0}
+                                    pageSize > ((tabOpened === 0 ? majorsStore?.totalRecords : majorsStoreDeleted?.totalRecords) ?? 0)
+                                        ? majorsData?.totalRecords ?? (tabOpened === 0 ? majorsStore?.totalRecords : majorsStoreDeleted?.totalRecords) ?? 0
+                                        : (tabOpened === 0 ? majorsStore?.totalRecords : majorsStoreDeleted?.totalRecords) ?? 0}
                                 </span>
                                 <div className="ml-2 inline-block">
                                     <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isFetchMajorsLoading}>
@@ -421,7 +421,7 @@ export default function MajorsPage() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {PAGE_SIZE_OPTIONS.map((option) => (
+                                            {pageSize_OPTIONS.map((option) => (
                                                 <SelectItem key={option.value} value={option.value}>
                                                     {option.label}
                                                 </SelectItem>
@@ -431,9 +431,9 @@ export default function MajorsPage() {
                                 </div>
                             </div>
 
-                            {((debouncedMajorSearch && (majorsData?.total_records ?? 0) > pageSize) ||
+                            {((debouncedMajorSearch && (majorsData?.totalRecords ?? 0) > pageSize) ||
                                 (!debouncedMajorSearch &&
-                                    ((tabOpened === 0 ? majorsStore?.total_records : majorsStoreDeleted?.total_records) ?? 0) > pageSize)) && (
+                                    ((tabOpened === 0 ? majorsStore?.totalRecords : majorsStoreDeleted?.totalRecords) ?? 0) > pageSize)) && (
                                 <Pagination>
                                     <PaginationContent>
                                         <PaginationItem>
@@ -449,9 +449,9 @@ export default function MajorsPage() {
                                                 onClick={() => {
                                                     const currentData = tabOpened === 0 ? majorsStore : majorsStoreDeleted;
                                                     const totalRecords =
-                                                        debouncedMajorSearch || pageSize > (currentData?.total_records ?? 0)
-                                                            ? majorsData?.total_records ?? currentData?.total_records ?? 0
-                                                            : currentData?.total_records ?? 0;
+                                                        debouncedMajorSearch || pageSize > (currentData?.totalRecords ?? 0)
+                                                            ? majorsData?.totalRecords ?? currentData?.totalRecords ?? 0
+                                                            : currentData?.totalRecords ?? 0;
                                                     const totalPages = Math.ceil(totalRecords / pageSize);
                                                     const nextPage = Math.min(currentPage + 1, totalPages);
                                                     const currentReduxData = tabOpened === 0 ? majorsStore.data : majorsStoreDeleted.data;

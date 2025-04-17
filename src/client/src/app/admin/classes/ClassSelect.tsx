@@ -33,12 +33,12 @@ export default function ClassSelect({
         queryKey: ['classes-options', facultyId, majorId, lecturerId],
         queryFn: () =>
             classService.getAll({
-                page_number: 1,
-                page_size: 100,
-                faculty_id: facultyId,
-                major_id: majorId,
+                pageNumber: 1,
+                pageSize: 100,
+                facultyId: facultyId,
+                majorId: majorId,
                 lecturer_id: lecturerId,
-                is_deleted: false,
+                isDeleted: false,
             }),
         enabled: false,
     });

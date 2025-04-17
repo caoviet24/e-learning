@@ -4,6 +4,7 @@ import { Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
+import Spinner from './spinner';
 
 interface ImageUploadProps {
     id?: string;
@@ -69,7 +70,6 @@ export const ImageUpload = ({ id = 'file-upload', onChange, value, className, la
     };
 
     const handleClickUpload = () => {
-        // Just trigger the file input click without resetting the image
         if (inputRef.current) {
             inputRef.current.click();
         }
@@ -78,17 +78,7 @@ export const ImageUpload = ({ id = 'file-upload', onChange, value, className, la
     return (
         <div className={cn('space-y-2', className)}>
             <Label htmlFor={id}>{label}</Label>
-
-            {/* Always render the input but keep it hidden */}
-            <input
-                id={id}
-                name={id}
-                type="file"
-                ref={inputRef}
-                className="hidden"
-                accept="image/*"
-                onChange={handleChange}
-            />
+            <input id={id} name={id} type="file" ref={inputRef} className="hidden" accept="image/*" onChange={handleChange} />
 
             {!preview ? (
                 <div
@@ -114,8 +104,9 @@ export const ImageUpload = ({ id = 'file-upload', onChange, value, className, la
             ) : (
                 <div className="relative rounded-lg overflow-hidden border border-gray-200">
                     <div className="group relative">
-                        <div className="aspect-video w-full relative bg-gray-50">
-                            <Image src={preview} alt="Image preview" fill sizes="(max-width: 768px) 100vw, 400px" className="object-contain" />
+                        <div className="aspect-video w-full bg-gray-50">
+                            <Image src={preview} alt="Image preview" fill sizes="(max-width: 768px) 100vw, 400px" className={` object-contain ${!value && 'blur-sm'}` } />
+                            { !value && <Spinner size='sm' />}
                         </div>
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
                             <Button type="button" variant="secondary" size="sm" onClick={handleClickUpload}>

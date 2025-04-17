@@ -22,8 +22,8 @@ export const accountService = {
     },
 
     async logout(setUserFn?: (user: IUser | null) => void) {
-        Cookies.remove('access_token');
-        Cookies.remove('refresh_token');
+        Cookies.remove('accessToken');
+        Cookies.remove('refreshToken');
         if (setUserFn) {
             setUserFn(null);
         }

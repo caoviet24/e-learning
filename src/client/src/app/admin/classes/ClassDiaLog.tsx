@@ -29,8 +29,8 @@ interface IClassDiaLogProps {
 interface ClassPayLoad {
     name: string;
     class_code: string;
-    faculty_id: string;
-    major_id: string;
+    facultyId: string;
+    majorId: string;
     lecturer_id?: string;
 }
 
@@ -59,8 +59,8 @@ const getClassSchema = (mode: string) => {
     return z.object({
         name: z.string().min(2, 'Tên lớp phải có ít nhất 2 ký tự'),
         class_code: z.string().min(2, 'Mã lớp phải có ít nhất 2 ký tự'),
-        faculty_id: z.string().min(1, 'Vui lòng chọn khoa'),
-        major_id: z.string().min(1, 'Vui lòng chọn ngành'),
+        facultyId: z.string().min(1, 'Vui lòng chọn khoa'),
+        majorId: z.string().min(1, 'Vui lòng chọn ngành'),
         lecturer_id: z.string().optional(),
     });
 };
@@ -79,13 +79,13 @@ export default function ClassDiaLog({ open, class: classData, mode, onClose, onS
         defaultValues: {
             name: classData?.name || '',
             class_code: classData?.class_code || '',
-            faculty_id: classData?.major?.faculty?.id || '',
-            major_id: classData?.major?.id || '',
+            facultyId: classData?.major?.faculty?.id || '',
+            majorId: classData?.major?.id || '',
             lecturer_id: classData?.lecturer?.id || '',
         } as ClassPayLoad,
     });
 
-    const selectedFacultyId = watch('faculty_id');
+    const selectedFacultyId = watch('facultyId');
     const isReadOnly = mode === 'view' || mode === 'delete-soft' || mode === 'delete' || mode === 'restore';
 
     const createClass = useMutation({
@@ -252,7 +252,7 @@ export default function ClassDiaLog({ open, class: classData, mode, onClose, onS
                                 Khoa <span className="text-red-500">*</span>
                             </label>
                             <Controller
-                                name="faculty_id"
+                                name="facultyId"
                                 control={control}
                                 render={({ field }) => (
                                     <FacultySelect 
@@ -261,14 +261,14 @@ export default function ClassDiaLog({ open, class: classData, mode, onClose, onS
                                     />
                                 )}
                             />
-                            {errors.faculty_id && <p className="text-red-500 text-sm">{errors.faculty_id.message as string}</p>}
+                            {errors.facultyId && <p className="text-red-500 text-sm">{errors.facultyId.message as string}</p>}
                         </div>
                         <div className="space-y-2">
                             <label>
                                 Ngành <span className="text-red-500">*</span>
                             </label>
                             <Controller
-                                name="major_id"
+                                name="majorId"
                                 control={control}
                                 render={({ field }) => (
                                     <MajorSelect 
@@ -278,7 +278,7 @@ export default function ClassDiaLog({ open, class: classData, mode, onClose, onS
                                     />
                                 )}
                             />
-                            {errors.major_id && <p className="text-red-500 text-sm">{errors.major_id.message as string}</p>}
+                            {errors.majorId && <p className="text-red-500 text-sm">{errors.majorId.message as string}</p>}
                         </div>
                         <div className="space-y-2">
                             <label>Giảng viên phụ trách</label>

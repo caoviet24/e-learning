@@ -1,13 +1,11 @@
 import { IFaculty, IResponseList } from '@/types';
 import { createSlice } from '@reduxjs/toolkit';
 
-
-
 const initStateFaculty = {
     data: [] as IFaculty[],
-    total_records: 0,
-    page_number: 0,
-    page_size: 0,
+    totalRecords: 0,
+    pageNumber: 0,
+    pageSize: 0,
 };
 
 export const facultySlice = createSlice({
@@ -43,20 +41,26 @@ export const facultySlice = createSlice({
         },
         setCreateFaculty: (state, action) => {
             state.facultiesStore.data.push(action.payload);
-            state.facultiesStore.total_records += 1;
+            state.facultiesStore.totalRecords += 1;
         },
         setUpdateFaculty: (state, action) => {
             const index = state.facultiesStore.data.findIndex((faculty) => faculty.id === action.payload.id);
 
             console.log('index', index);
-            
+
             state.facultiesStore.data[index] = action.payload;
         },
+
         setDeleteSoftFaculty: (state, action) => {
             state.facultiesStore.data = state.facultiesStore.data.filter((faculty) => faculty.id !== action.payload?.id);
-            state.facultiesStore.total_records -= 1;
+            state.facultiesStore.totalRecords -= 1;
             state.facultiesStoreDeleted.data.push(action.payload);
-            state.facultiesStoreDeleted.total_records += 1;
+            state.facultiesStoreDeleted.totalRecords += 1;
+        },
+
+        setDeleteFaculty: (state, action) => {
+            state.facultiesStoreDeleted.data = state.facultiesStoreDeleted.data.filter((faculty) => faculty.id !== action.payload?.id);
+            state.facultiesStoreDeleted.totalRecords -= 1;
         },
 
         setRestoreFaculty: (state, action) => {
@@ -66,12 +70,13 @@ export const facultySlice = createSlice({
                 state.facultiesStore.data.push(restoredFaculty);
                 state.facultiesStoreDeleted.data.splice(index, 1);
             }
-            state.facultiesStore.total_records += 1;
-            state.facultiesStoreDeleted.total_records -= 1;
+            state.facultiesStore.totalRecords += 1;
+            state.facultiesStoreDeleted.totalRecords -= 1;
         },
     },
 });
 
-export const { setFaculties, setFacultiesDeleted, setCreateFaculty, setUpdateFaculty, setDeleteSoftFaculty, setRestoreFaculty } = facultySlice.actions;
+export const { setFaculties, setFacultiesDeleted, setCreateFaculty, setUpdateFaculty, setDeleteSoftFaculty, setRestoreFaculty, setDeleteFaculty } =
+    facultySlice.actions;
 
 export const facultyReducer = facultySlice.reducer;

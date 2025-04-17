@@ -17,6 +17,8 @@ import MajorSelect from '../../../components/MajorSelect';
 import { useAppDispatch } from '@/redux/store';
 import { setCreateLecturer, setDeleteSoftLecturer, setRestoreLecturer, setUpdateLecturer } from '@/redux/slices/lecturer.slice';
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
+import { Role } from '@/types/enum';
+import { InputCalendar } from '@/components/input-calender';
 
 interface ILecturerDiaLogProps {
     open: boolean;
@@ -29,16 +31,17 @@ interface ILecturerDiaLogProps {
 interface LecturerPayLoad {
     username: string;
     password?: string;
-    full_name: string;
+    role: string;
+    fullName: string;
     gender?: string;
     email?: string;
-    phone_number?: string;
-    original_address?: string;
-    current_address?: string;
-    faculty_id: string;
-    major_id: string;
-    role: string;
-    lecturer_id?: string;
+    phone?: string;
+    position?: string;
+    status?: string;
+    joinedAt?: string;
+    currentAddress?: string;
+    facultyId: string;
+    majorId: string;
 }
 
 const MODE_OPTIONS = {
@@ -68,16 +71,34 @@ const GENDER_OPTIONS = [
     { value: '2', label: 'Khác' },
 ];
 
+const LecturerStatusOptions = [
+    { value: 'WORKING', label: 'Đang làm việc' },
+    { value: 'TEMPORARILYABSENT', label: 'Nghỉ tạm thời' },
+    { value: 'RESIGNED', label: 'Đã nghỉ việc' },
+];
+
+const POSITION_OPTIONS = [
+    { value: 'INTERN', label: 'Thực tập' },
+    { value: 'LECTURER', label: 'Giảng viên' },
+    { value: 'SENIOR_LECTURER', label: 'Thạc sĩ' },
+    { value: 'ASSOCIATE_DOCTOR', label: 'Phó tiến sĩ' },
+    { value: 'DOCTOR', label: 'Tiến sĩ' },
+    { value: 'ASSISTANT_PROFESSOR', label: 'Phó giáo sư' },
+    { value: 'PROFESSOR', label: 'Giáo sư' },
+];
+
 const getLecturerSchema = (mode: string) => {
     const baseSchema = {
-        full_name: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
+        fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
         gender: z.string().optional(),
         email: z.string().email('Email không hợp lệ').optional().or(z.literal('')),
-        phone_number: z.string().optional(),
-        original_address: z.string().optional(),
-        current_address: z.string().optional(),
-        faculty_id: z.string().min(1, 'Vui lòng chọn khoa'),
-        major_id: z.string().min(1, 'Vui lòng chọn ngành'),
+        phone: z.string().optional(),
+        currentAddress: z.string().optional(),
+        status: z.string().optional(),
+        position: z.string().optional(),
+        joinedAt: z.string().optional(),
+        facultyId: z.string().min(1, 'Vui lòng chọn khoa'),
+        majorId: z.string().min(1, 'Vui lòng chọn ngành'),
         role: z.string().optional().default('LECTURER'),
     };
 
@@ -110,25 +131,27 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
         defaultValues: {
             username: '',
             password: '',
-            full_name: lecturer?.user?.full_name || '',
+            role: Role.LECTURER,
+            fullName: lecturer?.user?.fullName || '',
             gender: lecturer?.user?.gender?.toString() || '',
             email: lecturer?.user?.email || '',
-            phone_number: lecturer?.user?.phone_number || '',
-            original_address: lecturer?.user?.original_address || '',
-            current_address: lecturer?.user?.current_address || '',
-            faculty_id: lecturer?.major?.faculty?.id || '',
-            major_id: lecturer?.major?.id || '',
-            role: 'LECTURER',
+            phone: lecturer?.user?.phone || '',
+            status: lecturer?.status || '',
+            position: lecturer?.position || '',
+            joinedAt: lecturer?.joinedAt || '',
+            currentAddress: lecturer?.user?.currentAddress || '',
+            facultyId: lecturer?.faculty?.id || '',
+            majorId: lecturer?.major?.id || '',
         } as LecturerPayLoad,
     });
 
-    const selectedFacultyId = watch('faculty_id');
+    const selectedFacultyId = watch('facultyId');
 
     const createLecturer = useMutation({
         mutationFn: (data: any) => lecturerService.create(data),
         onSuccess: (res) => {
             dispatch(setCreateLecturer(res.data));
-            toast.success(`Thêm giảng viên ${res.data?.user?.full_name} thành công`, {
+            toast.success(`Thêm giảng viên ${res.data?.user?.fullName} thành công`, {
                 position: 'top-right',
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -161,7 +184,7 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
                 dispatch(setUpdateLecturer(res.data));
             }
 
-            toast.success(`${res.message.startsWith('Khôi phục') ? 'Khôi phục' : 'Cập nhật'} giảng viên ${res?.data?.user?.full_name} thành công`, {
+            toast.success(`${res.message.startsWith('Khôi phục') ? 'Khôi phục' : 'Cập nhật'} giảng viên ${res?.data?.user?.fullName} thành công`, {
                 position: 'top-right',
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -193,7 +216,7 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
             } else {
                 dispatch(setRestoreLecturer(res.data));
             }
-            toast.success(`Xóa giảng viên ${res.data?.user.full_name || ''} thành công`, {
+            toast.success(`Xóa giảng viên ${res.data?.user.fullName || ''} thành công`, {
                 position: 'top-right',
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -298,18 +321,18 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
                                 Họ tên <span className="text-red-500">*</span>
                             </label>
                             <Controller
-                                name="full_name"
+                                name="fullName"
                                 control={control}
                                 render={({ field }) => (
                                     <Input
                                         {...field}
                                         placeholder="Nhập họ tên"
                                         disabled={mode === 'view'}
-                                        className={errors.full_name ? 'border-red-500' : ''}
+                                        className={errors.fullName ? 'border-red-500' : ''}
                                     />
                                 )}
                             />
-                            {errors.full_name && <p className="text-red-500 text-sm">{errors.full_name.message as string}</p>}
+                            {errors.fullName && <p className="text-red-500 text-sm">{errors.fullName?.message as string}</p>}
                         </div>
                         <div className="space-y-2">
                             <label>Giới tính</label>
@@ -334,6 +357,68 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
                             {errors.gender && <p className="text-red-500 text-sm">{errors.gender.message as string}</p>}
                         </div>
                         <div className="space-y-2">
+                            <label>Chức vụ</label>
+                            <Controller
+                                name="position"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select disabled={mode === 'view'} onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger className={errors.position ? 'border-red-500' : ''}>
+                                            <SelectValue placeholder="Chọn chức vụ" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {POSITION_OPTIONS.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            {errors.gender && <p className="text-red-500 text-sm">{errors.gender.message as string}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <label>Trạng thái</label>
+                            <Controller
+                                name="status"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select disabled={mode === 'view'} onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
+                                            <SelectValue placeholder="Chọn trạng thái" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {LecturerStatusOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            {errors.gender && <p className="text-red-500 text-sm">{errors.gender.message as string}</p>}
+                        </div>
+                        <div className="space-y-2 flex flex-col">
+                            <label>Ngày làm việc</label>
+                            <Controller
+                                name="joinedAt"
+                                control={control}
+                                render={({ field }) => (
+                                    <InputCalendar
+                                        value={field.value ? new Date(field.value) : undefined}
+                                        onChange={(date) => field.onChange(date ? date.toISOString() : undefined)}
+                                    />
+                                )}
+                            />
+                            {errors.gender && <p className="text-red-500 text-sm">{errors.gender.message as string}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <label>Mã giảng viên</label>
+                            <Input value={lecturer && lecturer.cardId} placeholder="Mã giáo viên" disabled={true} />
+                        </div>
+                        <div className="space-y-2">
                             <label>Email</label>
                             <Controller
                                 name="email"
@@ -353,7 +438,7 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
                         <div className="space-y-2">
                             <label>Số điện thoại</label>
                             <Controller
-                                name="phone_number"
+                                name="phone"
                                 control={control}
                                 render={({ field }) => (
                                     <Input
@@ -361,57 +446,53 @@ export default function LecturerDiaLog({ open, lecturer, mode, onClose, onSucces
                                         {...field}
                                         placeholder="Nhập số điện thoại"
                                         disabled={mode === 'view'}
-                                        className={errors.phone_number ? 'border-red-500' : ''}
+                                        className={errors.phone ? 'border-red-500' : ''}
                                     />
                                 )}
                             />
-                            {errors.phone_number && <p className="text-red-500 text-sm">{errors.phone_number.message as string}</p>}
+                            {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message as string}</p>}
                         </div>
                         <div className="space-y-2">
                             <label>
                                 Khoa <span className="text-red-500">*</span>
                             </label>
                             <Controller
-                                name="faculty_id"
+                                name="facultyId"
                                 control={control}
                                 render={({ field }) => <FacultySelect value={field.value} onSelectValue={field.onChange} />}
                             />
-                            {errors.faculty_id && <p className="text-red-500 text-sm">{errors.faculty_id.message as string}</p>}
+                            {errors.facultyId && <p className="text-red-500 text-sm">{errors.facultyId.message as string}</p>}
                         </div>
                         <div className="space-y-2">
                             <label>
                                 Ngành <span className="text-red-500">*</span>
                             </label>
                             <Controller
-                                name="major_id"
+                                name="majorId"
                                 control={control}
                                 render={({ field }) => <MajorSelect value={field.value} onSelectValue={field.onChange} facultyId={selectedFacultyId} />}
                             />
-                            {errors.major_id && <p className="text-red-500 text-sm">{errors.major_id.message as string}</p>}
+                            {errors.majorId && <p className="text-red-500 text-sm">{errors.majorId.message as string}</p>}
                         </div>
+                       
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label>Mã giảng vien viên</label>
-                            <Input value={lecturer && lecturer.lecturer_id} placeholder="Mã giáo viên" disabled={true} />
-                        </div>
-                        <div className="space-y-2">
+
+                    {/* <div className="space-y-2">
                             <label>Địa chỉ hiện tại</label>
                             <Controller
-                                name="current_address"
+                                name="currentAddress"
                                 control={control}
                                 render={({ field }) => (
                                     <Input
                                         {...field}
                                         placeholder="Nhập địa chỉ hiện tại"
                                         disabled={mode === 'view'}
-                                        className={errors.current_address ? 'border-red-500' : ''}
+                                        className={errors.currentAddress ? 'border-red-500' : ''}
                                     />
                                 )}
                             />
-                            {errors.current_address && <p className="text-red-500 text-sm">{errors.current_address.message as string}</p>}
-                        </div>
-                    </div>
+                            {errors.currentAddress && <p className="text-red-500 text-sm">{errors.currentAddress.message as string}</p>}
+                        </div> */}
 
                     <Button type="submit" className={`w-full`} disabled={isSubmitting}>
                         {isSubmitting ? 'Đang xử lý...' : 'Xác nhận'}

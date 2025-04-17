@@ -101,8 +101,8 @@ export default function Profile() {
     } = useQuery({
         queryKey: ['get-classes-by-lecturer-id', user?.id],
         queryFn: () => classService.getAll({
-            page_number: 1,
-            page_size: 100,
+            pageNumber: 1,
+            pageSize: 100,
             lecturer_id: user?.id || '',
         }),
         enabled: !!user?.id,

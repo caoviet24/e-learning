@@ -32,14 +32,14 @@ export default function FacultySelect({ value, onSelectValue }: FacultySelectPro
         queryKey: ['faculties', deboudcedFacultySearch],
         queryFn: () =>
             facultyService.getAll({
-                page_number: 1,
-                page_size: 10,
-                is_deleted: false,
+                pageNumber: 1,
+                pageSize: 10,
+                isDeleted: false,
                 search: deboudcedFacultySearch,
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
-        enabled: !!deboudcedFacultySearch || facultiesStore.total_records <= 0,
+        enabled: !!deboudcedFacultySearch || facultiesStore.totalRecords <= 0,
     });
 
     useEffect(() => {
@@ -47,7 +47,7 @@ export default function FacultySelect({ value, onSelectValue }: FacultySelectPro
             dispatch(setFaculties(facultiesData));
         }
 
-        if (facultiesStore.total_records > 0 && !deboudcedFacultySearch) {
+        if (facultiesStore.totalRecords > 0 && !deboudcedFacultySearch) {
             setSearchFacultyResult(facultiesStore.data);
         }
 

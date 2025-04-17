@@ -3,9 +3,9 @@ import { IMajor, IResponseList } from '@/types';
 
 const initStateMajor = {
     data: [] as IMajor[],
-    total_records: 0,
-    page_number: 0,
-    page_size: 0,
+    totalRecords: 0,
+    pageNumber: 0,
+    pageSize: 0,
 };
 
 export const majorSlice = createSlice({
@@ -16,7 +16,7 @@ export const majorSlice = createSlice({
     },
     reducers: {
         setMajors: (state, action) => {
-            // When filtering (e.g., by faculty_id) always take the API response as the source of truth
+            // When filtering (e.g., by facultyId) always take the API response as the source of truth
             if (action.payload.filtered) {
                 state.majorsStore = action.payload;
             }
@@ -46,7 +46,7 @@ export const majorSlice = createSlice({
         },
         setCreateMajor: (state, action) => {
             state.majorsStore.data.push(action.payload);
-            state.majorsStore.total_records += 1;
+            state.majorsStore.totalRecords += 1;
         },
         setUpdateMajor: (state, action) => {
             const index = state.majorsStore.data.findIndex((major) => major.id === action.payload.id);
@@ -54,12 +54,17 @@ export const majorSlice = createSlice({
                 state.majorsStore.data[index] = action.payload;
             }
         },
+        setDeleteMajor: (state, action) => {
+            state.majorsStoreDeleted.data = state.majorsStoreDeleted.data.filter((major) => major.id !== action.payload?.id);
+            state.majorsStoreDeleted.totalRecords -= 1;
+        },
+
         setDeleteSoftMajor: (state, action) => {
             state.majorsStore.data = state.majorsStore.data.filter((major) => major.id !== action.payload?.id);
-            state.majorsStore.total_records -= 1;
+            state.majorsStore.totalRecords -= 1;
             if (action.payload) {
                 state.majorsStoreDeleted.data.push(action.payload);
-                state.majorsStoreDeleted.total_records += 1;
+                state.majorsStoreDeleted.totalRecords += 1;
             }
         },
         setRestoreMajor: (state, action) => {
@@ -69,8 +74,8 @@ export const majorSlice = createSlice({
                 state.majorsStore.data.push(restoredMajor);
                 state.majorsStoreDeleted.data.splice(index, 1);
             }
-            state.majorsStore.total_records += 1;
-            state.majorsStoreDeleted.total_records -= 1;
+            state.majorsStore.totalRecords += 1;
+            state.majorsStoreDeleted.totalRecords -= 1;
         },
     },
 });
@@ -80,6 +85,7 @@ export const {
     setMajorsDeleted,
     setCreateMajor,
     setUpdateMajor,
+    setDeleteMajor,
     setDeleteSoftMajor,
     setRestoreMajor
 } = majorSlice.actions;

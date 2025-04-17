@@ -47,8 +47,8 @@ export default function LoginPage() {
         mutationFn: (data: any) => accountService.login(data),
         onSuccess: (data) => {
 
-            Cookies.set('access_token', data.access_token)
-            Cookies.set('refresh_token', data.refresh_token);
+            Cookies.set('accessToken', data.accessToken)
+            Cookies.set('refreshToken', data.refreshToken);
             router.push('/');
         },
         onError: (error: any) => {

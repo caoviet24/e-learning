@@ -12,7 +12,8 @@ import { useMutation } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/redux/store';
-import { setCreateFaculty, setUpdateFaculty, setDeleteSoftFaculty, setRestoreFaculty } from '@/redux/slices/faculty.slice';
+import { setCreateFaculty, setUpdateFaculty, setDeleteSoftFaculty, setRestoreFaculty, setDeleteFaculty } from '@/redux/slices/faculty.slice';
+import { Action } from '@/types/enum';
 
 interface FacultyDialogProps {
     open: boolean;
@@ -69,7 +70,7 @@ export default function FacultyDiaLog({ open, faculty, mode, onClose, onSuccess 
     const createFaculty = useMutation<IResponse<IFaculty>, Error, { name: string; code: string }>({
         mutationFn: (data) => facultyService.create(data),
         onSuccess: (res) => {
-            if (res.data) {
+            if (res.ok && res.action === Action.CREATE) {
                 dispatch(setCreateFaculty(res.data));
                 toast.success(`Thêm khoa ${res.data?.name} thành công`, {
                     position: 'top-right',
@@ -103,13 +104,13 @@ export default function FacultyDiaLog({ open, faculty, mode, onClose, onSuccess 
             });
         },
         onSuccess: (res: IResponse<IFaculty>) => {
-            if (res.data) {
-                if (res.success && res.message.includes('Khôi phục')) {
+            if (res) {
+                if (res.ok && res.action === Action.RESTORE) {
                     dispatch(setRestoreFaculty(res.data));
                 } else {
                     dispatch(setUpdateFaculty(res.data));
                 }
-                toast.success(`${!res?.data?.is_deleted ? 'Khôi phục' : 'Cập nhật'} khoa ${res.data?.name} thành công`, {
+                toast.success(`${res.ok && res.action === Action.RESTORE ? 'Khôi phục' : 'Cập nhật'} khoa ${res.data?.name} thành công`, {
                     position: 'top-right',
                     autoClose: 5000,
                     hideProgressBar: false,
@@ -139,12 +140,13 @@ export default function FacultyDiaLog({ open, faculty, mode, onClose, onSuccess 
             return facultyService.deleteSoft(data.id);
         },
         onSuccess: (res: IResponse<IFaculty>) => {
-            if (res.data) {
-                if (res.data?.is_deleted) {
+            if (res) {
+                if (res.ok && res.action === Action.DELETE_SOFT) {
                     dispatch(setDeleteSoftFaculty(res.data));
+                } else {
+                    dispatch(setDeleteFaculty(res.data));
                 }
-
-                toast.success(`Xóa khoa ${res.data?.name} thành công`, {
+                toast.success(`${res.ok && res.action === Action.DELETE_SOFT ? 'Xóa tạm thời' : 'Xóa vĩnh viễn'} khoa ${res.data?.name} thành công`, {
                     position: 'top-right',
                     autoClose: 5000,
                     hideProgressBar: false,

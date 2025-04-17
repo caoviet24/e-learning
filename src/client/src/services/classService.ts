@@ -3,24 +3,24 @@ import axiosJWT from '@/utils/axios.intercepter';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const classService = {
-    async getAll({ page_number, page_size, search, faculty_id, major_id, lecturer_id, is_deleted }: {
-        page_number: number;
-        page_size: number;
+    async getAll({ pageNumber, pageSize, search, facultyId, majorId, lecturer_id, isDeleted }: {
+        pageNumber: number;
+        pageSize: number;
         search?: string;
-        faculty_id?: string;
-        major_id?: string;
+        facultyId?: string;
+        majorId?: string;
         lecturer_id?: string;
-        is_deleted?: boolean
+        isDeleted?: boolean
     }) {
         const res = await axiosJWT.get(`${API_URL}/classes/get-all`, {
             params: {
-                page_number,
-                page_size,
+                pageNumber,
+                pageSize,
                 search: search || null,
-                faculty_id: faculty_id || null,
-                major_id: major_id || null,
+                facultyId: facultyId || null,
+                majorId: majorId || null,
                 lecturer_id: lecturer_id || null,
-                is_deleted,
+                isDeleted,
             },
         });
         return res.data;

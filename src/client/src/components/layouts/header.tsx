@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Bell, Menu } from 'lucide-react';
@@ -20,7 +20,10 @@ export default function Header({ isOpen, setIsOpen, backHref }: HeaderProps) {
     const unreadCount = 3;
     const { user } = useUser();
 
-    console.log('Header user', user);
+    useEffect(() => {
+        console.log('User data:', user);
+        
+    }, [user])
     
 
     return (

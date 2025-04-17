@@ -26,7 +26,7 @@ import { IFaculty, IResponseList } from '@/types';
 import TableRowSkeleton from '@/components/table-row-skeleton';
 import ButtonHover from '@/components/ButtonHover';
 
-const PAGE_SIZE_OPTIONS = [
+const pageSize_OPTIONS = [
     { value: '1', label: '1 bản ghi' },
     { value: '5', label: '5 bản ghi' },
     { value: '10', label: '10 bản ghi' },
@@ -59,14 +59,14 @@ export default function FacultyPage() {
         queryKey: ['faculties', currentPage, pageSize, tabOpened, debouncedSearch],
         queryFn: () =>
             facultyService.getAll({
-                page_number: currentPage,
-                page_size: pageSize,
-                is_deleted: tabOpened === 0 ? false : true,
+                pageNumber: currentPage,
+                pageSize: pageSize,
+                isDeleted: tabOpened === 0 ? false : true,
                 search: debouncedSearch,
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
-        enabled: !!debouncedSearch || (tabOpened === 0 && facultiesStore.total_records <= 0) || (tabOpened === 1 && facultiesStoreDeleted.total_records <= 0),
+        enabled: !!debouncedSearch || (tabOpened === 0 && facultiesStore.totalRecords <= 0) || (tabOpened === 1 && facultiesStoreDeleted.totalRecords <= 0),
     });
 
     useEffect(() => {
@@ -81,19 +81,19 @@ export default function FacultyPage() {
 
     useEffect(() => {
         if (prevPageSize < pageSize) {
-            if (facultiesStore.total_records < pageSize) {
+            if (facultiesStore.totalRecords < pageSize) {
                 refetch();
             }
         }
 
-        if (facultiesStore.total_records <= 0 && tabOpened === 0) {
+        if (facultiesStore.totalRecords <= 0 && tabOpened === 0) {
             refetch();
         }
 
-        if (facultiesStoreDeleted.total_records <= 0 && tabOpened === 1) {
+        if (facultiesStoreDeleted.totalRecords <= 0 && tabOpened === 1) {
             refetch();
         }
-    }, [pageSize, prevPageSize, facultiesStore.total_records, debouncedSearch, refetch, tabOpened]);
+    }, [pageSize, prevPageSize, facultiesStore.totalRecords, debouncedSearch, refetch, tabOpened]);
 
     const handlePageSizeChange = (value: string) => {
         setPrevPageSize(pageSize);
@@ -113,7 +113,7 @@ export default function FacultyPage() {
             }));
         }
 
-        if (facultiesData?.data) {
+        if (facultiesData?.data && facultiesData.data.length > 0) {
             return facultiesData.data.map((faculty, index) => ({
                 ...faculty,
                 index: (currentPage - 1) * pageSize + index + 1,
@@ -126,9 +126,9 @@ export default function FacultyPage() {
     const getIsLastPage = () => {
         const currentData = tabOpened === 0 ? facultiesStore : facultiesStoreDeleted;
         const totalRecords =
-            debouncedSearch || pageSize > (currentData?.total_records ?? 0)
-                ? facultiesData?.total_records ?? currentData?.total_records ?? 0
-                : currentData?.total_records ?? 0;
+            debouncedSearch || pageSize > (currentData?.totalRecords ?? 0)
+                ? facultiesData?.totalRecords ?? currentData?.totalRecords ?? 0
+                : currentData?.totalRecords ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
 
         return currentPage === totalPages;
@@ -138,9 +138,9 @@ export default function FacultyPage() {
         const items = [];
         const currentData = tabOpened === 0 ? facultiesStore : facultiesStoreDeleted;
         const totalRecords =
-            debouncedSearch || pageSize > (currentData?.total_records ?? 0)
-                ? facultiesData?.total_records ?? currentData?.total_records ?? 0
-                : currentData?.total_records ?? 0;
+            debouncedSearch || pageSize > (currentData?.totalRecords ?? 0)
+                ? facultiesData?.totalRecords ?? currentData?.totalRecords ?? 0
+                : currentData?.totalRecords ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
         const current = currentPage;
         const delta = 2;
@@ -365,18 +365,18 @@ export default function FacultyPage() {
                 </div>
 
                 {!isLoading &&
-                    ((debouncedSearch && (facultiesData?.total_records ?? 0) > 0) ||
-                        (!debouncedSearch && ((tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ?? 0) > 0)) && (
+                    ((debouncedSearch && (facultiesData?.totalRecords ?? 0) > 0) ||
+                        (!debouncedSearch && ((tabOpened === 0 ? facultiesStore?.totalRecords : facultiesStoreDeleted?.totalRecords) ?? 0) > 0)) && (
                         <div className="mt-4 flex flex-col md:flex-row justify-between items-center">
                             <div className="mb-4 md:mb-0 flex items-center">
                                 <span className="text-sm text-gray-500 text-nowrap">
                                     Tổng số bản ghi:{' '}
                                     {debouncedSearch ||
-                                    pageSize > ((tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ?? 0)
-                                        ? facultiesData?.total_records ??
-                                          (tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ??
+                                    pageSize > ((tabOpened === 0 ? facultiesStore?.totalRecords : facultiesStoreDeleted?.totalRecords) ?? 0)
+                                        ? facultiesData?.totalRecords ??
+                                          (tabOpened === 0 ? facultiesStore?.totalRecords : facultiesStoreDeleted?.totalRecords) ??
                                           0
-                                        : (tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ?? 0}
+                                        : (tabOpened === 0 ? facultiesStore?.totalRecords : facultiesStoreDeleted?.totalRecords) ?? 0}
                                 </span>
                                 <div className="ml-2 inline-block">
                                     <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isLoading}>
@@ -384,7 +384,7 @@ export default function FacultyPage() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {PAGE_SIZE_OPTIONS.map((option) => (
+                                            {pageSize_OPTIONS.map((option) => (
                                                 <SelectItem key={option.value} value={option.value}>
                                                     {option.label}
                                                 </SelectItem>
@@ -394,9 +394,9 @@ export default function FacultyPage() {
                                 </div>
                             </div>
 
-                            {((debouncedSearch && (facultiesData?.total_records ?? 0) > pageSize) ||
+                            {((debouncedSearch && (facultiesData?.totalRecords ?? 0) > pageSize) ||
                                 (!debouncedSearch &&
-                                    ((tabOpened === 0 ? facultiesStore?.total_records : facultiesStoreDeleted?.total_records) ?? 0) > pageSize)) && (
+                                    ((tabOpened === 0 ? facultiesStore?.totalRecords : facultiesStoreDeleted?.totalRecords) ?? 0) > pageSize)) && (
                                 <Pagination>
                                     <PaginationContent>
                                         <PaginationItem>
@@ -412,9 +412,9 @@ export default function FacultyPage() {
                                                 onClick={() => {
                                                     const currentData = tabOpened === 0 ? facultiesStore : facultiesStoreDeleted;
                                                     const totalRecords =
-                                                        debouncedSearch || pageSize > (currentData?.total_records ?? 0)
-                                                            ? facultiesData?.total_records ?? currentData?.total_records ?? 0
-                                                            : currentData?.total_records ?? 0;
+                                                        debouncedSearch || pageSize > (currentData?.totalRecords ?? 0)
+                                                            ? facultiesData?.totalRecords ?? currentData?.totalRecords ?? 0
+                                                            : currentData?.totalRecords ?? 0;
                                                     const totalPages = Math.ceil(totalRecords / pageSize);
                                                     const nextPage = Math.min(currentPage + 1, totalPages);
                                                     const currentReduxData = tabOpened === 0 ? facultiesStore.data : facultiesStoreDeleted.data;

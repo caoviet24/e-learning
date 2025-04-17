@@ -31,7 +31,7 @@ import ClassDiaLog from './ClassDiaLog';
 import { classService } from '@/services/classService';
 import { setClasses, setClassesDeleted, setCreateClass, setDeleteSoftClass, setRestoreClass } from '@/redux/slices/class.slice';
 
-const PAGE_SIZE_OPTIONS = [
+const pageSize_OPTIONS = [
     { value: '1', label: '1 bản ghi' },
     { value: '5', label: '5 bản ghi' },
     { value: '10', label: '10 bản ghi' },
@@ -54,8 +54,8 @@ export default function ClassesPage() {
     const dispatch = useAppDispatch();
     const { classesStore, classesStoreDeleted } = useAppSelector((state) => {
         return state.localStorage.class || {
-            classesStore: { data: [], total_records: 0, page_number: 0, page_size: 0 },
-            classesStoreDeleted: { data: [], total_records: 0, page_number: 0, page_size: 0 }
+            classesStore: { data: [], totalRecords: 0, pageNumber: 0, pageSize: 0 },
+            classesStoreDeleted: { data: [], totalRecords: 0, pageNumber: 0, pageSize: 0 }
         };
     });
     const [classSelected, setClassSelected] = useState<IClass | null>(null);
@@ -73,20 +73,20 @@ export default function ClassesPage() {
         queryKey: ['classes', currentPage, pageSize, tabOpened, debouncedClassSearch, facultySeleted, majorSeleted, lecturerSeleted],
         queryFn: () =>
             classService.getAll({
-                page_number: currentPage,
-                page_size: pageSize,
+                pageNumber: currentPage,
+                pageSize: pageSize,
                 search: debouncedClassSearch,
-                is_deleted: tabOpened === 0 ? false : true,
-                faculty_id: facultySeleted === 'all' ? undefined : facultySeleted,
-                major_id: majorSeleted === 'all' ? undefined : majorSeleted,
+                isDeleted: tabOpened === 0 ? false : true,
+                facultyId: facultySeleted === 'all' ? undefined : facultySeleted,
+                majorId: majorSeleted === 'all' ? undefined : majorSeleted,
                 lecturer_id: lecturerSeleted === 'all' ? undefined : lecturerSeleted,
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
         enabled:
             !!debouncedClassSearch ||
-            (tabOpened === 0 && classesStore?.total_records <= 0) ||
-            (tabOpened === 1 && classesStoreDeleted?.total_records <= 0) ||
+            (tabOpened === 0 && classesStore?.totalRecords <= 0) ||
+            (tabOpened === 1 && classesStoreDeleted?.totalRecords <= 0) ||
             facultySeleted !== 'all' ||
             majorSeleted !== 'all' ||
             lecturerSeleted !== 'all',
@@ -109,7 +109,7 @@ export default function ClassesPage() {
 
     useEffect(() => {
         if (prevPageSize < pageSize) {
-            if (pageSize > classesStore?.total_records || pageSize > classesStoreDeleted?.total_records) {
+            if (pageSize > classesStore?.totalRecords || pageSize > classesStoreDeleted?.totalRecords) {
                 refetchClasses();
             }
         }
@@ -163,9 +163,9 @@ export default function ClassesPage() {
     const getIsLastPage = () => {
         const currentData = tabOpened === 0 ? classesStore : classesStoreDeleted;
         const totalRecords =
-            debouncedClassSearch || pageSize > (currentData?.total_records ?? 0)
-                ? classesData?.total_records ?? currentData?.total_records ?? 0
-                : currentData?.total_records ?? 0;
+            debouncedClassSearch || pageSize > (currentData?.totalRecords ?? 0)
+                ? classesData?.totalRecords ?? currentData?.totalRecords ?? 0
+                : currentData?.totalRecords ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
 
         return currentPage === totalPages;
@@ -175,9 +175,9 @@ export default function ClassesPage() {
         const items = [];
         const currentData = tabOpened === 0 ? classesStore : classesStoreDeleted;
         const totalRecords =
-            debouncedClassSearch || pageSize > (currentData?.total_records ?? 0)
-                ? classesData?.total_records ?? currentData?.total_records ?? 0
-                : currentData?.total_records ?? 0;
+            debouncedClassSearch || pageSize > (currentData?.totalRecords ?? 0)
+                ? classesData?.totalRecords ?? currentData?.totalRecords ?? 0
+                : currentData?.totalRecords ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
         const current = currentPage;
         const delta = 2;
@@ -369,7 +369,7 @@ export default function ClassesPage() {
                                         <TableCell>{cls.class_code}</TableCell>
                                         <TableCell>{cls.major?.faculty?.name}</TableCell>
                                         <TableCell>{cls.major?.name}</TableCell>
-                                        <TableCell>{cls.lecturer?.user?.full_name || 'Chưa phân công'}</TableCell>
+                                        <TableCell>{cls.lecturer?.user?.fullName || 'Chưa phân công'}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-center gap-2">
                                                 {tabOpened === 0 && (
@@ -444,18 +444,18 @@ export default function ClassesPage() {
                 </div>
 
                 {!isFetchClassesLoading &&
-                    ((debouncedClassSearch && (classesData?.total_records ?? 0) > 0) ||
-                        (!debouncedClassSearch && ((tabOpened === 0 ? classesStore?.total_records : classesStoreDeleted?.total_records) ?? 0) > 0)) && (
+                    ((debouncedClassSearch && (classesData?.totalRecords ?? 0) > 0) ||
+                        (!debouncedClassSearch && ((tabOpened === 0 ? classesStore?.totalRecords : classesStoreDeleted?.totalRecords) ?? 0) > 0)) && (
                         <div className="mt-4 flex flex-col md:flex-row justify-between items-center">
                             <div className="mb-4 md:mb-0 flex items-center">
                                 <span className="text-sm text-gray-500 text-nowrap">
                                     Tổng số bản ghi:{' '}
                                     {debouncedClassSearch ||
-                                    pageSize > ((tabOpened === 0 ? classesStore?.total_records : classesStoreDeleted?.total_records) ?? 0)
-                                        ? classesData?.total_records ??
-                                          (tabOpened === 0 ? classesStore?.total_records : classesStoreDeleted?.total_records) ??
+                                    pageSize > ((tabOpened === 0 ? classesStore?.totalRecords : classesStoreDeleted?.totalRecords) ?? 0)
+                                        ? classesData?.totalRecords ??
+                                          (tabOpened === 0 ? classesStore?.totalRecords : classesStoreDeleted?.totalRecords) ??
                                           0
-                                        : (tabOpened === 0 ? classesStore?.total_records : classesStoreDeleted?.total_records) ?? 0}
+                                        : (tabOpened === 0 ? classesStore?.totalRecords : classesStoreDeleted?.totalRecords) ?? 0}
                                 </span>
                                 <div className="ml-2 inline-block">
                                     <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isFetchClassesLoading}>
@@ -463,7 +463,7 @@ export default function ClassesPage() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {PAGE_SIZE_OPTIONS.map((option) => (
+                                            {pageSize_OPTIONS.map((option) => (
                                                 <SelectItem key={option.value} value={option.value}>
                                                     {option.label}
                                                 </SelectItem>
@@ -473,9 +473,9 @@ export default function ClassesPage() {
                                 </div>
                             </div>
 
-                            {((debouncedClassSearch && (classesData?.total_records ?? 0) > pageSize) ||
+                            {((debouncedClassSearch && (classesData?.totalRecords ?? 0) > pageSize) ||
                                 (!debouncedClassSearch &&
-                                    ((tabOpened === 0 ? classesStore?.total_records : classesStoreDeleted?.total_records) ?? 0) > pageSize)) && (
+                                    ((tabOpened === 0 ? classesStore?.totalRecords : classesStoreDeleted?.totalRecords) ?? 0) > pageSize)) && (
                                 <Pagination>
                                     <PaginationContent>
                                         <PaginationItem>

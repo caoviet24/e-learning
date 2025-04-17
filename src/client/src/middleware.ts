@@ -5,8 +5,9 @@ import { Role } from '@/types/enum';
 import { JwtPayload } from './types';
 
 export function middleware(request: NextRequest) {
-    const isAuthenticated = request.cookies.has('access_token');
-    const token = request.cookies.get('access_token')?.value;
+    const isAuthenticated = request.cookies.has('accessToken');
+    const token = request.cookies.get('accessToken')?.value;
+
 
     let role: string | undefined;
     if (token) {

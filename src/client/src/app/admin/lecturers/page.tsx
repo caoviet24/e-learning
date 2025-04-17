@@ -31,8 +31,9 @@ import ButtonHover from '@/components/ButtonHover';
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
 import FacultySelect from '../../../components/FacultySelect';
 import MajorSelect from '../../../components/MajorSelect';
+import convertTimeVN from '@/utils/ConvertTimeVN';
 
-const PAGE_SIZE_OPTIONS = [
+const pageSize_OPTIONS = [
     { value: '1', label: '1 bản ghi' },
     { value: '5', label: '5 bản ghi' },
     { value: '10', label: '10 bản ghi' },
@@ -47,6 +48,21 @@ const GENDER_OPTIONS = [
     { value: '1', label: 'Nữ' },
     { value: '2', label: 'Khác' },
 ];
+
+const POSITION_OPTIONS = {
+    INTERN: 'Thực tập',
+    LECTURER: 'Giảng viên',
+    SENIOR_LECTURER: 'Thạc sĩ',
+    ASSOCIATE_DOCTOR: 'Phó tiến sĩ',
+    DOCTOR: 'Tiến sĩ',
+    ASSISTANT_PROFESSOR: 'Phó giáo sư',
+    PROFESSOR: 'Giáo sư',
+} as const;
+
+type PositionKey = keyof typeof POSITION_OPTIONS;
+
+
+
 
 export default function LecturersPage() {
     const [prevPageSize, setPrevPageSize] = useState(10);
@@ -74,19 +90,19 @@ export default function LecturersPage() {
         queryKey: ['lecturers', currentPage, pageSize, tabOpened, debouncedLecturerSearch, facultySeleted],
         queryFn: () =>
             lecturerService.getAll({
-                page_number: currentPage,
-                page_size: pageSize,
+                pageNumber: currentPage,
+                pageSize: pageSize,
                 search: debouncedLecturerSearch,
-                is_deleted: tabOpened === 0 ? false : true,
-                faculty_id: facultySeleted === 'all' ? undefined : facultySeleted,
-                major_id: majorSeleted === 'all' ? undefined : majorSeleted,
+                isDeleted: tabOpened === 0 ? false : true,
+                facultyId: facultySeleted === 'all' ? undefined : facultySeleted,
+                majorId: majorSeleted === 'all' ? undefined : majorSeleted,
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
         enabled:
             !!debouncedLecturerSearch ||
-            (tabOpened === 0 && lecturersStore.total_records <= 0) ||
-            (tabOpened === 1 && lecturersStoreDeleted.total_records <= 0) ||
+            (tabOpened === 0 && lecturersStore.totalRecords <= 0) ||
+            (tabOpened === 1 && lecturersStoreDeleted.totalRecords <= 0) ||
             facultySeleted !== 'all',
     });
 
@@ -107,7 +123,7 @@ export default function LecturersPage() {
 
     useEffect(() => {
         if (prevPageSize < pageSize) {
-            if (pageSize > lecturersStore.total_records || pageSize > lecturersStoreDeleted.total_records) {
+            if (pageSize > lecturersStore.totalRecords || pageSize > lecturersStoreDeleted.totalRecords) {
                 refetchLecturers();
             }
         }
@@ -161,9 +177,9 @@ export default function LecturersPage() {
     const getIsLastPage = () => {
         const currentData = tabOpened === 0 ? lecturersStore : lecturersStoreDeleted;
         const totalRecords =
-            debouncedLecturerSearch || pageSize > (currentData?.total_records ?? 0)
-                ? lecturersData?.total_records ?? currentData?.total_records ?? 0
-                : currentData?.total_records ?? 0;
+            debouncedLecturerSearch || pageSize > (currentData?.totalRecords ?? 0)
+                ? lecturersData?.totalRecords ?? currentData?.totalRecords ?? 0
+                : currentData?.totalRecords ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
 
         return currentPage === totalPages;
@@ -173,9 +189,9 @@ export default function LecturersPage() {
         const items = [];
         const currentData = tabOpened === 0 ? lecturersStore : lecturersStoreDeleted;
         const totalRecords =
-            debouncedLecturerSearch || pageSize > (currentData?.total_records ?? 0)
-                ? lecturersData?.total_records ?? currentData?.total_records ?? 0
-                : currentData?.total_records ?? 0;
+            debouncedLecturerSearch || pageSize > (currentData?.totalRecords ?? 0)
+                ? lecturersData?.totalRecords ?? currentData?.totalRecords ?? 0
+                : currentData?.totalRecords ?? 0;
         const totalPages = Math.ceil(totalRecords / pageSize);
         const current = currentPage;
         const delta = 2;
@@ -358,6 +374,9 @@ export default function LecturersPage() {
                                 <TableHead>Email</TableHead>
                                 <TableHead>Địa chỉ</TableHead>
                                 <TableHead>Mã giảng viên</TableHead>
+                                <TableHead>Chức vụ</TableHead>
+                                <TableHead>Trạng thái</TableHead>
+                                <TableHead>Ngày vào làm</TableHead>
                                 <TableHead>Khoa</TableHead>
                                 <TableHead>Chuyên ngành</TableHead>
                                 <TableHead className="text-center">Thao tác</TableHead>
@@ -368,16 +387,20 @@ export default function LecturersPage() {
                                 <TableRowSkeleton row={4} cell={10} />
                             ) : dataDisplayed && dataDisplayed.length > 0 ? (
                                 dataDisplayed.map((lecturer: ILecturer, index) => (
-                                    <TableRow key={lecturer.id}>
+                                    <TableRow key={lecturer.cardId}>
                                         <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
-                                        <TableCell>{lecturer.user?.full_name}</TableCell>
+                                        <TableCell>{lecturer.user?.fullName}</TableCell>
                                         <TableCell>{lecturer.user?.gender === 0 ? 'Nam' : 'Nữ'}</TableCell>
-                                        <TableCell>{lecturer.user?.phone_number}</TableCell>
+                                        <TableCell>{lecturer.user?.phone}</TableCell>
                                         <TableCell>{lecturer.user?.email}</TableCell>
-                                        <TableCell>{lecturer.user?.current_address}</TableCell>
-                                        <TableCell>{lecturer?.lecturer_id}</TableCell>
+                                        <TableCell>{lecturer.user?.currentAddress || 'N/A'}</TableCell>
+                                        <TableCell>{lecturer?.cardId}</TableCell>
+                                        <TableCell>{lecturer?.position && (POSITION_OPTIONS[lecturer.position as PositionKey] || 'N/A')}</TableCell>
+                                        <TableCell>{lecturer?.status}</TableCell>
+                                        <TableCell>{convertTimeVN(lecturer?.joinedAt)}</TableCell>
+                                        <TableCell>{lecturer?.faculty.name}</TableCell>
                                         <TableCell>{lecturer?.major?.name}</TableCell>
-                                        <TableCell>{lecturer?.major?.faculty?.name}</TableCell>
+                                       
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-center gap-2">
                                                 {tabOpened === 0 && (
@@ -452,18 +475,18 @@ export default function LecturersPage() {
                 </div>
 
                 {!isFetchLecturersLoading &&
-                    ((debouncedLecturerSearch && (lecturersData?.total_records ?? 0) > 0) ||
-                        (!debouncedLecturerSearch && ((tabOpened === 0 ? lecturersStore?.total_records : lecturersStoreDeleted?.total_records) ?? 0) > 0)) && (
+                    ((debouncedLecturerSearch && (lecturersData?.totalRecords ?? 0) > 0) ||
+                        (!debouncedLecturerSearch && ((tabOpened === 0 ? lecturersStore?.totalRecords : lecturersStoreDeleted?.totalRecords) ?? 0) > 0)) && (
                         <div className="mt-4 flex flex-col md:flex-row justify-between items-center">
                             <div className="mb-4 md:mb-0 flex items-center">
                                 <span className="text-sm text-gray-500 text-nowrap">
                                     Tổng số bản ghi:{' '}
                                     {debouncedLecturerSearch ||
-                                    pageSize > ((tabOpened === 0 ? lecturersStore?.total_records : lecturersStoreDeleted?.total_records) ?? 0)
-                                        ? lecturersData?.total_records ??
-                                          (tabOpened === 0 ? lecturersStore?.total_records : lecturersStoreDeleted?.total_records) ??
+                                    pageSize > ((tabOpened === 0 ? lecturersStore?.totalRecords : lecturersStoreDeleted?.totalRecords) ?? 0)
+                                        ? lecturersData?.totalRecords ??
+                                          (tabOpened === 0 ? lecturersStore?.totalRecords : lecturersStoreDeleted?.totalRecords) ??
                                           0
-                                        : (tabOpened === 0 ? lecturersStore?.total_records : lecturersStoreDeleted?.total_records) ?? 0}
+                                        : (tabOpened === 0 ? lecturersStore?.totalRecords : lecturersStoreDeleted?.totalRecords) ?? 0}
                                 </span>
                                 <div className="ml-2 inline-block">
                                     <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isFetchLecturersLoading}>
@@ -471,7 +494,7 @@ export default function LecturersPage() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {PAGE_SIZE_OPTIONS.map((option) => (
+                                            {pageSize_OPTIONS.map((option) => (
                                                 <SelectItem key={option.value} value={option.value}>
                                                     {option.label}
                                                 </SelectItem>
@@ -481,9 +504,9 @@ export default function LecturersPage() {
                                 </div>
                             </div>
 
-                            {((debouncedLecturerSearch && (lecturersData?.total_records ?? 0) > pageSize) ||
+                            {((debouncedLecturerSearch && (lecturersData?.totalRecords ?? 0) > pageSize) ||
                                 (!debouncedLecturerSearch &&
-                                    ((tabOpened === 0 ? lecturersStore?.total_records : lecturersStoreDeleted?.total_records) ?? 0) > pageSize)) && (
+                                    ((tabOpened === 0 ? lecturersStore?.totalRecords : lecturersStoreDeleted?.totalRecords) ?? 0) > pageSize)) && (
                                 <Pagination>
                                     <PaginationContent>
                                         <PaginationItem>
@@ -499,9 +522,9 @@ export default function LecturersPage() {
                                                 onClick={() => {
                                                     const currentData = tabOpened === 0 ? lecturersStore : lecturersStoreDeleted;
                                                     const totalRecords =
-                                                        debouncedLecturerSearch || pageSize > (currentData?.total_records ?? 0)
-                                                            ? lecturersData?.total_records ?? currentData?.total_records ?? 0
-                                                            : currentData?.total_records ?? 0;
+                                                        debouncedLecturerSearch || pageSize > (currentData?.totalRecords ?? 0)
+                                                            ? lecturersData?.totalRecords ?? currentData?.totalRecords ?? 0
+                                                            : currentData?.totalRecords ?? 0;
                                                     const totalPages = Math.ceil(totalRecords / pageSize);
                                                     const nextPage = Math.min(currentPage + 1, totalPages);
                                                     const currentReduxData = tabOpened === 0 ? lecturersStore.data : lecturersStoreDeleted.data;
