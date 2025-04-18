@@ -9,7 +9,7 @@ using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
-namespace Application.Major.Commands.Create
+namespace Application.Majors.Commands.Create
 {
     [Authorize(Role = "ADMIN")]
     public class CreateMajorCommand : IRequest<Response<MajorDtoWithFaculty>>

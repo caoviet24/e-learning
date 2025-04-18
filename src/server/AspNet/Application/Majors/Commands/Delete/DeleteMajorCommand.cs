@@ -9,7 +9,7 @@ using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
-namespace Application.Major.Commands.Delete
+namespace Application.Majors.Commands.Delete
 {
     [Authorize(Role = "ADMIN")]
     public class DeleteMajorCommand : IRequest<Response<MajorDtoWithFaculty>>

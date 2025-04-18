@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace Application.Major.Queries.GetById
+namespace Application.Majors.Commands.Delete
 {
-    public class GetMajorByIdQueryValidator : AbstractValidator<GetMajorByIdQuery>
+    public class DeleteMajorCommandValidator : AbstractValidator<DeleteMajorCommand>
     {
-        public GetMajorByIdQueryValidator()
+        public DeleteMajorCommandValidator()
         {
             RuleFor(x => x.Id)
                 .NotEmpty()

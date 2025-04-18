@@ -7,6 +7,7 @@ using Application.Common.Interfaces;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Auth
@@ -17,17 +18,17 @@ namespace Application.Auth
         private readonly IUser _user;
         private readonly IMapper _mapper;
         private readonly IJwtService _jwtService;
-        private readonly IRedisService _redisService;
         private readonly ILogger<AuthService> _logger;
+        private readonly IMemoryCache _memoryCache;
 
-        public AuthService(IUnitOfWork unitOfWork, IUser user, IMapper mapper, IJwtService jwtService, IRedisService redisService, ILogger<AuthService> logger)
+        public AuthService(IUnitOfWork unitOfWork, IUser user, IMapper mapper, IJwtService jwtService, IMemoryCache memoryCache , ILogger<AuthService> logger)
         {
             _unitOfWork = unitOfWork;
             _user = user;
             _mapper = mapper;
             _jwtService = jwtService;
-            _redisService = redisService;
             _logger = logger;
+            _memoryCache = memoryCache;
         }
 
         public async Task<UserDto> AuthMe(string token)
@@ -57,25 +58,23 @@ namespace Application.Auth
                 throw new BadRequestException("Refresh token is invalid or missing");
             }
 
-            var allKeys = await _redisService.KeyExistsAsync($"refresh_token_lookup:{refreshToken}");
-
-            if (!allKeys)
+            var userId = _memoryCache.Get<string>($"refresh_token_lookup:{refreshToken}");
+            if (userId == null)
             {
                 throw new BadRequestException("Invalid or expired refresh token");
             }
-
-            var userId = await _redisService.GetStringAsync<string>($"refresh_token_lookup:{refreshToken}");
 
             if (string.IsNullOrEmpty(userId))
             {
                 throw new BadRequestException("Invalid refresh token mapping");
             }
 
-            var storedToken = await _redisService.GetStringAsync<string>($"refresh_token:{userId}");
+
+            var storedToken = _memoryCache.Get<string>($"refresh_token:{userId}");
 
             if (string.IsNullOrEmpty(storedToken) || storedToken != refreshToken)
             {
-                await _redisService.RemoveAsync($"refresh_token_lookup:{refreshToken}");
+                _memoryCache.Remove($"refresh_token_lookup:{refreshToken}");
                 throw new BadRequestException("Invalid or expired refresh token");
             }
 
@@ -87,9 +86,9 @@ namespace Application.Auth
             var newAccessToken = _jwtService.generateAccessToken(user);
             var newRefreshToken = _jwtService.generateRefreshToken(user);
 
-            await _redisService.RemoveAsync($"refresh_token_lookup:{refreshToken}");
-            await _redisService.SetStringAsync($"refresh_token:{userId}", newRefreshToken, TimeSpan.FromDays(30));
-            await _redisService.SetStringAsync($"refresh_token_lookup:{newRefreshToken}", userId, TimeSpan.FromDays(30));
+            _memoryCache.Remove($"refresh_token_lookup:{refreshToken}");
+            _memoryCache.Set<string>($"refresh_token:{userId}", newRefreshToken,TimeSpan.FromDays(30));
+            _memoryCache.Set<string>($"refresh_token_lookup:{newRefreshToken}", userId, TimeSpan.FromDays(30));
 
             return new TokenDto
             {

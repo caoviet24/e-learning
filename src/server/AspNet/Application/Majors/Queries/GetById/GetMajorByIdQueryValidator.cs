@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace Application.Major.Commands.Restore
+namespace Application.Majors.Queries.GetById
 {
-    public class RestoreMajorCommandValidator : AbstractValidator<RestoreMajorCommand>
+    public class GetMajorByIdQueryValidator : AbstractValidator<GetMajorByIdQuery>
     {
-        public RestoreMajorCommandValidator()
+        public GetMajorByIdQueryValidator()
         {
             RuleFor(x => x.Id)
                 .NotEmpty()

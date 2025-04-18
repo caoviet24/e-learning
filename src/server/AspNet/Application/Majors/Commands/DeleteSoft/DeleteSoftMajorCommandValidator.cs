@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace Application.Major.Commands.Delete
+namespace Application.Majors.Commands.DeleteSoft
 {
-    public class DeleteMajorCommandValidator : AbstractValidator<DeleteMajorCommand>
+    public class DeleteSoftMajorCommandValidator : AbstractValidator<DeleteSoftMajorCommand>
     {
-        public DeleteMajorCommandValidator()
+        public DeleteSoftMajorCommandValidator()
         {
             RuleFor(x => x.Id)
                 .NotEmpty()

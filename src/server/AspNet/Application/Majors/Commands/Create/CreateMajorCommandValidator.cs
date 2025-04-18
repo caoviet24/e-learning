@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace Application.Major.Commands.Create
+namespace Application.Majors.Commands.Create
 {
     public class CreateMajorCommandValidator : AbstractValidator<CreateMajorCommand>
     {

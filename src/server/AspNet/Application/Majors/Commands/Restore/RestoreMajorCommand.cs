@@ -9,7 +9,7 @@ using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
-namespace Application.Major.Commands.Restore
+namespace Application.Majors.Commands.Restore
 {
     [Authorize(Role = "ADMIN")]
     public class RestoreMajorCommand : IRequest<Response<MajorDtoWithFaculty>>

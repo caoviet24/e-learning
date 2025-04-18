@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace Application.Major.Commands.Update
+namespace Application.Majors.Commands.Update
 {
     public class UpdateMajorCommandValidator : AbstractValidator<UpdateMajorCommand>
     {

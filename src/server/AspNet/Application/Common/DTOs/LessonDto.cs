@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using Domain.Common;
 
-namespace Domain.Entites
+namespace Application.Common.DTOs
 {
-    public class Lesson : BaseEnity
+    public class LessonDto : BaseEnity
     {
         public string title { get; set; } = null!;
         public string description { get; set; } = null!;
@@ -14,8 +11,6 @@ namespace Domain.Entites
         public int position { get; set; }
         public string urlVideo { get; set; } = null!;
         public string courseId { get; set; } = null!;
-        public virtual Course Course { get; set; } = null!;
+        public virtual CourseDto Course { get; set; } = null!;
     }
-
-
 }

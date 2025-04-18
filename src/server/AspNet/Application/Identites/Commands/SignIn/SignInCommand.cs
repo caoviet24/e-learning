@@ -7,6 +7,7 @@ using Application.Common.Interfaces;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Caching.Memory;
 
 
 namespace Application.Identites.Commands.SignIn
@@ -19,7 +20,7 @@ namespace Application.Identites.Commands.SignIn
         public string Role { get; set; } = null!;
     }
 
-    public class SignInCommandHandler(IUnitOfWork unitOfWork, IJwtService jwtService, IRedisService redisService) : IRequestHandler<SignInCommand, TokenDto>
+    public class SignInCommandHandler(IUnitOfWork unitOfWork, IJwtService jwtService, IMemoryCache memoryCache) : IRequestHandler<SignInCommand, TokenDto>
     {
         public async Task<TokenDto> Handle(SignInCommand request, CancellationToken cancellationToken)
         {
@@ -50,13 +51,8 @@ namespace Application.Identites.Commands.SignIn
             var refreshToken = jwtService.generateRefreshToken(exitUser);
 
             var expiry = TimeSpan.FromDays(30);
-            var tasks = new[]
-            {
-                redisService.SetStringAsync($"refresh_token:{exitUser.Id}", refreshToken, expiry),
-                redisService.SetStringAsync($"refresh_token_lookup:{refreshToken}", exitUser.Id, expiry)
-            };
-
-            await Task.WhenAll(tasks);
+            memoryCache.Set<string>($"refresh_token:{exitUser.Id}", refreshToken, expiry);
+            memoryCache.Set<string>($"refresh_token_lookup:{refreshToken}", exitUser.Id, expiry);
 
             return new TokenDto
             {

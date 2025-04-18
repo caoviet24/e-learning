@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace Application.Major.Queries.GetAll
+namespace Application.Majors.Queries.GetAll
 {
     public class GetAllMajorQueryValidator : AbstractValidator<GetAllMajorQuery>
     {

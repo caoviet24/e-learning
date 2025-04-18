@@ -9,7 +9,7 @@ using Domain.Exceptions;
 using Domain.Interfaces;
 using MediatR;
 
-namespace Application.Major.Queries.GetById
+namespace Application.Majors.Queries.GetById
 {
     [Authorize]
     public class GetMajorByIdQuery : IRequest<Response<MajorDto>>

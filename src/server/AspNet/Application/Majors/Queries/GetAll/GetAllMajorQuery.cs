@@ -8,7 +8,7 @@ using AutoMapper;
 using Domain.Interfaces;
 using MediatR;
 
-namespace Application.Major.Queries.GetAll
+namespace Application.Majors.Queries.GetAll
 {
     [Authorize]
     public class GetAllMajorQuery : IRequest<ResponseList<MajorDtoWithFaculty>>

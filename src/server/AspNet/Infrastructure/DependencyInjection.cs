@@ -26,6 +26,9 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
+        services.AddMemoryCache();
+        services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
+
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
@@ -72,13 +75,12 @@ public static class DependencyInjection
             };
         });
 
-        services.AddSingleton<IConnectionMultiplexer>(sp =>
-        {
-            var configuration = sp.GetRequiredService<IConfiguration>();
-            var redisConfig = configuration["Redis:Configuration"] ?? "localhost:6379";
-            return ConnectionMultiplexer.Connect(redisConfig);
-        });
-        services.AddScoped<IRedisService, RedisService>();
+        // services.AddSingleton<IConnectionMultiplexer>(sp =>
+        // {
+        //     var configuration = sp.GetRequiredService<IConfiguration>();
+        //     var redisConfig = configuration["Redis:Configuration"] ?? "localhost:6379";
+        //     return ConnectionMultiplexer.Connect(redisConfig);
+        // });
 
         return services;
     }

@@ -10,7 +10,7 @@ using Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Application.Major.Commands.Update
+namespace Application.Majors.Commands.Update
 {
     [Authorize(Role = "ADMIN")]
     public class UpdateMajorCommand : IRequest<Response<MajorDtoWithFaculty>>
