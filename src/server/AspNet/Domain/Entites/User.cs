@@ -39,6 +39,8 @@ namespace Domain.Entites
         public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
         public virtual ICollection<ReplyComment> ReplyCommentsSender { get; set; } = new HashSet<ReplyComment>();
         public virtual ICollection<ReplyComment> ReplyCommentsReceiver { get; set; } = new HashSet<ReplyComment>();
+        public virtual ICollection<Permisstion> CreatedPermisstionsUser { get; set; } = new HashSet<Permisstion>();
+        public virtual ICollection<Permisstion> AssignedPermisstionsUser { get; set; } = new HashSet<Permisstion>();
 
     }
 }

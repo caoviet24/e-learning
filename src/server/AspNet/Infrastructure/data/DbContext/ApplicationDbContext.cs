@@ -51,6 +51,21 @@ namespace Infrastructure.data.context
                 entity.HasKey(e => e.Id);
             });
 
+            modelBuilder.Entity<Permisstion>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.createdUser)
+                      .WithMany(u => u.CreatedPermisstionsUser)
+                      .HasForeignKey(e => e.createdBy)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.assignedUser)
+                      .WithMany(u => u.AssignedPermisstionsUser)
+                      .HasForeignKey(e => e.assignedUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
             modelBuilder.Entity<Lecturer>(entity =>
             {
                 entity.ToTable("Lecturers");
