@@ -18,8 +18,6 @@ public static class DependencyInjection
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
         });
 
-        services.AddScoped<IIdentitiesService, AuthService>();
-
         return services;
     }
 }

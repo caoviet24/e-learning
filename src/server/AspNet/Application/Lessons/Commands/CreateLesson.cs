@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Lessons.Commands
 {
     [Authorize(Role = "ADMIN,LECTURER")]
-    public record CreateLessonCommand : IRequest<Response<LessonDto>>
+    public record CreateLessonCommand : IRequest<LessonDto>
     {
         public string title { get; init; } = null!;
         public string description { get; init; } = null!;
@@ -50,9 +50,9 @@ namespace Application.Lessons.Commands
     internal class CreateLessonCommandHandler(
         IApplicationDbContext dbContext,
         IMapper mapper
-    ) : IRequestHandler<CreateLessonCommand, Response<LessonDto>>
+    ) : IRequestHandler<CreateLessonCommand, LessonDto>
     {
-        public async Task<Response<LessonDto>> Handle(CreateLessonCommand request, CancellationToken cancellationToken)
+        public async Task<LessonDto> Handle(CreateLessonCommand request, CancellationToken cancellationToken)
         {
             var course = await dbContext.Courses.FindAsync(request.courseId);
             if (course == null) throw new NotFoundException("Course not found");
@@ -67,12 +67,7 @@ namespace Application.Lessons.Commands
             await dbContext.Lessons.AddAsync(lesson, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
             
-            var lessonDto = mapper.Map<LessonDto>(lesson);
-            return Response<LessonDto>.Success(
-                data: lessonDto,
-                message: "Thêm bài học thành công",
-                action: Domain.Enums.Action.CREATE.ToString()
-            );
+            return mapper.Map<LessonDto>(lesson);
         }
     }
 }

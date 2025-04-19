@@ -36,22 +36,18 @@ namespace Application.Faculties.Queries
         public async Task<PaginatedList<FacultyDetailDto>> Handle(GetFacultiesWithDetailQuery request, CancellationToken cancellationToken)
         {
             var query = dbContext.Faculties.AsQueryable();
-            
+
             if (!string.IsNullOrEmpty(request.name))
             {
                 query = query.Where(x => x.name.Contains(request.name));
             }
-            
+
             if (!string.IsNullOrEmpty(request.code))
             {
                 query = query.Where(x => x.code.Contains(request.code));
             }
-            
-            if (request.isActive.HasValue)
-            {
-                query = query.Where(x => x.isActive == request.isActive.Value);
-            }
-            
+
+
             if (request.isDeleted.HasValue)
             {
                 query = query.Where(x => x.isDeleted == request.isDeleted.Value);

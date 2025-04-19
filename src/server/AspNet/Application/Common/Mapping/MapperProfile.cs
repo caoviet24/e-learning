@@ -1,5 +1,8 @@
-using Application.Lessons.Commands.Create;
-using Application.Majors.Commands.Create;
+using Application.Courses.Commands;
+using Application.Faculties.Commands;
+using Application.Lecturers.Commands;
+using Application.Lessons.Commands;
+using Application.Majors.Commands;
 using AutoMapper;
 using Domain.Entites;
 

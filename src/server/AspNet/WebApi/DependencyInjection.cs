@@ -56,9 +56,6 @@ namespace WebApi
             });
 
             // Add Health Checks
-            services.AddHealthChecks()
-                .AddCheck<RedisHealthCheck>("redis", HealthStatus.Unhealthy, 
-                    tags: new[] { "ready", "redis" });
 
             services.AddScoped<IUser, GetCurrentUser>();
             services.AddHttpContextAccessor();
