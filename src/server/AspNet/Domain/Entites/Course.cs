@@ -20,6 +20,5 @@ namespace Domain.Entites
         public virtual User User { get; set; } = null!;
         public virtual ICollection<Student> Students { get; set; } = new HashSet<Student>();
         public virtual ICollection<Lesson> Lessons { get; set; } = new HashSet<Lesson>();
-        public virtual ICollection<Exam> Exams { get; set; } = new HashSet<Exam>();
     }
 }

@@ -41,6 +41,12 @@ namespace Domain.Entites
         public virtual ICollection<ReplyComment> ReplyCommentsReceiver { get; set; } = new HashSet<ReplyComment>();
         public virtual ICollection<Permisstion> CreatedPermisstionsUser { get; set; } = new HashSet<Permisstion>();
         public virtual ICollection<Permisstion> AssignedPermisstionsUser { get; set; } = new HashSet<Permisstion>();
+        public virtual ICollection<Subject> CreatedSubjectsUser { get; set; } = new HashSet<Subject>();
+        public virtual ICollection<ExamSchedule> CreatedExamSchedulesUser { get; set; } = new HashSet<ExamSchedule>();
+        public virtual ICollection<ExamSchedule> ExamSuperVisor { get; set; } = new HashSet<ExamSchedule>();
+        public virtual ICollection<TeachSchedule> CreatedTeachSchedulesUser { get; set; } = new HashSet<TeachSchedule>();
+        public virtual ICollection<TeachSchedule> TeachSchedulesUser { get; set; } = new HashSet<TeachSchedule>();
+
 
     }
 }
