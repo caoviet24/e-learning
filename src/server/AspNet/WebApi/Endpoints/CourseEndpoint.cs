@@ -29,9 +29,9 @@ namespace WebApi.Endpoints
             return await sender.Send(command);
         }
 
-        public async Task<CourseDto> DeleteCourse(ISender sender,[FromQuery] DeleteCourseCommand command)
+        public async Task<CourseDto> DeleteCourse(ISender sender,[FromRoute] string id)
         {
-            return await sender.Send(command);
+            return await sender.Send(new DeleteCourseCommand { id = id });
         }
 
         public async Task<CourseDto> ActiveCourse(ISender sender,[FromQuery] ActiveCourseCommand command)

@@ -21,7 +21,7 @@ namespace WebApi.Endpoints
             .MapPost(create);
         }
 
-        public async Task<PaginatedList<LecturerDto>> getAll(ISender sender,[FromQuery] GetAllLecturersQuery query)
+        public async Task<PaginatedList<LecturerDto>> getAll(ISender sender,[AsParameters] GetAllLecturersQuery query)
         {
             return await sender.Send(query);
         }

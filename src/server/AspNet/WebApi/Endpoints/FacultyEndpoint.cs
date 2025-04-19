@@ -23,7 +23,7 @@ namespace WebApi.Endpoints
             .MapDelete(Delete,"{id}");
         }
 
-        public async Task<PaginatedList<FacultyDto>> GetAll(ISender sender,[FromQuery] GetAllFacultiesQuery query)
+        public async Task<PaginatedList<FacultyDto>> GetAll(ISender sender,[AsParameters] GetAllFacultiesQuery query)
         {
             return await sender.Send(query);
         }

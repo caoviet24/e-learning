@@ -13,17 +13,23 @@ namespace WebApi.Endpoints
     {
         public override void Map(WebApplication app)
         {
-            throw new NotImplementedException();
+            app.MapGroup(this)
+            .RequireAuthorization()
+            .MapGet(GetAll)
+            .MapGet(GetById,"{id}")
+            .MapPost(Create)
+            .MapPut(Update,"{id}")
+            .MapDelete(Delete,"{id}");
         }
 
-        public async Task<PaginatedList<MajorDtoWithFaculty>> GetAll(ISender sender, [FromQuery] GetAllMajorQuery query)
+        public async Task<PaginatedList<MajorDtoWithFaculty>> GetAll(ISender sender, [AsParameters] GetAllMajorQuery query)
         {
             return await sender.Send(query);
         }
 
-        public async Task<MajorDto> GetById(ISender sender, [FromQuery] GetMajorByIdQuery query)
+        public async Task<MajorDto> GetById(ISender sender, [FromRoute] string id)
         {
-            return await sender.Send(query);
+            return await sender.Send(new GetMajorByIdQuery { Id = id });
         }
 
         public async Task<MajorDtoWithFaculty> Create(ISender sender, [FromBody] CreateMajorCommand command)
