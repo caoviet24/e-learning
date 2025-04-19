@@ -35,6 +35,10 @@ namespace Infrastructure.data.context
             public DbSet<Comment> Comments { get; set; } = null!;
             public DbSet<ReplyComment> ReplyComments { get; set; } = null!;
             public DbSet<LikePost> LikePosts { get; set; } = null!;
+            public DbSet<Subject> Subjects { get; set; } = null!;
+            public DbSet<Permisstion> Permisstions { get; set; } = null!;
+            public DbSet<ExamSchedule> ExamSchedules { get; set; } = null!;
+            public DbSet<TeachSchedule> TeachSchedules { get; set; } = null!;
 
 
 
