@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Application.Lecturers.Commands.Create;
 using Application.Lecturers.Queries.GetAll;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

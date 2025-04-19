@@ -1,9 +1,7 @@
-﻿using Application.Auth;
-using Application.Behaviors;
+﻿using Application.Behaviors;
 using Application.Common.Behaviors;
 using Application.Common.Interfaces;
 using Application.Common.Mapping;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;

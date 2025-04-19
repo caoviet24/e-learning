@@ -2,11 +2,9 @@ using Application;
 using WebApi;
 using WebApi.Logging;
 using Infrastructure;
-using Microsoft.OpenApi.Models;
 using WebApi.Middlewares;
-using Application.Common.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 using Infrastructure.Data.DbContext;
+using WebApi.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure custom colored console logging
@@ -81,7 +79,8 @@ app.UseCors("AllowAllOrigins");
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+app.MapEndpoints();
+// app.MapControllers();
 
 
 app.Run();
