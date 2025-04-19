@@ -1,14 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Application.Major.Commands.Create;
-using Application.Major.Commands.Delete;
-using Application.Major.Commands.DeleteSoft;
-using Application.Major.Commands.Restore;
-using Application.Major.Commands.Update;
-using Application.Major.Queries.GetAll;
-using Application.Major.Queries.GetById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

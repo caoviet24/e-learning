@@ -1,13 +1,11 @@
-using Application.Common.DTOs;
 using Application.Common.Interfaces;
 using Application.Common.Sercurity;
 using AutoMapper;
 using Domain.Entites;
 using Domain.Exceptions;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Lessons.Commands.Create
+namespace Application.Lessons.Commands
 {
     [Authorize(Role = "ADMIN,LECTURER")]
     public record CreateLessonCommand : IRequest<Response<LessonDto>>
@@ -23,6 +21,29 @@ namespace Application.Lessons.Commands.Create
     {
         public CreateLessonValidator()
         {
+            RuleFor(x => x.title)
+                .NotEmpty()
+                .WithMessage("Title is required.")
+                .MaximumLength(100)
+                .WithMessage("Title must not exceed 100 characters.");
+
+            RuleFor(x => x.description)
+                .NotEmpty()
+                .WithMessage("Description is required.")
+                .MaximumLength(500)
+                .WithMessage("Description must not exceed 500 characters.");
+
+            RuleFor(x => x.thumbnail)
+                .NotEmpty()
+                .WithMessage("Thumbnail is required.");
+                
+            RuleFor(x => x.urlVideo)
+                .NotEmpty()
+                .WithMessage("Video URL is required.");
+                
+            RuleFor(x => x.courseId)
+                .NotEmpty()
+                .WithMessage("Course ID is required.");
         }
     }
 
@@ -42,10 +63,16 @@ namespace Application.Lessons.Commands.Create
             var position = highestPosition + 1;
             var lesson = mapper.Map<Lesson>(request);
             lesson.position = position;
-            var newLesson = await dbContext.Lessons.AddAsync(lesson);
+            
+            await dbContext.Lessons.AddAsync(lesson, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
-            var lessonDto = mapper.Map<LessonDto>(newLesson);
-            return new Response<LessonDto>() { Data = lessonDto, Message = "Thêm thành công", action = "create",Ok = true};
+            
+            var lessonDto = mapper.Map<LessonDto>(lesson);
+            return Response<LessonDto>.Success(
+                data: lessonDto,
+                message: "Thêm bài học thành công",
+                action: Domain.Enums.Action.CREATE.ToString()
+            );
         }
     }
 }

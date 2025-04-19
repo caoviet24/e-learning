@@ -1,12 +1,7 @@
-using System;
 using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Application.Common.Exceptions;
-using Application.Common.Interfaces;
 using Domain.Exceptions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
 
 namespace WebApi.Middlewares
 {

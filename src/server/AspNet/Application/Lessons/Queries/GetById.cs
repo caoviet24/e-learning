@@ -1,38 +1,36 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Application.Common.DTOs;
 using Application.Common.Interfaces;
 using AutoMapper;
 using Domain.Exceptions;
-using MediatR;
 
 namespace Application.Lessons.Queries
 {
-    public record GetByIdQuery : IRequest<Response<LessonDto>>
+    public record GetLessonByIdQuery : IRequest<LessonDto>
     {
-        public string id { get; set; } = null!;
+        public string id { get; init; } = null!;
     }
 
-    public class GetByIdValidator : AbstractValidator<GetByIdQuery>
+    public class GetLessonByIdValidator : AbstractValidator<GetLessonByIdQuery>
     {
-        public GetByIdValidator()
+        public GetLessonByIdValidator()
         {
-            RuleFor(x => x.id).NotEmpty();
+            RuleFor(x => x.id).NotEmpty().WithMessage("Lesson ID is required.");
         }
     }
-    internal class GetByIdQueryHandler(
+
+    internal class GetLessonByIdQueryHandler(
         IApplicationDbContext dbContext,
         IMapper mapper
-    ) : IRequestHandler<GetByIdQuery, Response<LessonDto>>
+    ) : IRequestHandler<GetLessonByIdQuery, LessonDto>
     {
-        public async Task<Response<LessonDto>> Handle(GetByIdQuery request, CancellationToken cancellationToken)
+        public async Task<LessonDto> Handle(GetLessonByIdQuery request, CancellationToken cancellationToken)
         {
-            var lesson = await dbContext.Lessons.FindAsync(request.id);
-            if (lesson == null) throw new NotFoundException("Lesson not found");
-            var lessonDto = mapper.Map<LessonDto>(lesson);
-            return Response<LessonDto>.Success(lessonDto, "Lấy thành công", "getById");
+            var lesson = await dbContext.Lessons.FindAsync(new object[] { request.id }, cancellationToken);
+
+            if (lesson == null)
+                throw new NotFoundException("Không tìm thấy bài học");
+
+            return mapper.Map<LessonDto>(lesson);
+
         }
     }
 }

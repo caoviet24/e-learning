@@ -1,16 +1,6 @@
-using System;
-using System.Threading.Tasks;
-using Application.Faculties.Commands.CreateFaculty;
-using Application.Faculties.Commands.UpdateFaculty;
-using Application.Faculties.Commands.DeleteFaculty;
-using Application.Faculties.Commands.RestoreFaculty;
 using Application.Faculties.Queries.GetAllFaculties;
-using Application.Faculties.Queries.GetFacultyById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using Application.Faculties.Commands.DeleteSoft;
 
 namespace WebApi.Controllers
 {

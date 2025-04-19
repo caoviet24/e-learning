@@ -1,16 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Application.Common.Interfaces;
-using Domain.Common;
 using Domain.Entites;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.data.context
 {
-<<<<<<< HEAD
     public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
         public ApplicationDbContext()
@@ -48,45 +41,12 @@ namespace Infrastructure.data.context
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<User>(entity =>
-=======
-      public class ApplicationDbContext : DbContext
-      {
-            public ApplicationDbContext()
->>>>>>> origin/duck-dev
-            {
-            }
-            public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-            {
-            }
 
-            public DbSet<User> Users { get; set; } = null!;
-            public DbSet<Course> Courses { get; set; } = null!;
-            public DbSet<Faculty> Faculties { get; set; } = null!;
-            public DbSet<Lecturer> Lecturers { get; set; } = null!;
-            public DbSet<Lesson> Lessons { get; set; } = null!;
-            public DbSet<Major> Majors { get; set; } = null!;
-            public DbSet<Notify> Notifications { get; set; } = null!;
-            public DbSet<Student> Students { get; set; } = null!;
-            public DbSet<Class> Classes { get; set; } = null!;
-            public DbSet<Exam> Exams { get; set; } = null!;
-            public DbSet<ExamQuestion> ExamQuestions { get; set; } = null!;
-            public DbSet<ExamResultByUser> ExamResultsByUser { get; set; } = null!;
-            public DbSet<Post> Posts { get; set; } = null!;
-            public DbSet<SavedPosts> SavedPosts { get; set; } = null!;
-            public DbSet<Comment> Comments { get; set; } = null!;
-            public DbSet<ReplyComment> ReplyComments { get; set; } = null!;
-            public DbSet<LikePost> LikePosts { get; set; } = null!;
-
-
-
-            /// <summary>
+            /// <su
             /// Configures the entity models and their relationships
             /// </summary>
             /// <param name="modelBuilder">The model builder</param>
-            protected override void OnModelCreating(ModelBuilder modelBuilder)
-            {
-                  base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder);
 
                   modelBuilder.Entity<User>(entity =>
                   {
@@ -465,29 +425,5 @@ namespace Infrastructure.data.context
                         .OnDelete(DeleteBehavior.Restrict);
                   });
 
-
-
-
-
-                  // Enable filtering for soft delete
-                  // foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-                  // {
-                  //     if (typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
-                  //     {
-                  //         var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
-                  //         var property = System.Linq.Expressions.Expression.Property(parameter, "isDeleted");
-                  //         var nullConstant = System.Linq.Expressions.Expression.Constant(null, typeof(bool?));
-                  //         var falseConstant = System.Linq.Expressions.Expression.Constant(false, typeof(bool?));
-
-                  //         var nullCheck = System.Linq.Expressions.Expression.Equal(property, nullConstant);
-                  //         var falseCheck = System.Linq.Expressions.Expression.Equal(property, falseConstant);
-                  //         var orExpression = System.Linq.Expressions.Expression.OrElse(nullCheck, falseCheck);
-
-                  //         var lambda = System.Linq.Expressions.Expression.Lambda(orExpression, parameter);
-                  //         entityType.SetQueryFilter(lambda);
-                  //     }
-                  // }
-
-            }
       }
-}
+}}

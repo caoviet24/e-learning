@@ -1,10 +1,4 @@
-using System;
 using System.Collections.Concurrent;
-using System.Drawing;
-using System.Text;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 
 namespace WebApi.Logging

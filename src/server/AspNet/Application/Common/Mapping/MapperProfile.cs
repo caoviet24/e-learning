@@ -1,10 +1,3 @@
-
-using Application.Common.DTOs;
-using Application.Courses.Commands.Create;
-using Application.Courses.Commands.Update;
-using Application.Faculties.Commands.CreateFaculty;
-using Application.Faculties.Commands.UpdateFaculty;
-using Application.Lecturers.Commands.Create;
 using Application.Lessons.Commands.Create;
 using Application.Majors.Commands.Create;
 using AutoMapper;
