@@ -38,6 +38,7 @@ export function NavbarLecturer({ isOpen, setIsOpen }: NavbarProps) {
     const navigationItems: NavItem[] = [
         { name: 'Trang chủ', href: '/lecturer/', icon: Home, active: true },
         { name: 'Tin tức', href: '/lecturer/news', icon: Newspaper, active: false },
+        { name: 'Bảng tin chung', href: '/posts', icon: FileText, active: false },
         { name: 'Quản lý khoá học ', href: '/lecturer/courses', icon: FileText, active: false },
         { name: 'Lớp học của tôi', href: '/lecturer/classes', icon: Globe, active: false },
         { name: 'Quản lý bài thi', href: '/lecturer/exams', icon: ClipboardList, active: false },
@@ -68,11 +69,11 @@ export function NavbarLecturer({ isOpen, setIsOpen }: NavbarProps) {
                             <div className="flex items-center gap-3">
                                 <Avatar>
                                     <AvatarImage src={user?.avatar} alt="Avatar" />
-                                    <AvatarFallback>{user?.full_name}</AvatarFallback>
+                                    <AvatarFallback>{user?.fullName}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <div className="font-medium">{user?.full_name}</div>
-                                    <div className="text-sm text-muted-foreground">Sinh viên</div>
+                                    <div className="font-medium">{user?.fullName}</div>
+                                    <div className="text-sm text-muted-foreground">Giảng viên</div>
                                 </div>
                             </div>
                         </div>

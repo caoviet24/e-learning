@@ -98,6 +98,61 @@ async function updateStatus(id: string, status: string) {
     return res.data;
 }
 
+// Interface for course statistics
+export interface CourseStatistics {
+    totalStudents: number;
+    completionRate: number;
+    lessonsCompleted: number;
+    totalLessons: number;
+    studentProgress: {
+        name: string;
+        progress: number;
+    }[];
+    completionByWeek: {
+        week: string;
+        completions: number;
+    }[];
+}
+
+async function getStatistics(courseId: string): Promise<CourseStatistics> {
+    const res = await axiosJWT.get(`${API_URL}/courses/statistics/${courseId}`);
+    return res.data;
+}
+
+// Mock function for statistics if backend API is not ready
+async function getStatisticsMock(courseId: string): Promise<CourseStatistics> {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Generate random data for demo
+    const totalStudents = Math.floor(Math.random() * 100) + 10;
+    const totalLessons = Math.floor(Math.random() * 20) + 5;
+    const lessonsCompleted = Math.floor(Math.random() * totalLessons);
+    const completionRate = Math.round((lessonsCompleted / totalLessons) * 100);
+    
+    // Generate random student progress
+    const studentProgress = Array.from({ length: 10 }, (_, i) => ({
+        name: `Student ${i+1}`,
+        progress: Math.floor(Math.random() * 100)
+    }));
+    
+    // Generate weekly completion data
+    const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+    const completionByWeek = weeks.map(week => ({
+        week,
+        completions: Math.floor(Math.random() * 30)
+    }));
+    
+    return {
+        totalStudents,
+        completionRate,
+        lessonsCompleted,
+        totalLessons,
+        studentProgress,
+        completionByWeek
+    };
+}
+
 export const courseService = {
     getAll,
     getById,
@@ -109,4 +164,5 @@ export const courseService = {
     active,
     inActive,
     updateStatus,
+    getStatistics: getStatisticsMock // Use mock for now, switch to real API when ready
 };

@@ -26,8 +26,8 @@ export function CourseCard({ id, title, major, faculty, author, thumbnail, views
                 <CardTitle className="text-lg">{title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-                <p className="text-sm text-muted-foreground">Khoa: {major.name}</p>
-                <p className="text-sm text-muted-foreground">Ngành: {faculty.name}</p>
+                <p className="text-sm text-muted-foreground">Khoa: {major?.name}</p>
+                <p className="text-sm text-muted-foreground">Ngành: {faculty?.name}</p>
                 <p className="text-sm text-muted-foreground">Giảng viên: {author?.fullName}</p>
             </CardContent>
             {isJoin && progress && (
