@@ -9,8 +9,8 @@ import { accountService } from '@/services/accountService';
 import Cookies from 'js-cookie';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { useAppSelector } from '@/redux/store';
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
+import { useUser } from '@/hooks/useUser';
 
 interface NavItem {
     name: string;
@@ -27,23 +27,15 @@ interface NavbarProps {
 }
 
 export function NavbarStudent({ isOpen, setIsOpen }: NavbarProps) {
-    const [username, setUsername] = useState<string | undefined>();
     const [notificationOpen, setNotificationOpen] = useState(false);
-    const unreadCount = 3; // This should come from your notification service/state
-    const { my_account } = useAppSelector((state) => state.sessionStorage.account);
+    const unreadCount = 3;
+    const { user } = useUser();
 
-    useEffect(() => {
-        const usernameCookie = Cookies.get('username');
-        setUsername(usernameCookie);
-    }, []);
-
-    const handleLogout = () => {
-        accountService.logout();
-    };
 
     const navigationItems: NavItem[] = [
         { name: 'Trang chủ', href: '/student/', icon: Home, active: true },
         { name: 'Tin tức', href: '/student/news', icon: Newspaper, active: false },
+        { name: 'Bảng tin chung', href: '/posts', icon: FileText, active: false },
         { name: 'Khóa học của tôi', href: '/student/learning', icon: FileText, active: false },
         { name: 'Lớp học của tôi', href: '/student/classes', icon: Globe, active: false },
         { name: 'Làm bài thi', href: '/student/exams', icon: ClipboardList, active: false },
@@ -69,15 +61,15 @@ export function NavbarStudent({ isOpen, setIsOpen }: NavbarProps) {
                 `}
             >
                 <div className="h-full flex flex-col">
-                    <RenderWithCondition condition={!!my_account}>
+                    <RenderWithCondition condition={!!user}>
                         <div className="px-8 py-4 border-b md:hidden">
                             <div className="flex items-center gap-3">
                                 <Avatar>
-                                    <AvatarImage src={my_account?.user?.avatar} alt="Avatar" />
-                                    <AvatarFallback>{my_account?.username}</AvatarFallback>
+                                    <AvatarImage src={user?.avatar} alt="Avatar" />
+                                    <AvatarFallback>{user?.fullName}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <div className="font-medium">{my_account?.username}</div>
+                                    <div className="font-medium">{user?.fullName}</div>
                                     <div className="text-sm text-muted-foreground">Sinh viên</div>
                                 </div>
                             </div>
@@ -135,9 +127,9 @@ export function NavbarStudent({ isOpen, setIsOpen }: NavbarProps) {
 
                     {/* Footer Actions */}
                     <div className="p-4 border-t space-y-4">
-                        <RenderWithCondition condition={!!my_account}>
+                        <RenderWithCondition condition={!!user}>
                             <button
-                                onClick={handleLogout}
+                                onClick={() => accountService.logout()}
                                 className="flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium text-red-500 rounded-lg hover:bg-accent hover:text-red-600 transition-colors w-full md:hidden"
                             >
                                 <LogOut className="w-5 h-5" />
@@ -149,12 +141,7 @@ export function NavbarStudent({ isOpen, setIsOpen }: NavbarProps) {
                 </div>
             </nav>
 
-            {isOpen && (
-                <div
-                    className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 md:hidden"
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
+            {isOpen && <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 md:hidden" onClick={() => setIsOpen(false)} />}
             <NotificationDrawer open={notificationOpen} onOpenChange={setNotificationOpen} />
         </div>
     );

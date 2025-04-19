@@ -93,12 +93,17 @@ export const courses = [
     },
 ];
 
-export const myCourses = [
+export const Courses = [
     {
+        id: 1,
         title: 'Next.js Development',
         description: 'Master the fundamentals of Next.js and build modern web applications',
         icon: '/window.svg',
-        progress: 60,
+        faculty : {
+            id: 1,
+            name: 'Công nghệ thông tin',
+        }
+
     },
     {
         title: 'React Essentials',
@@ -115,24 +120,55 @@ export const myCourses = [
 ];
 
 
-
-export const myAccount = {
-    name : 'Test User',
-    role: 'student',
-}
-
-
-export const accTest = [
+export const courseData = [
     {
         id: 1,
-        username: "st1",
-        password: "1",
-        role: 0,
+        title: '',
+        description: 'Learn the basics of programming using Python.',
+        thumbnail: 'https://files.fullstack.edu.vn/f8-prod/courses/7.png',
+        rating: 4.5,
+        views: 1200,
+        progress: 75,
     },
     {
         id: 2,
-        username: "tch1",
-        password: "1",
-        role: 1
-    },
+        title: 'Web Development Bootcamp',
+        description: 'Become a full-stack web developer with HTML, CSS, and JavaScript.',
+        thumbnail: 'https://files.fullstack.edu.vn/f8-prod/courses/7.png',
+        rating: 4.8,
+        views: 1500,
+        progress: 50,
+    }
 ]
+
+
+export const lesssonsData = [
+    {
+        Id: 1,
+        title: 'Introduction to Programming',
+        description: 'Learn the basics of programming using Python.',
+        thumbnail: 'https://files.fullstack.edu.vn/f8-prod/courses/7.png',
+        videoUrl: 'https://www.youtube.com/watch?v=example1',
+        position: 1,
+        courseId: 1,
+    },
+    {
+        Id: 2,
+        title: 'Web Development Basics',
+        description: 'Learn the fundamentals of web development with HTML and CSS.',
+        thumbnail: 'https://files.fullstack.edu.vn/f8-prod/courses/7.png',
+        videoUrl: 'https://www.youtube.com/watch?v=example2',
+        position: 2,
+        courseId: 1,
+    },
+    {
+        Id: 3,
+        title: 'JavaScript for Beginners',
+        description: 'Get started with JavaScript programming.',
+        thumbnail: 'https://files.fullstack.edu.vn/f8-prod/courses/7.png',
+        videoUrl: 'https://www.youtube.com/watch?v=example3',
+        position: 3,
+        courseId: 1,
+    }
+];
+
