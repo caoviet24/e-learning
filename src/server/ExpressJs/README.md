@@ -1,116 +1,122 @@
-# E-Learning Server
+# File Upload Server
 
-Backend server for the E-Learning platform built with Express.js, Prisma, MySQL, Socket.IO, and rate limiting.
+An Express.js server for handling file uploads (videos, images, and documents) with proper error handling and file type validation.
 
-## Project Structure
+## Features
 
-```
-server/
-├── controllers/         # Request handlers
-│   └── userController.js
-├── repositories/        # Database operations
-│   └── userRepository.js
-├── routes/             # API routes
-│   └── users.js
-├── prisma/             # Database schema and migrations
-│   └── schema.prisma
-├── .env                # Environment variables
-├── .env.example        # Environment variables template
-├── index.js           # Main application file
-└── package.json
-```
-
-## Architecture
-
-- **Controllers**: Handle HTTP requests and responses, input validation, and business logic
-- **Repositories**: Handle database operations and data access logic
-- **Routes**: Define API endpoints and connect them to controllers
-- **Prisma**: ORM for database operations with Postgresql
+- Upload videos, images, and documents
+- File type validation
+- File size limits
+- Organized file storage
+- RESTful API endpoints
 
 ## Setup
 
 1. Install dependencies:
+   ```
+   npm install
+   ```
+
+2. Start the server:
+   ```
+   npm start
+   ```
+
+   For development with auto-restart:
+   ```
+   npm run dev
+   ```
+
+3. Server will run at http://localhost:5000
+
+## API Endpoints
+
+| Endpoint | Method | Description | Request Body |
+|----------|--------|-------------|-------------|
+| `/api/upload/video` | POST | Upload a video file | `video` (file) |
+| `/api/upload/image` | POST | Upload an image file | `image` (file) |
+| `/api/upload/document` | POST | Upload a document file | `document` (file) |
+| `/api/upload` | POST | Upload any supported file type | `file` (file) |
+
+## Example Usage
+
+### Using cURL
+
+Upload a video:
 ```bash
-npm install
+curl -X POST http://localhost:5000/api/upload/video \
+  -F "video=@/path/to/your/video.mp4"
 ```
 
-2. Configure environment variables:
-- Copy `.env.example` to `.env`
-- Update the environment variables in `.env`
+Upload an image:
 ```bash
-# Required variables:
-PORT=8000
-DATABASE_URL="postgresql://localhost:5432/postgres"
-RATE_LIMIT_WINDOW=15
-RATE_LIMIT_MAX_REQUEST=100
+curl -X POST http://localhost:5000/api/upload/image \
+  -F "image=@/path/to/your/image.jpg"
 ```
 
-3. Initialize database:
+Upload a document:
 ```bash
-# Generate Prisma Client
-npm run prisma:generate
-
-# Run migrations
-npm run prisma:migrate
+curl -X POST http://localhost:5000/api/upload/document \
+  -F "document=@/path/to/your/document.pdf"
 ```
 
-## Running the Server
+### Using JavaScript (Fetch API)
 
-### Development mode:
-```bash
-npm run dev
+```javascript
+// Example: Uploading a video
+const formData = new FormData();
+formData.append('video', videoFile); // videoFile is a File object from input
+
+fetch('http://localhost:5000/api/upload/video', {
+  method: 'POST',
+  body: formData,
+})
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
 ```
 
-### Production mode:
-```bash
-npm start
+## Response Format
+
+Successful upload:
+```json
+{
+  "success": true,
+  "message": "Video uploaded successfully!",
+  "file": {
+    "originalname": "example.mp4",
+    "filename": "1614567890123-123456789.mp4",
+    "mimetype": "video/mp4",
+    "size": 1048576,
+    "url": "http://localhost:5000/uploads/videos/1614567890123-123456789.mp4"
+  }
+}
 ```
 
-### Using Docker Compose (Recommended)
-
-1. Start the application and database:
-```bash
-docker-compose up -d
+Error response:
+```json
+{
+  "success": false,
+  "message": "Error message here"
+}
 ```
 
-2. The server will be available at `http://localhost:8000`
-3. MySQL database will be accessible at `localhost:5432`
+## File Type Support
 
-To stop the containers:
-```bash
-docker-compose down
-```
+- **Videos**: mp4, mov, avi, mkv, webm
+- **Images**: jpeg, jpg, png, gif, svg, webp
+- **Documents**: pdf, doc, docx, xls, xlsx, ppt, pptx, txt, csv, json, xml
 
-To rebuild the containers after making changes:
-```bash
-docker-compose up -d --build
-```
+## File Size Limits
 
-### Environment Variables for Docker
+- Videos: 100MB
+- Images: 5MB  
+- Documents: 20MB
 
-The following environment variables are pre-configured in docker-compose.yml:
-- `DATABASE_URL`: postgresql://localhost:5432/postgres
-- MySQL credentials:
-  - Database: elearning
-  - User: user
-  - Password: password
-  - Root Password: rootpassword
+## Directory Structure
 
-### Using Docker without Compose
+Uploaded files are stored in the following directories:
 
-Build the image:
-```bash
-docker build -t elearning-server .
-```
-
-Run the container:
-```bash
-docker run -p 8000:8000 -d elearning-server
-```
-
-## Scripts
-
-- `npm run dev` - Run server in development mode with nodemon
-- `npm start` - Run server in production mode
-- `npm run prisma:generate` - Generate Prisma Client
-- `npm run prisma:migrate` - Run database migrations
+- `/uploads/videos/` - For video files
+- `/uploads/images/` - For image files
+- `/uploads/documents/` - For document files

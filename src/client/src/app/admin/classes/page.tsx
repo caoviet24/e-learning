@@ -1,12 +1,11 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Edit, FileInput, FileOutput, Layers, Loader2, Plus, Repeat, Search, SearchIcon, Trash, Trash2 } from 'lucide-react';
+import { Edit, FileOutput, Loader2, Plus, Repeat, Search, Trash, Trash2 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
     Pagination,
     PaginationContent,
@@ -17,19 +16,17 @@ import {
     PaginationEllipsis,
 } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bounce, toast, ToastContainer } from 'react-toastify';
+import { Bounce, toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import useDebounce from '@/hooks/useDebounce';
-import { IClass, IFaculty, IResponse, IResponseList } from '@/types';
+import { IClass, IResponseList } from '@/types';
 import TableRowSkeleton from '@/components/table-row-skeleton';
 import ButtonHover from '@/components/ButtonHover';
-import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
 import FacultySelect from '../../../components/FacultySelect';
 import MajorSelect from '../../../components/MajorSelect';
-import LecturerSelect from '../lecturers/LecturerSelect';
 import ClassDiaLog from './ClassDiaLog';
 import { classService } from '@/services/classService';
-import { setClasses, setClassesDeleted, setCreateClass, setDeleteSoftClass, setRestoreClass } from '@/redux/slices/class.slice';
+import { setClasses, setClassesDeleted } from '@/redux/slices/class.slice';
 
 const pageSize_OPTIONS = [
     { value: '1', label: '1 bản ghi' },
@@ -50,7 +47,6 @@ export default function ClassesPage() {
     const debouncedClassSearch = useDebounce(searchClass, 500);
     const [facultySeleted, setFacultySelected] = useState('all');
     const [majorSeleted, setMajorSelected] = useState('all');
-    const [lecturerSeleted, setLecturerSelected] = useState('all');
     const dispatch = useAppDispatch();
     const { classesStore, classesStoreDeleted } = useAppSelector((state) => {
         return state.localStorage.class || {
@@ -70,7 +66,7 @@ export default function ClassesPage() {
         isSuccess: isFetchClassesSuccess,
         refetch: refetchClasses,
     } = useQuery<IResponseList<IClass>>({
-        queryKey: ['classes', currentPage, pageSize, tabOpened, debouncedClassSearch, facultySeleted, majorSeleted, lecturerSeleted],
+        queryKey: ['classes', currentPage, pageSize, tabOpened, debouncedClassSearch, facultySeleted, majorSeleted],
         queryFn: () =>
             classService.getAll({
                 pageNumber: currentPage,
@@ -78,8 +74,7 @@ export default function ClassesPage() {
                 search: debouncedClassSearch,
                 isDeleted: tabOpened === 0 ? false : true,
                 facultyId: facultySeleted === 'all' ? undefined : facultySeleted,
-                majorId: majorSeleted === 'all' ? undefined : majorSeleted,
-                lecturer_id: lecturerSeleted === 'all' ? undefined : lecturerSeleted,
+                majorId: majorSeleted === 'all' ? undefined : majorSeleted
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
@@ -88,8 +83,7 @@ export default function ClassesPage() {
             (tabOpened === 0 && classesStore?.totalRecords <= 0) ||
             (tabOpened === 1 && classesStoreDeleted?.totalRecords <= 0) ||
             facultySeleted !== 'all' ||
-            majorSeleted !== 'all' ||
-            lecturerSeleted !== 'all',
+            majorSeleted !== 'all'
     });
 
     useEffect(() => {
@@ -98,14 +92,14 @@ export default function ClassesPage() {
                 dispatch(
                     setClasses({
                         ...classesData,
-                        filtered: facultySeleted !== 'all' || majorSeleted !== 'all' || lecturerSeleted !== 'all',
+                        filtered: facultySeleted !== 'all' || majorSeleted !== 'all'
                     }),
                 );
             } else {
                 dispatch(setClassesDeleted(classesData));
             }
         }
-    }, [isFetchClassesSuccess, classesData, debouncedClassSearch, facultySeleted, majorSeleted, lecturerSeleted]);
+    }, [isFetchClassesSuccess, classesData, debouncedClassSearch, facultySeleted, majorSeleted]);
 
     useEffect(() => {
         if (prevPageSize < pageSize) {
@@ -122,7 +116,7 @@ export default function ClassesPage() {
     };
 
     const dataDisplayed = useMemo(() => {
-        if (facultySeleted !== 'all' || majorSeleted !== 'all' || lecturerSeleted !== 'all' || debouncedClassSearch) {
+        if (facultySeleted !== 'all' || majorSeleted !== 'all' || debouncedClassSearch) {
             if (classesData?.data) {
                 if (classesData.data.length === 0) {
                     return [];
@@ -184,8 +178,8 @@ export default function ClassesPage() {
 
         if (totalPages <= 1) return [];
 
-        let start = Math.max(1, current - delta);
-        let end = Math.min(totalPages, current + delta);
+        const start = Math.max(1, current - delta);
+        const end = Math.min(totalPages, current + delta);
 
         items.push(
             <PaginationItem key={1}>
@@ -333,15 +327,7 @@ export default function ClassesPage() {
                             facultyId={facultySeleted === 'all' ? undefined : facultySeleted}
                         />
 
-                        {/* <LecturerSelect
-                            value={lecturerSeleted}
-                            onSelectValue={(value) => {
-                                setLecturerSelected(value);
-                                setCurrentPage(1);
-                            }}
-                            facultyId={facultySeleted === 'all' ? undefined : facultySeleted}
-                            majorId={majorSeleted === 'all' ? undefined : majorSeleted}
-                        /> */}
+                        
                     </div>
                 </div>
 

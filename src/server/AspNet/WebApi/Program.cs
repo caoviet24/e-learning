@@ -2,11 +2,9 @@ using Application;
 using WebApi;
 using WebApi.Logging;
 using Infrastructure;
-using Microsoft.OpenApi.Models;
 using WebApi.Middlewares;
-using Application.Common.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 using Infrastructure.Data.DbContext;
+using WebApi.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure custom colored console logging
@@ -56,32 +54,33 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
 // Configure health check endpoints
-app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-{
-    ResponseWriter = async (context, report) =>
-    {
-        context.Response.ContentType = "application/json";
-        var result = System.Text.Json.JsonSerializer.Serialize(new
-        {
-            status = report.Status.ToString(),
-            checks = report.Entries.Select(e => new
-            {
-                name = e.Key,
-                status = e.Value.Status.ToString(),
-                description = e.Value.Description,
-                duration = e.Value.Duration
-            })
-        });
-        await context.Response.WriteAsync(result);
-    }
-});
+// app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+// {
+//     ResponseWriter = async (context, report) =>
+//     {
+//         context.Response.ContentType = "application/json";
+//         var result = System.Text.Json.JsonSerializer.Serialize(new
+//         {
+//             status = report.Status.ToString(),
+//             checks = report.Entries.Select(e => new
+//             {
+//                 name = e.Key,
+//                 status = e.Value.Status.ToString(),
+//                 description = e.Value.Description,
+//                 duration = e.Value.Duration
+//             })
+//         });
+//         await context.Response.WriteAsync(result);
+//     }
+// });
 
 app.UseCors("AllowAllOrigins");
 
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+app.MapEndpoints();
+// app.MapControllers();
 
 
 app.Run();

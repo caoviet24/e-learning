@@ -1,12 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { User, Home, Newspaper, FileText, Globe, ClipboardList, BookOpen, Bell, LogOut, Settings } from 'lucide-react';
+import {Home, Newspaper, FileText, Globe, ClipboardList, BookOpen, Bell, LogOut, LucideIcon } from 'lucide-react';
 import { ThemeToggle } from '../theme-toggle';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { NotificationDrawer } from '../notification-drawer';
 import { accountService } from '@/services/accountService';
-import Cookies from 'js-cookie';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
@@ -15,7 +14,7 @@ import { useUser } from '@/hooks/useUser';
 interface NavItem {
     name: string;
     href: string;
-    icon: any;
+    icon: LucideIcon;
     active: boolean;
     onClick?: () => void;
     showOnMobile?: boolean;

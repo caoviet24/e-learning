@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Domain.Entites;
 namespace Application.Common.Interfaces
 {
@@ -9,5 +5,6 @@ namespace Application.Common.Interfaces
     {
         string generateAccessToken(User payload);
         string generateRefreshToken(User payload);
+        Task<TokenDto> RefreshToken(string token);
     }
 }

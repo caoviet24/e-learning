@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Application.Common.DTOs;
-using Application.Courses.Commands.Create;
-using Application.Courses.Commands.Update;
-using Application.Faculties.Commands.CreateFaculty;
-using Application.Faculties.Commands.UpdateFaculty;
-using Application.Lecturers.Commands.Create;
-using Application.Major.Commands.Create;
+using Application.Courses.Commands;
+using Application.Faculties.Commands;
+using Application.Lecturers.Commands;
+using Application.Lessons.Commands;
+using Application.Majors.Commands;
 using AutoMapper;
 using Domain.Entites;
 
@@ -18,6 +12,8 @@ namespace Application.Common.Mapping
     {
         public MapperProfile()
         {
+            CreateMap<CreateLessonCommand, Lesson>();
+
             CreateMap<User, UserDto>();
             CreateMap<UserDto, User>();
 

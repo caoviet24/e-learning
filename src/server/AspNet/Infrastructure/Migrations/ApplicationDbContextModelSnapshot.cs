@@ -533,6 +533,9 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("position")
+                        .HasColumnType("integer");
+
                     b.Property<string>("thumbnail")
                         .IsRequired()
                         .HasColumnType("text");

@@ -1,17 +1,12 @@
 ﻿using Application.Common.Interfaces;
-using Domain.Interfaces;
 using Infrastructure.data.context;
-using Infrastructure.data.Repositories;
 using Infrastructure.Data.DbContext;
 using Infrastructure.Data.Interceptor;
-using Infrastructure.Data.Repositories;
-using Infrastructure.Redis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using StackExchange.Redis;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Logging;
 using Infrastructure.Configurations;
@@ -26,6 +21,18 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
+        if (configuration["Jwt:AccessKey"] == null)
+        {
+            throw new ArgumentNullException("Jwt:AccessKey cannot be null. Please check your configuration.");
+        }
+        if (configuration["Jwt:Issuer"] == null)
+        {
+            throw new ArgumentNullException("Jwt:Issuer cannot be null. Please check your configuration.");
+        }
+
+        services.AddMemoryCache();
+        services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
+
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
@@ -35,20 +42,8 @@ public static class DependencyInjection
         services.Configure<JwtConfiguration>(configuration.GetSection("Jwt"));
         services.AddScoped<ISaveChangesInterceptor, AuditableInterceptor>();
         services.AddScoped<ApplicationDbContextInitialiser>();
-
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IEmailService, EmailService>();
-
-
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IFacultyRepository, FacultyRepository>();
-        services.AddScoped<IMajorRepository, MajorRepository>();
-        // services.AddScoped<IClassRepository, ClassRepository>();
-        services.AddScoped<ILecturerRepository, LecturerRepository>();
-        // services.AddScoped<IStudentRepository, StudentRepository>();
-        services.AddScoped<ICourseRepository, CourseRepository>();
 
 
 
@@ -71,14 +66,6 @@ public static class DependencyInjection
                 IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration["Jwt:AccessKey"]))
             };
         });
-
-        services.AddSingleton<IConnectionMultiplexer>(sp =>
-        {
-            var configuration = sp.GetRequiredService<IConfiguration>();
-            var redisConfig = configuration["Redis:Configuration"] ?? "localhost:6379";
-            return ConnectionMultiplexer.Connect(redisConfig);
-        });
-        services.AddScoped<IRedisService, RedisService>();
 
         return services;
     }
