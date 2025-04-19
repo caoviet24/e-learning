@@ -52,19 +52,13 @@ namespace WebApi
                            .AllowAnyHeader()
                            .AllowAnyMethod()
                            .AllowCredentials();
-               });
+                });
             });
 
+            // Add Health Checks
 
             services.AddScoped<IUser, GetCurrentUser>();
             services.AddHttpContextAccessor();
-            // Add Health Checks
-            // services.AddHealthChecks()
-            //     .AddCheck<RedisHealthCheck>("redis", HealthStatus.Unhealthy, 
-            //         tags: new[] { "ready", "redis" });
-
-            // services.AddScoped<IUser, GetCurrentUser>();
-            // services.AddHttpContextAccessor();
 
             // We'll add a custom JWT authentication middleware since the package isn't properly installed
 

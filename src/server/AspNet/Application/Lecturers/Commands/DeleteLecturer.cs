@@ -1,6 +1,7 @@
 using Application.Common.Interfaces;
 using Application.Common.Sercurity;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,17 +36,17 @@ namespace Application.Lecturers.Commands
             {
                 var lecturer = await dbContext.Lecturers
                     .Include(l => l.User)
-                    .FirstOrDefaultAsync(l => l.userId == request.id, cancellationToken);
+                    .FirstOrDefaultAsync(l => l.User.Id == request.id, cancellationToken);
 
                 if (lecturer == null)
                     throw new NotFoundException($"Không tìm thấy giảng viên với ID: {request.id}");
 
                 // Check if lecturer has any dependent entities like courses, schedules, etc.
-                var hasCourses = await dbContext.Courses.AnyAsync(c => c.createdBy == lecturer.userId, cancellationToken);
-                // var hasTeachSchedules = await dbContext.Tea.AnyAsync(ts => ts.lecturerId == lecturer.Id, cancellationToken);
-
-                // if (hasCourses || hasTeachSchedules)
-                //     throw new BadRequestException("Giảng viên này không thể xóa vì có dữ liệu liên quan (khóa học, lịch dạy).");
+                var hasCourses = await dbContext.Courses.AnyAsync(c => c.createdBy == lecturer.User.Id, cancellationToken);
+    
+                
+                if (hasCourses)
+                    throw new BadRequestException("Giảng viên này không thể xóa vì có dữ liệu liên quan (khóa học, lịch dạy).");
 
                 // Store lecturer info for response
                 var lecturerDto = mapper.Map<LecturerDto>(lecturer);
@@ -59,7 +60,7 @@ namespace Application.Lecturers.Commands
                 // Delete lecturer
                 dbContext.Lecturers.Remove(lecturer);
                 await dbContext.SaveChangesAsync(cancellationToken);
-
+                
                 await transaction.CommitAsync(cancellationToken);
 
                 return lecturerDto;

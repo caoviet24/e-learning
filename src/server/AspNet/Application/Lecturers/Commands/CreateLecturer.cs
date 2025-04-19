@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Lecturers.Commands
 {
     [Authorize(Role = "ADMIN")]
-    public class CreateLecturerCommand : IRequest<Response<LecturerDto>>
+    public class CreateLecturerCommand : IRequest<LecturerDto>
     {
         public string username { get; set; } = null!;
         public string password { get; set; } = null!;
@@ -28,9 +28,9 @@ namespace Application.Lecturers.Commands
     public class CreateLecturerCommandHander(
         IApplicationDbContext dbContext,
         IMapper mapper
-    ) : IRequestHandler<CreateLecturerCommand, Response<LecturerDto>>
+    ) : IRequestHandler<CreateLecturerCommand, LecturerDto>
     {
-        public async Task<Response<LecturerDto>> Handle(CreateLecturerCommand request, CancellationToken cancellationToken)
+        public async Task<LecturerDto> Handle(CreateLecturerCommand request, CancellationToken cancellationToken)
         {
             var newUser = mapper.Map<User>(request);
             newUser.role = Domain.Enums.Role.LECTURER.ToString();
@@ -66,13 +66,7 @@ namespace Application.Lecturers.Commands
 
             await transaction.CommitAsync();
 
-            var lecturerDto = mapper.Map<LecturerDto>(createdLecturer);
-
-            return Response<LecturerDto>.Success(
-                data: lecturerDto,
-                message: "Lecturer created successfully",
-                action: Domain.Enums.Action.CREATE.ToString()
-            );
+            return mapper.Map<LecturerDto>(createdLecturer);
         }
     }
 }
