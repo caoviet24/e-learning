@@ -11,8 +11,8 @@ interface IResponse<T> {
 }
 
 interface IResponseList<T> {
-    data: T[];
-    totalRecords: number;
+    items: T[];
+    totalCount: number;
     pageNumber: number;
     pageSize: number;
 }
@@ -96,6 +96,7 @@ export interface ICourse {
     description: string;
     thumbNail?: string;
     status: string;
+    documentUrl?: string;
     facultyId?: string;
     majorId?: string;
     isDeleted?: boolean;

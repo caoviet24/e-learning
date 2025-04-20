@@ -101,8 +101,8 @@ export default function LecturersPage() {
         refetchOnWindowFocus: false,
         enabled:
             !!debouncedLecturerSearch ||
-            (tabOpened === 0 && lecturersStore.totalRecords <= 0) ||
-            (tabOpened === 1 && lecturersStoreDeleted.totalRecords <= 0) ||
+            (tabOpened === 0 && lecturersStore.totalCount <= 0) ||
+            (tabOpened === 1 && lecturersStoreDeleted.totalCount <= 0) ||
             facultySeleted !== 'all',
     });
 
@@ -123,7 +123,7 @@ export default function LecturersPage() {
 
     useEffect(() => {
         if (prevPageSize < pageSize) {
-            if (pageSize > lecturersStore.totalRecords || pageSize > lecturersStoreDeleted.totalRecords) {
+            if (pageSize > lecturersStore.totalCount || pageSize > lecturersStoreDeleted.totalCount) {
                 refetchLecturers();
             }
         }
@@ -176,11 +176,11 @@ export default function LecturersPage() {
 
     const getIsLastPage = () => {
         const currentData = tabOpened === 0 ? lecturersStore : lecturersStoreDeleted;
-        const totalRecords =
-            debouncedLecturerSearch || pageSize > (currentData?.totalRecords ?? 0)
-                ? lecturersData?.totalRecords ?? currentData?.totalRecords ?? 0
-                : currentData?.totalRecords ?? 0;
-        const totalPages = Math.ceil(totalRecords / pageSize);
+        const totalCount =
+            debouncedLecturerSearch || pageSize > (currentData?.totalCount ?? 0)
+                ? lecturersData?.totalCount ?? currentData?.totalCount ?? 0
+                : currentData?.totalCount ?? 0;
+        const totalPages = Math.ceil(totalCount / pageSize);
 
         return currentPage === totalPages;
     };
@@ -188,11 +188,11 @@ export default function LecturersPage() {
     const renderPaginationItems = () => {
         const items = [];
         const currentData = tabOpened === 0 ? lecturersStore : lecturersStoreDeleted;
-        const totalRecords =
-            debouncedLecturerSearch || pageSize > (currentData?.totalRecords ?? 0)
-                ? lecturersData?.totalRecords ?? currentData?.totalRecords ?? 0
-                : currentData?.totalRecords ?? 0;
-        const totalPages = Math.ceil(totalRecords / pageSize);
+        const totalCount =
+            debouncedLecturerSearch || pageSize > (currentData?.totalCount ?? 0)
+                ? lecturersData?.totalCount ?? currentData?.totalCount ?? 0
+                : currentData?.totalCount ?? 0;
+        const totalPages = Math.ceil(totalCount / pageSize);
         const current = currentPage;
         const delta = 2;
 
@@ -475,18 +475,18 @@ export default function LecturersPage() {
                 </div>
 
                 {!isFetchLecturersLoading &&
-                    ((debouncedLecturerSearch && (lecturersData?.totalRecords ?? 0) > 0) ||
-                        (!debouncedLecturerSearch && ((tabOpened === 0 ? lecturersStore?.totalRecords : lecturersStoreDeleted?.totalRecords) ?? 0) > 0)) && (
+                    ((debouncedLecturerSearch && (lecturersData?.totalCount ?? 0) > 0) ||
+                        (!debouncedLecturerSearch && ((tabOpened === 0 ? lecturersStore?.totalCount : lecturersStoreDeleted?.totalCount) ?? 0) > 0)) && (
                         <div className="mt-4 flex flex-col md:flex-row justify-between items-center">
                             <div className="mb-4 md:mb-0 flex items-center">
                                 <span className="text-sm text-gray-500 text-nowrap">
                                     Tổng số bản ghi:{' '}
                                     {debouncedLecturerSearch ||
-                                    pageSize > ((tabOpened === 0 ? lecturersStore?.totalRecords : lecturersStoreDeleted?.totalRecords) ?? 0)
-                                        ? lecturersData?.totalRecords ??
-                                          (tabOpened === 0 ? lecturersStore?.totalRecords : lecturersStoreDeleted?.totalRecords) ??
+                                    pageSize > ((tabOpened === 0 ? lecturersStore?.totalCount : lecturersStoreDeleted?.totalCount) ?? 0)
+                                        ? lecturersData?.totalCount ??
+                                          (tabOpened === 0 ? lecturersStore?.totalCount : lecturersStoreDeleted?.totalCount) ??
                                           0
-                                        : (tabOpened === 0 ? lecturersStore?.totalRecords : lecturersStoreDeleted?.totalRecords) ?? 0}
+                                        : (tabOpened === 0 ? lecturersStore?.totalCount : lecturersStoreDeleted?.totalCount) ?? 0}
                                 </span>
                                 <div className="ml-2 inline-block">
                                     <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isFetchLecturersLoading}>
@@ -504,9 +504,9 @@ export default function LecturersPage() {
                                 </div>
                             </div>
 
-                            {((debouncedLecturerSearch && (lecturersData?.totalRecords ?? 0) > pageSize) ||
+                            {((debouncedLecturerSearch && (lecturersData?.totalCount ?? 0) > pageSize) ||
                                 (!debouncedLecturerSearch &&
-                                    ((tabOpened === 0 ? lecturersStore?.totalRecords : lecturersStoreDeleted?.totalRecords) ?? 0) > pageSize)) && (
+                                    ((tabOpened === 0 ? lecturersStore?.totalCount : lecturersStoreDeleted?.totalCount) ?? 0) > pageSize)) && (
                                 <Pagination>
                                     <PaginationContent>
                                         <PaginationItem>
@@ -521,15 +521,15 @@ export default function LecturersPage() {
                                             <PaginationNext
                                                 onClick={() => {
                                                     const currentData = tabOpened === 0 ? lecturersStore : lecturersStoreDeleted;
-                                                    const totalRecords =
-                                                        debouncedLecturerSearch || pageSize > (currentData?.totalRecords ?? 0)
-                                                            ? lecturersData?.totalRecords ?? currentData?.totalRecords ?? 0
-                                                            : currentData?.totalRecords ?? 0;
-                                                    const totalPages = Math.ceil(totalRecords / pageSize);
+                                                    const totalCount =
+                                                        debouncedLecturerSearch || pageSize > (currentData?.totalCount ?? 0)
+                                                            ? lecturersData?.totalCount ?? currentData?.totalCount ?? 0
+                                                            : currentData?.totalCount ?? 0;
+                                                    const totalPages = Math.ceil(totalCount / pageSize);
                                                     const nextPage = Math.min(currentPage + 1, totalPages);
                                                     const currentReduxData = tabOpened === 0 ? lecturersStore.data : lecturersStoreDeleted.data;
 
-                                                    if (totalRecords > currentReduxData.length) {
+                                                    if (totalCount > currentReduxData.length) {
                                                         setCurrentPage(nextPage);
                                                         setTimeout(() => {
                                                             refetchLecturers();

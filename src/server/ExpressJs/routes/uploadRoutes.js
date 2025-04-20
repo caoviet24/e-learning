@@ -1,6 +1,16 @@
-const express = require('express');
-const { videoUpload, imageUpload, documentUpload, uploadFile } = require('../middlewares/uploadMiddleware');
-const { uploadVideo, uploadImage, uploadDocument, uploadAny } = require('../controllers/uploadController');
+const express = require("express");
+const {
+  videoUpload,
+  imageUpload,
+  documentUpload,
+  uploadFile,
+} = require("../middlewares/uploadMiddleware");
+const {
+  uploadVideo,
+  uploadImage,
+  uploadDocument,
+  uploadAny,
+} = require("../controllers/uploadController");
 
 const router = express.Router();
 
@@ -9,43 +19,43 @@ const router = express.Router();
  * @desc    Upload a video file
  * @access  Public
  */
-router.post('/video', videoUpload.single('video'), uploadVideo);
+router.post("/video", videoUpload.single("video"), uploadVideo);
 
 /**
  * @route   POST /api/upload/image
  * @desc    Upload an image file
  * @access  Public
  */
-router.post('/image', imageUpload.single('image'), uploadImage);
+router.post("/image", imageUpload.single("image"), uploadImage);
 
 /**
  * @route   POST /api/upload/document
  * @desc    Upload a document file
  * @access  Public
  */
-router.post('/document', documentUpload.single('document'), uploadDocument);
+router.post("/document", documentUpload.single("document"), uploadDocument);
 
 /**
  * @route   POST /api/upload
  * @desc    Upload any supported file type (auto-detect)
  * @access  Public
  */
-router.post('/', uploadFile.single('file'), uploadAny);
+router.post("/", uploadFile.single("file"), uploadAny);
 
 /**
  * Handle upload errors
  */
 router.use((err, req, res, next) => {
-  if (err.code === 'LIMIT_FILE_SIZE') {
+  if (err.code === "LIMIT_FILE_SIZE") {
     return res.status(413).json({
       success: false,
-      message: 'File size is too large. Please upload a smaller file.'
+      message: "File size is too large. Please upload a smaller file.",
     });
   }
-  
+
   res.status(400).json({
     success: false,
-    message: err.message || 'An error occurred during file upload.'
+    message: err.message || "An error occurred during file upload.",
   });
 });
 

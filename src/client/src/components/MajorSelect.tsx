@@ -3,8 +3,6 @@
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
 import { Input } from '@/components/ui/input';
 import useDebounce from '@/hooks/useDebounce';
-import { setMajors } from '@/redux/slices/major.slice';
-import { useAppDispatch, useAppSelector } from '@/redux/store';
 import { majorService } from '@/services/majorService';
 import { IMajor, IResponseList } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -22,14 +20,11 @@ export default function MajorSelect({ value, onSelectValue, facultyId }: MajorSe
     const [searchMajor, setSearchMajor] = useState('');
     const [searchMajorResult, setSearchMajorResult] = useState<IMajor[]>([]);
     const debouncedMajorSearch = useDebounce(searchMajor, 500);
-    const { majorsStore } = useAppSelector((state) => state.localStorage.major);
-    const dispatch = useAppDispatch();
 
     const {
         data: majorsData,
         isLoading: isFetchMajorsLoading,
         isSuccess: isFetchMajorsSuccess,
-        refetch: refetchMajors,
     } = useQuery<IResponseList<IMajor>>({
         queryKey: ['majors', debouncedMajorSearch, facultyId],
         queryFn: () =>
@@ -38,28 +33,24 @@ export default function MajorSelect({ value, onSelectValue, facultyId }: MajorSe
                 pageSize: 10,
                 isDeleted: false,
                 facultyId: facultyId === 'all' || !facultyId ? undefined : facultyId,
-                search: searchMajor ? searchMajor : undefined,
+                search: debouncedMajorSearch,
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
-        enabled: !!debouncedMajorSearch || majorsStore.totalRecords <= 0 || !!facultyId,
     });
 
     useEffect(() => {
-        if (majorsStore.totalRecords > 0 && !majorsData && !isFetchMajorsSuccess) {
-            setSearchMajorResult(majorsStore.data);
+        if (isFetchMajorsSuccess && majorsData) {
+            setSearchMajorResult(majorsData.items);
         }
-    }, [majorsStore]);
-
-    useEffect(() => {
-        if (isFetchMajorsSuccess) {
-            setSearchMajorResult(majorsData.data);
-            dispatch(setMajors(majorsData));
-        }
-    }, [isFetchMajorsSuccess, majorsData, dispatch]);
+    }, [isFetchMajorsSuccess, majorsData, debouncedMajorSearch]);
 
     return (
-        <Select value={value} onValueChange={onSelectValue} disabled={isFetchMajorsLoading}>
+        <Select
+            value={value}
+            onValueChange={onSelectValue}
+            disabled={isFetchMajorsLoading}
+        >
             <SelectTrigger className="w-full md:w-48 bg-background py-5 h-10">
                 <SelectValue placeholder="Chọn ngành" />
             </SelectTrigger>
@@ -72,7 +63,9 @@ export default function MajorSelect({ value, onSelectValue, facultyId }: MajorSe
                             </div>
                         )}
 
-                        {!isFetchMajorsLoading && <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />}
+                        {!isFetchMajorsLoading && (
+                            <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        )}
 
                         <Input
                             placeholder="Tìm kiếm ngành..."
@@ -87,7 +80,7 @@ export default function MajorSelect({ value, onSelectValue, facultyId }: MajorSe
                     Tất cả ngành
                 </SelectItem>
 
-                <RenderWithCondition condition={isFetchMajorsLoading && searchMajor !== null}>
+                <RenderWithCondition condition={isFetchMajorsLoading && searchMajor !== ''}>
                     <div className="flex items-center justify-center py-4">
                         <div className="animate-spin mr-2">
                             <Loader2 />
@@ -109,7 +102,7 @@ export default function MajorSelect({ value, onSelectValue, facultyId }: MajorSe
                     ))}
                 </RenderWithCondition>
 
-                <RenderWithCondition condition={searchMajorResult.length === 0 && searchMajor !== null && !isFetchMajorsLoading}>
+                <RenderWithCondition condition={searchMajorResult.length === 0 && searchMajor !== '' && !isFetchMajorsLoading}>
                     <div className="flex items-center justify-center py-4">
                         <span className="text-sm text-muted-foreground">Không tìm thấy ngành nào</span>
                     </div>

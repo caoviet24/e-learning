@@ -6,8 +6,6 @@ import { JwtPayload } from './types';
 
 export function middleware(request: NextRequest) {
 
-    return NextResponse.next(); // disable middleware for now
-
     const isAuthenticated = request.cookies.has('accessToken');
     const token = request.cookies.get('accessToken')?.value;
 

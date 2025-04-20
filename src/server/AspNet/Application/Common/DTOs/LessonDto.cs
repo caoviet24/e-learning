@@ -9,6 +9,7 @@ namespace Application.Common.DTOs
         public string description { get; set; } = null!;
         public string thumbnail { get; set; } = null!;
         public int position { get; set; }
+        public string? documentUrl { get; set; } = null!;
         public string urlVideo { get; set; } = null!;
         public string courseId { get; set; } = null!;
         public virtual CourseDto Course { get; set; } = null!;

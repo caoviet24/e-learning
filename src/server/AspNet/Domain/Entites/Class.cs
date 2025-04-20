@@ -17,6 +17,5 @@ namespace Domain.Entites
         public virtual ICollection<Exam> Exams { get; set; } = new HashSet<Exam>();
         public virtual ICollection<Subject> Subjects { get; set; } = new HashSet<Subject>();
         public virtual ICollection<ExamSchedule> ExamSchedules { get; set; } = new HashSet<ExamSchedule>();
-        public virtual ICollection<TeachSchedule> TeachSchedules { get; set; } = new HashSet<TeachSchedule>();
     }
 }

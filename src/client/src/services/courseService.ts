@@ -29,11 +29,11 @@ async function getAll({
 }: GetAllOptions) {
     let url : string;
     if (type === 'basic') {
-        url = `${API_URL}/courses/get-all-basic`;
+        url = `${API_URL}/course/get-all-basic`;
     } else if (type === 'with-author') {
-        url = `${API_URL}/courses/get-all-with-author`;
+        url = `${API_URL}/course/get-all-with-author`;
     } else if (type === 'detail') {
-        url = `${API_URL}/courses/get-detail`;
+        url = `${API_URL}/course/get-detail`;
     } else {
         throw new Error(`Invalid type: ${type}`);
     }
@@ -46,55 +46,55 @@ async function getAll({
             majorId: majorId || null,
             lecturer_id: lecturer_id || null,
             status: status || null,
-            isActive: null,
-            isDeleted: null,
+            isActive: isActive || null,
+            isDeleted: isDeleted || null,
         },
     });
     return res.data;
 }
 
 async function getById(id: string) {
-    const res = await axiosJWT.get(`${API_URL}/courses/get-by-id/${id}`);
+    const res = await axiosJWT.get(`${API_URL}/course/get-by-id/${id}`);
     return res.data;
 }
 
 async function create(data: any) {
-    const res = await axiosJWT.post(`${API_URL}/courses/create`, data);
+    const res = await axiosJWT.post(`${API_URL}/course/create`, data);
     return res.data;
 }
 
 async function update(id: string, data: any) {
-    const res = await axiosJWT.put(`${API_URL}/courses/update/${id}`, data);
+    const res = await axiosJWT.put(`${API_URL}/course/update/${id}`, data);
     return res.data;
 }
 
 async function deleteCourse(id: string) {
-    const res = await axiosJWT.delete(`${API_URL}/courses/delete/${id}`);
+    const res = await axiosJWT.delete(`${API_URL}/course/delete/${id}`);
     return res.data;
 }
 
 async function deleteSoft(id: string) {
-    const res = await axiosJWT.delete(`${API_URL}/courses/delete-soft/${id}`);
+    const res = await axiosJWT.delete(`${API_URL}/course/delete-soft/${id}`);
     return res.data;
 }
 
 async function restore(id: string) {
-    const res = await axiosJWT.put(`${API_URL}/courses/restore/${id}`);
+    const res = await axiosJWT.put(`${API_URL}/course/restore/${id}`);
     return res.data;
 }
 
 async function active(id: string) {
-    const res = await axiosJWT.put(`${API_URL}/courses/active/${id}`);
+    const res = await axiosJWT.put(`${API_URL}/course/active/${id}`);
     return res.data;
 }
 
 async function inActive(id: string) {
-    const res = await axiosJWT.put(`${API_URL}/courses/in-active/${id}`);
+    const res = await axiosJWT.put(`${API_URL}/course/in-active/${id}`);
     return res.data;
 }
 
 async function updateStatus(id: string, status: string) {
-    const res = await axiosJWT.put(`${API_URL}/courses/update-status/${id}`, { status });
+    const res = await axiosJWT.put(`${API_URL}/course/update-status/${id}`, { status });
     return res.data;
 }
 
@@ -115,7 +115,7 @@ export interface CourseStatistics {
 }
 
 async function getStatistics(courseId: string): Promise<CourseStatistics> {
-    const res = await axiosJWT.get(`${API_URL}/courses/statistics/${courseId}`);
+    const res = await axiosJWT.get(`${API_URL}/course/statistics/${courseId}`);
     return res.data;
 }
 

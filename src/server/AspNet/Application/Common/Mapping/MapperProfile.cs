@@ -14,8 +14,19 @@ namespace Application.Common.Mapping
         {
             CreateMap<CreateLessonCommand, Lesson>();
 
-            CreateMap<User, UserDto>();
+            CreateMap<User, MySeftDto>()
+                .ForMember(dest => dest.StudentProfile, opt => opt.MapFrom(src => src.Student))
+                .ForMember(dest => dest.LecturerProfile, opt => opt.MapFrom(src => src.Lecturer));
+            CreateMap<MySeftDto, User>();
+
+            CreateMap<User, UserDto>()
+                .ForMember(dest => dest.StudentProfile, opt => opt.MapFrom(src => src.Student))
+                .ForMember(dest => dest.LecturerProfile, opt => opt.MapFrom(src => src.Lecturer));
             CreateMap<UserDto, User>();
+            CreateMap<StudentProfileDto, Student>();
+            CreateMap<Student, StudentProfileDto>();
+            CreateMap<LecturerProfileDto, Lecturer>();
+            CreateMap<Lecturer, LecturerProfileDto>();
 
             CreateMap<Faculty, FacultyDto>();
             CreateMap<FacultyDto, Faculty>();

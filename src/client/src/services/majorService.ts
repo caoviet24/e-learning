@@ -10,7 +10,7 @@ export const majorService = {
         isDeleted?: boolean;
         facultyId?: string;
     }) {
-        const res = await axiosJWT.get(`${API_URL}/majors/get-all`, {
+        const res = await axiosJWT.get(`${API_URL}/major/get-all`, {
             params: {
                 pageNumber,
                 pageSize,
@@ -23,34 +23,34 @@ export const majorService = {
     },
 
     async getById(id: string) {
-        const res = await axiosJWT.get(`${API_URL}/majors/${id}`);
+        const res = await axiosJWT.get(`${API_URL}/major/${id}`);
         return res.data;
     },
 
-    async create(data: any) {
-        const res = await axiosJWT.post(`${API_URL}/majors/create`, data);
+    async create(data: unknown) {
+        const res = await axiosJWT.post(`${API_URL}/major/create`, data);
         return res.data;
     },
 
     async update(id: string, data: any) {
         console.log('update major', id, data);
         
-        const res = await axiosJWT.put(`${API_URL}/majors/update/${id}`, data);
+        const res = await axiosJWT.put(`${API_URL}/major/update/${id}`, data);
         return res.data;
     },
 
     async delete(id: string) {
-        const res = await axiosJWT.delete(`${API_URL}/majors/delete/${id}`);
+        const res = await axiosJWT.delete(`${API_URL}/major/delete/${id}`);
         return res.data;
     },
 
     async deleteSoft(id: string) {
-        const res = await axiosJWT.delete(`${API_URL}/majors/delete-soft/${id}`);
+        const res = await axiosJWT.delete(`${API_URL}/major/delete-soft/${id}`);
         return res.data;
     },
 
     async restore(id: string) {
-        const res = await axiosJWT.put(`${API_URL}/majors/restore/${id}`);
+        const res = await axiosJWT.put(`${API_URL}/major/restore/${id}`);
         return res.data;
     },
 };

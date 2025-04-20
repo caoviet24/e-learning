@@ -3,14 +3,28 @@
 import RenderWithCondition from '@/components/RenderWithCondition/RenderWithCondition';
 import { Input } from '@/components/ui/input';
 import useDebounce from '@/hooks/useDebounce';
-import { setFaculties } from '@/redux/slices/faculty.slice';
-import { useAppDispatch, useAppSelector } from '@/redux/store';
 import { facultyService } from '@/services/facultyService';
-import { IFaculty, IResponseList } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, Search, SearchIcon } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import { Loader2, SearchIcon } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+interface FacultyProps {
+    id: string;
+    name: string;
+    code: string;
+    isActive: boolean;
+    isDeleted: boolean;
+}
+
+interface FacultyResponseProps {
+    items: FacultyProps[];
+    pageNumber: number;
+    totalPages: number;
+    totalCount: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
 
 interface FacultySelectProps {
     value: string;
@@ -19,42 +33,31 @@ interface FacultySelectProps {
 
 export default function FacultySelect({ value, onSelectValue }: FacultySelectProps) {
     const [searchFaculty, setSearchFaculty] = useState('');
-    const [searchFacultyResult, setSearchFacultyResult] = useState<IFaculty[]>([]);
-    const deboudcedFacultySearch = useDebounce(searchFaculty, 500);
-    const dispatch = useAppDispatch();
-    const { facultiesStore } = useAppSelector((state) => state.localStorage.faculty);
+    const [searchFacultyResult, setSearchFacultyResult] = useState<FacultyProps[]>([]);
+    const debouncedFacultySearch = useDebounce(searchFaculty, 500);
 
     const {
         data: facultiesData,
         isLoading: isFetchFacultiesLoading,
         isSuccess: isFetchFacultiesSuccess,
-    } = useQuery<IResponseList<IFaculty>>({
-        queryKey: ['faculties', deboudcedFacultySearch],
+    } = useQuery<FacultyResponseProps>({
+        queryKey: ['faculties', debouncedFacultySearch],
         queryFn: () =>
             facultyService.getAll({
                 pageNumber: 1,
                 pageSize: 10,
                 isDeleted: false,
-                search: deboudcedFacultySearch,
+                search: debouncedFacultySearch,
             }),
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
-        enabled: !!deboudcedFacultySearch || facultiesStore.totalRecords <= 0,
     });
 
     useEffect(() => {
-        if (isFetchFacultiesSuccess && facultiesData && !deboudcedFacultySearch) {
-            dispatch(setFaculties(facultiesData));
+        if (isFetchFacultiesSuccess && facultiesData) {
+            setSearchFacultyResult(facultiesData.items);
         }
-
-        if (facultiesStore.totalRecords > 0 && !deboudcedFacultySearch) {
-            setSearchFacultyResult(facultiesStore.data);
-        }
-
-        if (deboudcedFacultySearch && isFetchFacultiesSuccess) {
-            setSearchFacultyResult(facultiesData.data);
-        }
-    }, [isFetchFacultiesSuccess, facultiesData, deboudcedFacultySearch]);
+    }, [isFetchFacultiesSuccess, facultiesData, debouncedFacultySearch]);
 
     return (
         <Select
@@ -89,7 +92,7 @@ export default function FacultySelect({ value, onSelectValue }: FacultySelectPro
                     Tất cả khoa
                 </SelectItem>
 
-                <RenderWithCondition condition={isFetchFacultiesLoading && searchFaculty !== null}>
+                <RenderWithCondition condition={isFetchFacultiesLoading && searchFaculty !== ''}>
                     <div className="flex items-center justify-center py-4">
                         <div className="animate-spin mr-2">
                             <Loader2 />
@@ -111,7 +114,7 @@ export default function FacultySelect({ value, onSelectValue }: FacultySelectPro
                     ))}
                 </RenderWithCondition>
 
-                <RenderWithCondition condition={searchFacultyResult.length === 0 && searchFaculty !== null && !isFetchFacultiesLoading}>
+                <RenderWithCondition condition={searchFacultyResult.length === 0 && searchFaculty !== '' && !isFetchFacultiesLoading}>
                     <div className="flex items-center justify-center py-4">
                         <span className="text-sm text-muted-foreground">Không tìm thấy khoa nào</span>
                     </div>

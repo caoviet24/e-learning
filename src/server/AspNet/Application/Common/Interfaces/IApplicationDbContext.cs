@@ -19,11 +19,8 @@ namespace Application.Common.Interfaces
         public DbSet<Exam> Exams { get; }
         public DbSet<ExamQuestion> ExamQuestions { get; }
         public DbSet<ExamResultByUser> ExamResultsByUser { get; }
-        public DbSet<Post> Posts { get; }
-        public DbSet<SavedPosts> SavedPosts { get; }
         public DbSet<Comment> Comments { get; }
         public DbSet<ReplyComment> ReplyComments { get; }
-        public DbSet<LikePost> LikePosts { get; }
         public DatabaseFacade Database { get; }
 
         EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;

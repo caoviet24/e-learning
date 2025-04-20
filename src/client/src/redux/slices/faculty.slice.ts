@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initStateFaculty = {
     data: [] as IFaculty[],
-    totalRecords: 0,
+    totalCount: 0,
     pageNumber: 0,
     pageSize: 0,
 };
@@ -41,7 +41,7 @@ export const facultySlice = createSlice({
         },
         setCreateFaculty: (state, action) => {
             state.facultiesStore.data.push(action.payload);
-            state.facultiesStore.totalRecords += 1;
+            state.facultiesStore.totalCount += 1;
         },
         setUpdateFaculty: (state, action) => {
             const index = state.facultiesStore.data.findIndex((faculty) => faculty.id === action.payload.id);
@@ -53,14 +53,14 @@ export const facultySlice = createSlice({
 
         setDeleteSoftFaculty: (state, action) => {
             state.facultiesStore.data = state.facultiesStore.data.filter((faculty) => faculty.id !== action.payload?.id);
-            state.facultiesStore.totalRecords -= 1;
+            state.facultiesStore.totalCount -= 1;
             state.facultiesStoreDeleted.data.push(action.payload);
-            state.facultiesStoreDeleted.totalRecords += 1;
+            state.facultiesStoreDeleted.totalCount += 1;
         },
 
         setDeleteFaculty: (state, action) => {
             state.facultiesStoreDeleted.data = state.facultiesStoreDeleted.data.filter((faculty) => faculty.id !== action.payload?.id);
-            state.facultiesStoreDeleted.totalRecords -= 1;
+            state.facultiesStoreDeleted.totalCount -= 1;
         },
 
         setRestoreFaculty: (state, action) => {
@@ -70,8 +70,8 @@ export const facultySlice = createSlice({
                 state.facultiesStore.data.push(restoredFaculty);
                 state.facultiesStoreDeleted.data.splice(index, 1);
             }
-            state.facultiesStore.totalRecords += 1;
-            state.facultiesStoreDeleted.totalRecords -= 1;
+            state.facultiesStore.totalCount += 1;
+            state.facultiesStoreDeleted.totalCount -= 1;
         },
     },
 });

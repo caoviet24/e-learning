@@ -32,6 +32,7 @@ interface CoursePayLoad {
     thumbnail?: string;
     majorId: string;
     status: string;
+    documentUrl?: string;
 }
 
 const courseSchema = z.object({
@@ -41,6 +42,7 @@ const courseSchema = z.object({
     description: z.string().min(1, {
         message: 'Mô tả không để trống',
     }),
+    documentUrl: z.string().optional(),
     thumbnail: z.string().optional(),
     facultyId: z.string().min(1, {
         message: 'Khoa không để trống',
@@ -60,6 +62,7 @@ const lessonSchema = z.object({
     description: z.string().min(1, {
         message: 'Mô tả không để trống',
     }),
+    documentUrl: z.string().optional(),
     urlVideo: z.string().url({
         message: 'URL video không hợp lệ',
     }),
@@ -89,6 +92,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
         defaultValues: {
             title: '',
             description: '',
+            documentUrl: '',
             facultyId: '',
             thumbnail: '',
             majorId: '',
@@ -112,7 +116,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
         },
     });
 
-    const { data: response, isSuccess } = useQuery<IResponse<ICourse>>({
+    const { data: response, isSuccess } = useQuery<ICourse>({
         queryKey: ['get-by-id', id],
         queryFn: () => courseService.getById(id),
         enabled: !!id && id !== 'new',
@@ -165,11 +169,12 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     });
 
     useEffect(() => {
-        if (isSuccess && response?.data) {
-            const data = response.data;
+        if (isSuccess) {
+            const data = response;
             courseDataRef.current = {
                 title: data.title,
                 description: data.description,
+                documentUrl: data.documentUrl,
                 facultyId: data.facultyId || '',
                 majorId: data.majorId || '',
                 thumbnail: data.thumbNail,
@@ -317,6 +322,18 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                                 control={control}
                                 render={({ field }) => (
                                     <Textarea {...field} className={errors.description ? 'border-red-500' : ''} placeholder="Nhập mô tả ngắn về khóa học" />
+                                )}
+                            />
+                            {errors.description && <p className="text-red-500 text-sm">{errors.description.message as string}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="documentUrl">Đường dẫn tài liệu</Label>
+                            <Controller
+                                name="documentUrl"
+                                control={control}
+                                render={({ field }) => (
+                                    <Textarea {...field} className={errors.description ? 'border-red-500' : ''} placeholder="Đường dẫn tài liệu(Không bắt buộc)" />
                                 )}
                             />
                             {errors.description && <p className="text-red-500 text-sm">{errors.description.message as string}</p>}
