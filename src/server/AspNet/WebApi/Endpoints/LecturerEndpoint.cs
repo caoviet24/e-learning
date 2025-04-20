@@ -17,16 +17,16 @@ namespace WebApi.Endpoints
         {
             app.MapGroup(this)
             .RequireAuthorization()
-            .MapGet(getAll)
-            .MapPost(create);
+            .MapGet(getAllLecturers, "/get-all")
+            .MapPost(createLecturer);
         }
 
-        public async Task<PaginatedList<LecturerDto>> getAll(ISender sender,[FromQuery] GetAllLecturersQuery query)
+        public async Task<PaginatedList<LecturerDto>> getAllLecturers(ISender sender, [AsParameters] GetAllLecturersQuery query)
         {
             return await sender.Send(query);
         }
 
-        public async Task<LecturerDto> create(ISender sender,[FromBody] CreateLecturerCommand command)
+        public async Task<LecturerDto> createLecturer(ISender sender, [FromBody] CreateLecturerCommand command)
         {
             return await sender.Send(command);
         }

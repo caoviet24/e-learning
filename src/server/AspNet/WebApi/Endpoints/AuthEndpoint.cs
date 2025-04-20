@@ -1,6 +1,7 @@
 
 using Application.Common.DTOs;
 using Application.Identites.Commands;
+using Application.Users.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.Infrastructure;
@@ -13,11 +14,16 @@ namespace WebApi.Endpoints
         {
             app.MapGroup(this)
                 .AllowAnonymous()
-                .MapPost(Login,"/login")
-                .MapPost(RefreshToken,"/refresh");
+                .MapGet(GetMyInfo, "/me")
+                .MapPost(Login, "/login")
+                .MapPost(RefreshToken, "/refresh");
         }
 
-        public async Task<TokenDto> Login(ISender sender ,[FromBody] SignInCommand command)
+        public async Task<MySeftDto> GetMyInfo(ISender sender, [AsParameters] GetMyInfoQuery query)
+        {
+            return await sender.Send(query);
+        }
+        public async Task<TokenDto> Login(ISender sender, [FromBody] SignInCommand command)
         {
             return await sender.Send(command);
         }

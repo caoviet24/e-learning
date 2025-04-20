@@ -3,7 +3,7 @@ import { IClass, IResponseList } from '@/types';
 
 const initStateClass = {
     data: [] as IClass[],
-    totalRecords: 0,
+    totalCount: 0,
     pageNumber: 0,
     pageSize: 0,
 };
@@ -41,7 +41,7 @@ export const classSlice = createSlice({
         },
         setCreateClass: (state, action) => {
             state.classesStore.data.push(action.payload);
-            state.classesStore.totalRecords += 1;
+            state.classesStore.totalCount += 1;
         },
         setUpdateClass: (state, action) => {
             const index = state.classesStore.data.findIndex((cls) => cls.id === action.payload.id);
@@ -51,10 +51,10 @@ export const classSlice = createSlice({
         },
         setDeleteSoftClass: (state, action) => {
             state.classesStore.data = state.classesStore.data.filter((cls) => cls.id !== action.payload?.id);
-            state.classesStore.totalRecords -= 1;
+            state.classesStore.totalCount -= 1;
             if (action.payload) {
                 state.classesStoreDeleted.data.push(action.payload);
-                state.classesStoreDeleted.totalRecords += 1;
+                state.classesStoreDeleted.totalCount += 1;
             }
         },
         setRestoreClass: (state, action) => {
@@ -65,8 +65,8 @@ export const classSlice = createSlice({
                 state.classesStore.data.push(restoredClass);
                 state.classesStoreDeleted.data.splice(index, 1);
             }
-            state.classesStore.totalRecords += 1;
-            state.classesStoreDeleted.totalRecords -= 1;
+            state.classesStore.totalCount += 1;
+            state.classesStoreDeleted.totalCount -= 1;
         },
     },
 });

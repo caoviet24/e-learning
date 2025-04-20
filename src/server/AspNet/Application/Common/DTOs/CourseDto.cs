@@ -6,6 +6,7 @@ namespace Application.Common.DTOs
         public string title { get; set; } = null!;
         public string description { get; set; } = null!;
         public string thumbNail { get; set; } = null!;
+        public string? documentUrl { get; set; } = null!;
         public string status { get; set; } = null!;
         public string facultyId { get; set; } = null!;
         public string majorId { get; set; } = null!;

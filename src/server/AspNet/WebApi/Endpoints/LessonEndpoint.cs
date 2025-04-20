@@ -13,10 +13,10 @@ namespace WebApi.Endpoints
         {
             app.MapGroup(this)
             .RequireAuthorization()
-            .MapPost(create);
+            .MapPost(createLesson);
         }
 
-        public async Task<LessonDto> create(ISender sender,[FromBody] CreateLessonCommand command)
+        public async Task<LessonDto> createLesson(ISender sender, [FromBody] CreateLessonCommand command)
         {
             return await sender.Send(command);
         }

@@ -3,13 +3,12 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Edit, FileInput, Plus, Repeat, Search, Trash2 } from 'lucide-react';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import FacultyDiaLog from './FacultyDiaLog';
 import useDebounce from '@/hooks/useDebounce';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQuery } from '@tanstack/react-query';
 import { facultyService } from '@/services/facultyService';
-import { setFaculties, setFacultiesDeleted } from '@/redux/slices/faculty.slice';
 import {
     Pagination,
     PaginationContent,
@@ -21,8 +20,6 @@ import {
 } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Bounce, toast } from 'react-toastify';
-import { useAppDispatch, useAppSelector } from '@/redux/store';
-import { IFaculty, IResponseList } from '@/types';
 import TableRowSkeleton from '@/components/table-row-skeleton';
 import ButtonHover from '@/components/ButtonHover';
 
@@ -36,13 +33,27 @@ const pageSize_OPTIONS = [
     { value: '100', label: '100 bản ghi' },
 ];
 
+interface IFaculty {
+    id: string;
+    name: string;
+    code: string;
+    isActive: boolean;
+    isDeleted: boolean;
+}
+
+interface IPaginatedResponse {
+    items: IFaculty[];
+    pageNumber: number;
+    totalPages: number;
+    totalCount: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+}
+
 export default function FacultyPage() {
-    const dispatch = useAppDispatch();
-    const { facultiesStore, facultiesStoreDeleted } = useAppSelector((state) => state.localStorage.faculty);
     const [pageSize, setPageSize] = useState(10);
-    const [prevPageSize, setPrevPageSize] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
-    const [tabOpened, setTabOpened] = useState(0);
+    const [tabOpened, setTabOpened] = useState(0); // 0: active faculties, 1: deleted faculties
     const [searchValue, setSearchValue] = useState('');
     const debouncedSearch = useDebounce(searchValue, 500);
     const [formFaculty, setFormFaculty] = useState<IFaculty | undefined>(undefined);
@@ -55,100 +66,34 @@ export default function FacultyPage() {
         isLoading,
         data: facultiesData,
         refetch,
-    } = useQuery<IResponseList<IFaculty>>({
+    } = useQuery<IPaginatedResponse>({
         queryKey: ['faculties', currentPage, pageSize, tabOpened, debouncedSearch],
         queryFn: () =>
             facultyService.getAll({
                 pageNumber: currentPage,
                 pageSize: pageSize,
-                isDeleted: tabOpened === 0 ? false : true,
-                search: debouncedSearch,
+                isDeleted: tabOpened === 1,
+                search: debouncedSearch || undefined,
             }),
         staleTime: 1000 * 60 * 5,
-        refetchOnWindowFocus: false,
-        enabled: !!debouncedSearch || (tabOpened === 0 && facultiesStore.totalRecords <= 0) || (tabOpened === 1 && facultiesStoreDeleted.totalRecords <= 0),
+        refetchOnWindowFocus: false
     });
 
-    useEffect(() => {
-        if (facultiesData) {
-            if (tabOpened === 0) {
-                dispatch(setFaculties(facultiesData));
-            } else {
-                dispatch(setFacultiesDeleted(facultiesData));
-            }
-        }
-    }, [facultiesData, dispatch]);
-
-    useEffect(() => {
-        if (prevPageSize < pageSize) {
-            if (facultiesStore.totalRecords < pageSize) {
-                refetch();
-            }
-        }
-
-        if (facultiesStore.totalRecords <= 0 && tabOpened === 0) {
-            refetch();
-        }
-
-        if (facultiesStoreDeleted.totalRecords <= 0 && tabOpened === 1) {
-            refetch();
-        }
-    }, [pageSize, prevPageSize, facultiesStore.totalRecords, debouncedSearch, refetch, tabOpened]);
-
     const handlePageSizeChange = (value: string) => {
-        setPrevPageSize(pageSize);
         setPageSize(Number(value));
         setCurrentPage(1);
     };
 
-    const dataDisplayed = useMemo(() => {
-        const currentData = tabOpened === 0 ? facultiesStore : facultiesStoreDeleted;
-
-        if (!isLoading && currentData?.data && currentData.data.length > 0 && !debouncedSearch) {
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = Math.min(startIndex + pageSize, currentData.data.length);
-            return currentData.data.slice(startIndex, endIndex).map((faculty, index) => ({
-                ...faculty,
-                index: startIndex + index + 1,
-            }));
-        }
-
-        if (facultiesData?.data && facultiesData.data.length > 0) {
-            return facultiesData.data.map((faculty, index) => ({
-                ...faculty,
-                index: (currentPage - 1) * pageSize + index + 1,
-            }));
-        }
-
-        return [];
-    }, [facultiesStore, facultiesStoreDeleted, tabOpened, facultiesData, currentPage, pageSize, isLoading, debouncedSearch]);
-
-    const getIsLastPage = () => {
-        const currentData = tabOpened === 0 ? facultiesStore : facultiesStoreDeleted;
-        const totalRecords =
-            debouncedSearch || pageSize > (currentData?.totalRecords ?? 0)
-                ? facultiesData?.totalRecords ?? currentData?.totalRecords ?? 0
-                : currentData?.totalRecords ?? 0;
-        const totalPages = Math.ceil(totalRecords / pageSize);
-
-        return currentPage === totalPages;
-    };
-
     const renderPaginationItems = () => {
         const items = [];
-        const currentData = tabOpened === 0 ? facultiesStore : facultiesStoreDeleted;
-        const totalRecords =
-            debouncedSearch || pageSize > (currentData?.totalRecords ?? 0)
-                ? facultiesData?.totalRecords ?? currentData?.totalRecords ?? 0
-                : currentData?.totalRecords ?? 0;
-        const totalPages = Math.ceil(totalRecords / pageSize);
+        const totalPages = facultiesData?.totalPages || 1;
         const current = currentPage;
         const delta = 2;
 
         if (totalPages <= 1) return [];
 
-        let start = Math.max(1, current - delta);
-        let end = Math.min(totalPages, current + delta);
+        const start = Math.max(1, current - delta);
+        const end = Math.min(totalPages, current + delta);
 
         items.push(
             <PaginationItem key={1}>
@@ -183,6 +128,7 @@ export default function FacultyPage() {
                 </PaginationItem>,
             );
         }
+        
         if (totalPages > 1) {
             items.push(
                 <PaginationItem key={totalPages}>
@@ -285,10 +231,10 @@ export default function FacultyPage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRowSkeleton row={4} cell={4} />
-                            ) : dataDisplayed && dataDisplayed.length > 0 ? (
-                                dataDisplayed.map((faculty: IFaculty, index: number) => (
+                            ) : facultiesData?.items && facultiesData.items.length > 0 ? (
+                                facultiesData.items.map((faculty: IFaculty, index: number) => (
                                     <TableRow key={faculty.id}>
-                                        <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
+                                        <TableCell>{(facultiesData.pageNumber - 1) * pageSize + index + 1}</TableCell>
                                         <TableCell>{faculty.name}</TableCell>
                                         <TableCell>{faculty.code}</TableCell>
                                         <TableCell className="text-right">
@@ -364,79 +310,51 @@ export default function FacultyPage() {
                     </Table>
                 </div>
 
-                {!isLoading &&
-                    ((debouncedSearch && (facultiesData?.totalRecords ?? 0) > 0) ||
-                        (!debouncedSearch && ((tabOpened === 0 ? facultiesStore?.totalRecords : facultiesStoreDeleted?.totalRecords) ?? 0) > 0)) && (
-                        <div className="mt-4 flex flex-col md:flex-row justify-between items-center">
-                            <div className="mb-4 md:mb-0 flex items-center">
-                                <span className="text-sm text-gray-500 text-nowrap">
-                                    Tổng số bản ghi:{' '}
-                                    {debouncedSearch ||
-                                    pageSize > ((tabOpened === 0 ? facultiesStore?.totalRecords : facultiesStoreDeleted?.totalRecords) ?? 0)
-                                        ? facultiesData?.totalRecords ??
-                                          (tabOpened === 0 ? facultiesStore?.totalRecords : facultiesStoreDeleted?.totalRecords) ??
-                                          0
-                                        : (tabOpened === 0 ? facultiesStore?.totalRecords : facultiesStoreDeleted?.totalRecords) ?? 0}
-                                </span>
-                                <div className="ml-2 inline-block">
-                                    <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isLoading}>
-                                        <SelectTrigger className="h-8 w-[100px]">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {pageSize_OPTIONS.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                {!isLoading && facultiesData && facultiesData.totalCount > 0 && (
+                    <div className="mt-4 flex flex-col md:flex-row justify-between items-center">
+                        <div className="mb-4 md:mb-0 flex items-center">
+                            <span className="text-sm text-gray-500 text-nowrap">
+                                Tổng số bản ghi: {facultiesData.totalCount}
+                            </span>
+                            <div className="ml-2 inline-block">
+                                <Select value={pageSize.toString()} onValueChange={handlePageSizeChange} disabled={isLoading}>
+                                    <SelectTrigger className="h-8 w-[100px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {pageSize_OPTIONS.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
-
-                            {((debouncedSearch && (facultiesData?.totalRecords ?? 0) > pageSize) ||
-                                (!debouncedSearch &&
-                                    ((tabOpened === 0 ? facultiesStore?.totalRecords : facultiesStoreDeleted?.totalRecords) ?? 0) > pageSize)) && (
-                                <Pagination>
-                                    <PaginationContent>
-                                        <PaginationItem>
-                                            <PaginationPrevious
-                                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                                                className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                                                aria-label="Go to previous page"
-                                            />
-                                        </PaginationItem>
-                                        {renderPaginationItems()}
-                                        <PaginationItem>
-                                            <PaginationNext
-                                                onClick={() => {
-                                                    const currentData = tabOpened === 0 ? facultiesStore : facultiesStoreDeleted;
-                                                    const totalRecords =
-                                                        debouncedSearch || pageSize > (currentData?.totalRecords ?? 0)
-                                                            ? facultiesData?.totalRecords ?? currentData?.totalRecords ?? 0
-                                                            : currentData?.totalRecords ?? 0;
-                                                    const totalPages = Math.ceil(totalRecords / pageSize);
-                                                    const nextPage = Math.min(currentPage + 1, totalPages);
-                                                    const currentReduxData = tabOpened === 0 ? facultiesStore.data : facultiesStoreDeleted.data;
-
-                                                    if (totalRecords > currentReduxData.length) {
-                                                        setCurrentPage(nextPage);
-                                                        setTimeout(() => {
-                                                            refetch();
-                                                        }, 0);
-                                                    } else {
-                                                        setCurrentPage(nextPage);
-                                                    }
-                                                }}
-                                                className={getIsLastPage() ? 'pointer-events-none opacity-50' : ''}
-                                                aria-label="Go to next page"
-                                            />
-                                        </PaginationItem>
-                                    </PaginationContent>
-                                </Pagination>
-                            )}
                         </div>
-                    )}
+
+                        {facultiesData.totalCount > pageSize && (
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                            className={!facultiesData.hasPreviousPage ? 'pointer-events-none opacity-50' : ''}
+                                            aria-label="Go to previous page"
+                                        />
+                                    </PaginationItem>
+                                    {renderPaginationItems()}
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            onClick={() => setCurrentPage((prev) => prev + 1)}
+                                            className={!facultiesData.hasNextPage ? 'pointer-events-none opacity-50' : ''}
+                                            aria-label="Go to next page"
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        )}
+                    </div>
+                )}
             </div>
 
             {optionDialog && (
@@ -447,6 +365,7 @@ export default function FacultyPage() {
                     onClose={() => setOptionDialog(null)}
                     onSuccess={() => {
                         setOptionDialog(null);
+                        refetch();
                     }}
                 />
             )}

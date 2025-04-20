@@ -4,7 +4,7 @@ using Domain.Exceptions;
 
 namespace Application.Courses.Queries
 {
-    public class GetCourseByIdQuery : IRequest<Response<CourseDto>>
+    public class GetCourseByIdQuery : IRequest<CourseDto>
     {
         public string id { get; set; } = null!;
 
@@ -19,9 +19,9 @@ namespace Application.Courses.Queries
         }
     }
 
-    public class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, IMapper mapper) : IRequestHandler<GetCourseByIdQuery, Response<CourseDto>>
+    public class GetCourseByIdQueryHandler(IApplicationDbContext dbContext, IMapper mapper) : IRequestHandler<GetCourseByIdQuery, CourseDto>
     {
-        public async Task<Response<CourseDto>> Handle(GetCourseByIdQuery request, CancellationToken cancellationToken)
+        public async Task<CourseDto> Handle(GetCourseByIdQuery request, CancellationToken cancellationToken)
         {
             var course = await dbContext.Courses.FindAsync(request.id);
 
@@ -30,13 +30,8 @@ namespace Application.Courses.Queries
                 throw new NotFoundException($"Không tìm thấy khóa học với ID: {request.id}");
             }
 
-            var data = mapper.Map<CourseDto>(course);
-            return new Response<CourseDto>
-            {
-                Data = data,
-                Message = "Lấy thông tin khóa học thành công",
-                Ok = true,
-            };
+            return mapper.Map<CourseDto>(course);
+
         }
     }
 }

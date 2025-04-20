@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import useDebounce from '@/hooks/useDebounce';
 import { useUser } from '@/hooks/useUser';
 import { courseService } from '@/services/courseService';
-import { ICourse } from '@/types';
+import { ICourse, IResponseList } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, Filter, Plus, Search, Video } from 'lucide-react';
 import Image from 'next/image';
@@ -24,7 +24,7 @@ export default function CoursesPage() {
 
     const debounceSearchTerm = useDebounce(searchTerm, 800);
 
-    const { data: coursesData, isSuccess: isFetchGetCourseSuccess } = useQuery({
+    const { data: coursesData, isSuccess: isFetchGetCourseSuccess } = useQuery<IResponseList<ICourse>>({
         queryKey: ['courses', user?.id, statusFilter, debounceSearchTerm],
         queryFn: () =>
             courseService.getAll({
@@ -40,8 +40,8 @@ export default function CoursesPage() {
 
     // Set the first course as selected when data loads
     useEffect(() => {
-        if (coursesData?.data?.length > 0 && !selectedCourseId) {
-            setSelectedCourseId(coursesData.data[0].id);
+        if (coursesData?.items && coursesData.items.length > 0 && !selectedCourseId) {
+            setSelectedCourseId(coursesData.items[0].id);
         }
     }, [coursesData, selectedCourseId]);
 
@@ -97,7 +97,7 @@ export default function CoursesPage() {
             <Tabs value={activeTab} className="w-full">
                 <TabsContent value="courses">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                        {!coursesData?.data?.length && (
+                        {!coursesData?.items?.length && (
                             <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-4 text-center py-16">
                                 <div className="flex justify-center">
                                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
@@ -107,14 +107,14 @@ export default function CoursesPage() {
                             </div>
                         )}
 
-                        {isFetchGetCourseSuccess && coursesData?.data?.length === 0 && (
+                        {isFetchGetCourseSuccess && coursesData?.items?.length === 0 && (
                             <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-4 text-center py-16">
                                 <p className="text-muted-foreground mt-4 font-medium">Không tìm thấy khóa học nào</p>
                                 <p className="text-sm text-muted-foreground mt-1">Hãy tạo khóa học mới để bắt đầu</p>
                             </div>
                         )}
 
-                        {coursesData?.data?.map((course: ICourse) => (
+                        {coursesData?.items?.map((course: ICourse) => (
                             <Card
                                 key={course.id}
                                 className="overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col"
@@ -212,7 +212,7 @@ export default function CoursesPage() {
                                 <CardHeader>
                                     <CardTitle>Thống kê khóa học</CardTitle>
                                     <CardDescription>
-                                        {coursesData?.data?.find((course: ICourse) => course.id === selectedCourseId)?.title || 'Đang tải...'}
+                                        {coursesData?.items?.find((course: ICourse) => course.id === selectedCourseId)?.title || 'Đang tải...'}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
@@ -223,7 +223,7 @@ export default function CoursesPage() {
                             <div className="mb-6">
                                 <h2 className="text-lg font-semibold mb-3">Chọn khóa học để xem thống kê</h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                    {coursesData?.data?.map((course: ICourse) => (
+                                    {coursesData?.items?.map((course: ICourse) => (
                                         <Card
                                             key={course.id}
                                             className={`cursor-pointer hover:shadow-md transition-all ${selectedCourseId === course.id ? 'border-primary border-2' : ''}`}

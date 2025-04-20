@@ -13,30 +13,37 @@ namespace WebApi.Endpoints
     {
         public override void Map(WebApplication app)
         {
-            throw new NotImplementedException();
+            app.MapGroup(this)
+                .RequireAuthorization()
+                .MapGet(GetAllMajors, "/get-all")
+                .MapGet(GetMajorById, "/get-by-id/{id}")
+                .MapPost(CreateMajor)
+                .MapPut(UpdateMajor, "{id}")
+                .MapDelete(DeleteMajor, "{id}");
         }
 
-        public async Task<PaginatedList<MajorDtoWithFaculty>> GetAll(ISender sender, [FromQuery] GetAllMajorQuery query)
+        public async Task<PaginatedList<MajorDtoWithFaculty>> GetAllMajors(ISender sender, [AsParameters] GetAllMajorQuery query)
         {
             return await sender.Send(query);
         }
 
-        public async Task<MajorDto> GetById(ISender sender, [FromQuery] GetMajorByIdQuery query)
+        public async Task<MajorDto> GetMajorById(ISender sender, [FromRoute] string id)
         {
+            var query = new GetMajorByIdQuery { Id = id };
             return await sender.Send(query);
         }
 
-        public async Task<MajorDtoWithFaculty> Create(ISender sender, [FromBody] CreateMajorCommand command)
+        public async Task<MajorDtoWithFaculty> CreateMajor(ISender sender, [FromBody] CreateMajorCommand command)
         {
             return await sender.Send(command);
         }
 
-        public async Task<MajorDtoWithFaculty> Update(ISender sender, [FromBody] UpdateMajorCommand command)
+        public async Task<MajorDtoWithFaculty> UpdateMajor(ISender sender, [FromBody] UpdateMajorCommand command)
         {
             return await sender.Send(command);
         }
 
-        public async Task<MajorDtoWithFaculty> Delete(ISender sender, [FromRoute] string id)
+        public async Task<MajorDtoWithFaculty> DeleteMajor(ISender sender, [FromRoute] string id)
         {
             return await sender.Send(new DeleteMajorCommand { Id = id });
         }

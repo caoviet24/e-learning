@@ -3,7 +3,7 @@ import { IMajor, IResponseList } from '@/types';
 
 const initStateMajor = {
     data: [] as IMajor[],
-    totalRecords: 0,
+    totalCount: 0,
     pageNumber: 0,
     pageSize: 0,
 };
@@ -46,7 +46,7 @@ export const majorSlice = createSlice({
         },
         setCreateMajor: (state, action) => {
             state.majorsStore.data.push(action.payload);
-            state.majorsStore.totalRecords += 1;
+            state.majorsStore.totalCount += 1;
         },
         setUpdateMajor: (state, action) => {
             const index = state.majorsStore.data.findIndex((major) => major.id === action.payload.id);
@@ -56,15 +56,15 @@ export const majorSlice = createSlice({
         },
         setDeleteMajor: (state, action) => {
             state.majorsStoreDeleted.data = state.majorsStoreDeleted.data.filter((major) => major.id !== action.payload?.id);
-            state.majorsStoreDeleted.totalRecords -= 1;
+            state.majorsStoreDeleted.totalCount -= 1;
         },
 
         setDeleteSoftMajor: (state, action) => {
             state.majorsStore.data = state.majorsStore.data.filter((major) => major.id !== action.payload?.id);
-            state.majorsStore.totalRecords -= 1;
+            state.majorsStore.totalCount -= 1;
             if (action.payload) {
                 state.majorsStoreDeleted.data.push(action.payload);
-                state.majorsStoreDeleted.totalRecords += 1;
+                state.majorsStoreDeleted.totalCount += 1;
             }
         },
         setRestoreMajor: (state, action) => {
@@ -74,8 +74,8 @@ export const majorSlice = createSlice({
                 state.majorsStore.data.push(restoredMajor);
                 state.majorsStoreDeleted.data.splice(index, 1);
             }
-            state.majorsStore.totalRecords += 1;
-            state.majorsStoreDeleted.totalRecords -= 1;
+            state.majorsStore.totalCount += 1;
+            state.majorsStoreDeleted.totalCount -= 1;
         },
     },
 });

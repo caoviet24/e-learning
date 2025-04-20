@@ -28,10 +28,6 @@ namespace Domain.Entites
         public virtual ICollection<Exam> CreatedUserExams { get; set; } = new HashSet<Exam>();
         public virtual ICollection<Exam> TesterExams { get; set; } = new HashSet<Exam>();
         public virtual ICollection<ExamResultByUser> ExamResultsByUser { get; set; } = new HashSet<ExamResultByUser>();
-
-        public virtual ICollection<Post> Posts { get; set; } = new HashSet<Post>();
-        public virtual ICollection<SavedPosts> SavedPosts { get; set; } = new HashSet<SavedPosts>();
-        public virtual ICollection<LikePost> LikePosts { get; set; } = new HashSet<LikePost>();
         public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
         public virtual ICollection<ReplyComment> ReplyCommentsSender { get; set; } = new HashSet<ReplyComment>();
         public virtual ICollection<ReplyComment> ReplyCommentsReceiver { get; set; } = new HashSet<ReplyComment>();
@@ -40,9 +36,5 @@ namespace Domain.Entites
         public virtual ICollection<Subject> CreatedSubjectsUser { get; set; } = new HashSet<Subject>();
         public virtual ICollection<ExamSchedule> CreatedExamSchedulesUser { get; set; } = new HashSet<ExamSchedule>();
         public virtual ICollection<ExamSchedule> ExamSuperVisor { get; set; } = new HashSet<ExamSchedule>();
-        public virtual ICollection<TeachSchedule> CreatedTeachSchedulesUser { get; set; } = new HashSet<TeachSchedule>();
-        public virtual ICollection<TeachSchedule> TeachSchedulesUser { get; set; } = new HashSet<TeachSchedule>();
-
-
     }
 }

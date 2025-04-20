@@ -1,7 +1,7 @@
-const multer = require('multer');
-const path = require('path');
-const config = require('../config');
-const { getFileType } = require('../utils/fileUtils');
+const multer = require("multer");
+const path = require("path");
+const config = require("../config");
+const { getFileType } = require("../utils/fileUtils");
 
 /**
  * Configure multer storage
@@ -10,29 +10,29 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const fileType = getFileType(file.mimetype);
     let uploadPath;
-    
+
     // Set destination based on file type
     switch (fileType) {
-      case 'video':
-        uploadPath = path.join(__dirname, '..', config.videoDir);
+      case "video":
+        uploadPath = path.join(__dirname, "..", config.videoDir);
         break;
-      case 'image':
-        uploadPath = path.join(__dirname, '..', config.imageDir);
+      case "image":
+        uploadPath = path.join(__dirname, "..", config.imageDir);
         break;
-      case 'document':
-        uploadPath = path.join(__dirname, '..', config.documentDir);
+      case "document":
+        uploadPath = path.join(__dirname, "..", config.documentDir);
         break;
       default:
-        return cb(new Error('Unsupported file type'), false);
+        return cb(new Error("Unsupported file type"), false);
     }
-    
+
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const extension = path.extname(file.originalname);
     cb(null, uniqueSuffix + extension);
-  }
+  },
 });
 
 /**
@@ -40,14 +40,14 @@ const storage = multer.diskStorage({
  */
 const fileFilter = function (req, file, cb) {
   const fileType = getFileType(file.mimetype);
-  
+
   if (!fileType) {
-    return cb(new Error('Unsupported file type'), false);
+    return cb(new Error("Unsupported file type"), false);
   }
-  
+
   const extension = path.extname(file.originalname).toLowerCase().substring(1);
   const isValidExtension = config.allowedFileTypes[fileType].test(extension);
-  
+
   if (isValidExtension) {
     cb(null, true);
   } else {
@@ -69,14 +69,14 @@ const createUploader = (fileType) => {
   return multer({
     storage: storage,
     limits: { fileSize: getFileSizeLimit(fileType) },
-    fileFilter: fileFilter
+    fileFilter: fileFilter,
   });
 };
 
 // Create upload middleware instances for different file types
-const videoUpload = createUploader('video');
-const imageUpload = createUploader('image');
-const documentUpload = createUploader('document');
+const videoUpload = createUploader("video");
+const imageUpload = createUploader("image");
+const documentUpload = createUploader("document");
 
 /**
  * Generic upload middleware that determines file type from the request
@@ -84,12 +84,12 @@ const documentUpload = createUploader('document');
 const uploadFile = multer({
   storage: storage,
   limits: { fileSize: 100 * 1024 * 1024 }, // Default to largest size (100MB)
-  fileFilter: fileFilter
+  fileFilter: fileFilter,
 });
 
 module.exports = {
   videoUpload,
   imageUpload,
   documentUpload,
-  uploadFile
+  uploadFile,
 };
